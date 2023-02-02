@@ -108,7 +108,7 @@ class Mathematical(object):
         for start, stop in start_stop:
             self.get_mean(start, stop)
             self.get_us()
-            name = f'{start}/{stop}'
+            name = f'{start}-{stop}'
             time = stop - start
             length = round((stop - start) * self.Wxc_kbti_acc / 3.6 / 1000, 3)
             height = self.get_height(start)

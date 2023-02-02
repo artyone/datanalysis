@@ -1,6 +1,7 @@
 import data_calculate as dc
 import data_map as dm
 import data_file as df
+import re
 
 class Control(object):
 
@@ -149,17 +150,18 @@ class Control(object):
         self.worker.calc_wp()
         return self.worker.get_data()
 
-    def get_intervals(self):
-        # intervals = self.worker.get_intervals(self.koef_for_intervals)
-        intervals = '25475-25952,29000-29451,30450-30883,36900-37432,37432-37967,37967-38320,47400-47921,47921-48440,48440-48960'
-        intervals = [i.split('-') for i in intervals.split(',')]
-        intervals = [(int(x), int(y)) for x, y in intervals]
+    def save_report(self, filepath, string):
+        if string == '':
+            intervals = self.worker.get_intervals(self.koef_for_intervals)
+        else:
+            intervals = re.sub(r'[^\d\-\n]', '', string)
+            intervals = re.findall(r'(\d+\-\d+)\n?', intervals)
+            intervals = [i.split('-') for i in intervals]
+            intervals = [(int(x), int(y)) for x, y in intervals]
         data_result = self.worker.get_calculated_data(intervals)
-        try:
-            self.fly.write_xlsx(data_result, '26122022_ДИСС_по_эталону.xlsx')
-        except Exception as e:
-            print('Ошибка записи файла\n', e)
-            exit()
+
+        self.fly.write_xlsx(data_result, filepath)
+
 
     def save_map(self, filepath, jvd_h_min='', decimation=''):
         if self.data_calculate is None:

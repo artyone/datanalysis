@@ -1,11 +1,13 @@
 import sys
+import os
 import controller as ctlr
 import qrc_resources
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, sip
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont, QIcon, QScreen
 from PyQt5.QtCore import QCoreApplication, Qt, QEvent, QPoint
 import PyQt5.QtCore as QtCore
+from qtwidgets import AnimatedToggle
 from functools import partial
 from PyQt5.QtWidgets import (
     QPushButton,
@@ -37,7 +39,9 @@ from PyQt5.QtWidgets import (
     QSpinBox,
     QSlider,
     QActionGroup,
-    QDoubleSpinBox
+    QDoubleSpinBox,
+    QTextEdit,
+    QPlainTextEdit
 )
 
 class GraphWindow(QMdiSubWindow):
@@ -226,12 +230,11 @@ class MapWindow(QWidget):
 
     def __init__(self, controller):
         super().__init__()
-        self.initUI()
         self.controller = controller
-
+        self.initUI()
+        
     def initUI(self):
         self.setGeometry(0, 0, 250, 150)
-        self.center()
         self.setWindowTitle("Create map")
         dlgLayout = QVBoxLayout()
         formLayout = QFormLayout()
@@ -248,7 +251,6 @@ class MapWindow(QWidget):
         btnBox.rejected.connect(self.close)
         dlgLayout.addLayout(formLayout)
         dlgLayout.addWidget(btnBox)
-        # Set the layout on the application's window
         self.setLayout(dlgLayout)
 
     def createEvent(self):
@@ -264,11 +266,83 @@ class MapWindow(QWidget):
             except:
                 QMessageBox.critical(self, "Error", "Error with save file")
 
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+
+class ReportWindow(QWidget):
+
+    def __init__(self, controller) -> None:
+        super().__init__()
+        self.controller = controller
+        self.intervalsTxt = None
+        self.initUI()
+
+    def initUI(self):
+        self.setGeometry(0, 0, 500, 500)
+        self.setWindowTitle("Create report")
+        self.setLayout(QVBoxLayout())
+
+        formLayout = QFormLayout()
+        horizontalLayout = QHBoxLayout()
+
+        self.intervalsToggle = AnimatedToggle()
+        self.intervalsToggle.setChecked(True)
+        self.intervalsToggle.stateChanged.connect(self.addFormTxt)
+        self.intervalsTxt = QPlainTextEdit()
+
+        self.btnBox = QDialogButtonBox()
+
+        self.btnBox.setStandardButtons(QDialogButtonBox.Open |
+                                       QDialogButtonBox.Save | 
+                                       QDialogButtonBox.Cancel)
+        self.btnBox.rejected.connect(self.close)
+
+        self.openButton = self.btnBox.button(QDialogButtonBox.Open)
+        self.openButton.clicked.connect(self.openFile)
+        self.openButton.hide()
+
+        saveButton = self.btnBox.button(QDialogButtonBox.Save)
+        saveButton.clicked.connect(self.getReport)
+        
+
+        horizontalLayout.addWidget(QLabel('<b>Intervals:</b>'), 2)
+        horizontalLayout.addWidget(QLabel('auto'), 1,
+                                   alignment=Qt.AlignRight)
+        horizontalLayout.addWidget(self.intervalsToggle, 1)
+        horizontalLayout.addWidget(QLabel('manual'), 2)
+
+        formLayout.addRow(horizontalLayout)
+        formLayout.addRow(self.intervalsTxt)
+
+        self.layout().addLayout(formLayout, 1)
+        self.layout().addWidget(self.btnBox, 1)
+
+    def addFormTxt(self):
+        if self.intervalsToggle.isChecked():
+            self.intervalsTxt.show()
+        else: 
+            self.intervalsTxt.hide()
+
+    def getReport(self):
+        text = self.intervalsTxt.toPlainText()
+        if self.intervalsToggle.isChecked() and not text:
+            QMessageBox.information(self, "Error", "Need input intervals")
+            return
+        if not self.intervalsToggle.isChecked():
+            text = ''
+        options = QFileDialog.Options()
+        self.filePath, _ = QFileDialog.getSaveFileName(self,
+                    "Save File", "", "xlsx Files (*.xlsx);;All Files(*)",
+                    options=options)
+        if self.filePath:
+            try:
+                self.controller.save_report(self.filePath, text)
+                self.openButton.show()
+            except PermissionError:
+                QMessageBox.critical(self, 'Error', 'File opened in another program')
+    
+    def openFile(self):
+        os.startfile(self.filePath)
+
+
 
 
 class MainWindow(QMainWindow):
@@ -277,6 +351,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.data = None
         self.mapWindow = None
+        self.reportWindow = None
         self.controller = None
         self.filePathTxt = None
         self.filePathPdd = None
@@ -285,7 +360,6 @@ class MainWindow(QMainWindow):
     def initUI(self):
 
         self.setGeometry(100, 100, 800, 600)
-        self.center()
         self.setWindowTitle('Rp_datanalysis')
         self._createActions()
         self._createMenuBar()
@@ -307,7 +381,9 @@ class MainWindow(QMainWindow):
 
         self.splitter.addWidget(self.mdi)
         self.setCentralWidget(self.splitter)
+        self.center()
         self.showMaximized()
+
 
     def _createMenuBar(self):
         menuBar = self.menuBar()
@@ -337,7 +413,7 @@ class MainWindow(QMainWindow):
 
         serviceMenu = menuBar.addMenu('&Service')
         serviceMenu.addAction(self.createMapAction)
-        serviceMenu.addAction(self.createReport)
+        serviceMenu.addAction(self.createReportAction)
 
         settingsMenu = menuBar.addMenu('&Settings')
 
@@ -415,13 +491,13 @@ class MainWindow(QMainWindow):
         self.closeAllAction.setIcon(QIcon(':x-circle.svg'))
         self.closeAllAction.setStatusTip('Close all opened Windows')
 
-        self.createMapAction = QAction('&Create map', self)
+        self.createMapAction = QAction('Create &map', self)
         self.createMapAction.setIcon(QIcon(':map.svg'))
         self.createMapAction.setStatusTip('Create interactive map')
 
-        self.createReport = QAction('&Create report', self)
-        self.createReport.setIcon(QIcon(':mail.svg'))
-        self.createReport.setStatusTip('Create cvv report')
+        self.createReportAction = QAction('Create &report', self)
+        self.createReportAction.setIcon(QIcon(':mail.svg'))
+        self.createReportAction.setStatusTip('Create xlsx report')
 
         self.aboutAction = QAction('&About', self)
         self.aboutAction.setIcon(QIcon(':help-circle.svg'))
@@ -433,6 +509,7 @@ class MainWindow(QMainWindow):
         self.openPddAction.triggered.connect(self.openFilePdd)
         self.openRecentMenu.aboutToShow.connect(self.populateOpenRecent)
         self.createMapAction.triggered.connect(self.createMap)
+        self.createReportAction.triggered.connect(self.createReport)
         self.aboutAction.triggered.connect(self.about)
         self.exitAction.triggered.connect(self.close)
         self.createGraphAction.triggered.connect(self.createGraph)
@@ -467,14 +544,17 @@ class MainWindow(QMainWindow):
         self.tree.show()
         self.splitter.setSizes([100, 500])
 
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
+    def center(self, obj=None):
+        if obj is None:
+            obj = self
+        qr = obj.frameGeometry()
+        cp = self.screen().geometry().center()
         qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        obj.move(qr.topLeft())
 
     def newFile(self):
-        self.centralWidget.setText('<b>File > New</b> clicked')
+        pass
+
 
     def openFileTxt(self):
         self.filePathTxt, check = QFileDialog.getOpenFileName(
@@ -496,10 +576,21 @@ class MainWindow(QMainWindow):
             return
         if self.mapWindow is None:
             self.mapWindow = MapWindow(self.controller)
-            self.mapWindow.show()
         else:
             self.mapWindow.hide()
-            self.mapWindow.show()
+        self.center(self.mapWindow)
+        self.mapWindow.show()
+
+    def createReport(self):
+        if self.controller is None:
+            QMessageBox.information(self, "Error", "Need to select the data")
+            return
+        if self.reportWindow is None:
+            self.reportWindow = ReportWindow(self.controller)
+        else:
+            self.reportWindow.hide()
+        self.center(self.reportWindow)
+        self.reportWindow.show()
 
     def about(self):
         self.centralWidget.setText('<b>Help > About</b> clicked')
