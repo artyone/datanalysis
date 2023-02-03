@@ -1,4 +1,5 @@
 from typing import Any, Iterable
+import pandas as pd
 from pandas import DataFrame
 from math import pi, sin, cos, atan, radians
 
@@ -121,8 +122,8 @@ class Mathematical(object):
 
             res_dict[name] = [length, height, start,
                               stop, time, US, Wp, Wx, Wz, Wy]
-
-        return res_dict
+            result = pd.DataFrame(res_dict)
+        return result
 
     def rolling_in_the_deep(self):
         return self.d.DIS_Wx.rolling(50).mean()

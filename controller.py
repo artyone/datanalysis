@@ -125,8 +125,8 @@ class Control(object):
 
     def __init__(self, file) -> None:
         self.filepath = file
-        self.data_from_file = self.set_data_from_file(self.filepath)
-        self.data_calculate = self.set_calculate_data()
+        self.data = self.set_data_from_file(self.filepath)
+        self.data_calculated = False
 
     def set_data_from_file(self, filepath):
         self.fly = df.Datas(filepath)
@@ -138,9 +138,9 @@ class Control(object):
             exit()
 
     def set_calculate_data(self):
-        if self.data_from_file is None:
+        if self.data is None:
             raise Exception('Data must be not none')
-        self.worker = dc.Mathematical(self.data_from_file)
+        self.worker = dc.Mathematical(self.data)
         self.worker.apply_coefficient_w_diss(
             wx=self.koef_Wx_PNK, wz=self.koef_Wz_PNK, wy=self.koef_Wy_PNK)
         self.worker.calc_angles(kren=self.kren_correct,
@@ -148,7 +148,8 @@ class Control(object):
         self.worker.calc_wg_kbti(tu22=self.tu22)
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
-        return self.worker.get_data()
+        self.data = self.worker.get_data()
+        self.data_calculated = True
 
     def save_report(self, filepath, string):
         if string == '':
@@ -164,24 +165,35 @@ class Control(object):
 
 
     def save_map(self, filepath, jvd_h_min='', decimation=''):
-        if self.data_calculate is None:
+        if self.data is None:
             raise Exception('Data must be not none')
         if decimation == '':
             decimation = 1
         if jvd_h_min == '':
             jvd_h_min = 0
-        map = dm.Map(self.data_calculate.loc
-                     [(self.data_calculate.JVD_H > float(jvd_h_min))
-                      & (self.data_calculate.name % float(decimation) == 0),
+        map = dm.Map(self.data.loc
+                     [(self.data.JVD_H > float(jvd_h_min))
+                      & (self.data.name % float(decimation) == 0),
                       ['name', 'latitude', 'longitude', 'JVD_H']])
         map.get_map()
         map.save_map(filepath)
 
-    def get_data_from_file(self):
-        return self.data_from_file
+    def save_csv(self, filepath):
+        if self.data is None:
+            raise Exception('Data must be not none')
+        self.fly.write_csv(self.data, filepath)
 
-    def get_data_calculate(self):
-        return self.data_calculate
+    def save_parquet(self, filepath):
+        if self.data is None:
+            raise Exception('Data must be not none')
+        self.fly.write_parquet(self.data, filepath)
+
+    def get_data(self):
+        return self.data
+
+
+    def is_calculated(self):
+        return self.data_calculated
 
 
 # new = Control('26122022_ДИСС_по_эталону.txt')

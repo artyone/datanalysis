@@ -1,50 +1,19 @@
 import sys
-import os
 import controller as ctlr
 import qrc_resources
 import pyqtgraph as pg
-from PyQt5 import QtWidgets, sip
-from PyQt5.QtGui import QFont, QIcon, QScreen
-from PyQt5.QtCore import QCoreApplication, Qt, QEvent, QPoint
-import PyQt5.QtCore as QtCore
+from os import startfile
+from PyQt5.sip import delete
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore
+from PyQt5 import QtWidgets as qtw
 from qtwidgets import AnimatedToggle
 from functools import partial
-from PyQt5.QtWidgets import (
-    QPushButton,
-    QWidget,
-    QMessageBox,
-    QDesktopWidget,
-    QLabel,
-    QMdiSubWindow,
-    QMdiArea,
-    QApplication,
-    QMainWindow,
-    QAction,
-    QFileDialog,
-    QHBoxLayout,
-    QSpacerItem,
-    QCheckBox,
-    QVBoxLayout,
-    QSplitter,
-    QFrame,
-    QScrollArea,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QTreeWidgetItemIterator,
-    QFormLayout,
-    QLineEdit,
-    QDialogButtonBox,
-    QErrorMessage,
-    QMenu,
-    QSpinBox,
-    QSlider,
-    QActionGroup,
-    QDoubleSpinBox,
-    QTextEdit,
-    QPlainTextEdit
-)
+from notificator import notificator
+from notificator.alingments import BottomRight
 
-class GraphWindow(QMdiSubWindow):
+class GraphWindow(qtw.QMdiSubWindow):
 
     def __init__(self, data, treeSelected) -> None:
         super().__init__()
@@ -57,9 +26,9 @@ class GraphWindow(QMdiSubWindow):
 
     def initUI(self):
         self.shiftWidget = None
-        self.mainWidget = QWidget()
+        self.mainWidget = qtw.QWidget()
         self.setWidget(self.mainWidget)
-        self.mainLayout = QVBoxLayout()
+        self.mainLayout = qtw.QVBoxLayout()
         self.mainWidget.setLayout(self.mainLayout)
         self.setWindowTitle('/'.join(self.columns))
         self.setGeometry(0, 0, 500, 300)
@@ -113,13 +82,13 @@ class GraphWindow(QMdiSubWindow):
             event.accept()
 
     def contextMenu(self, event):
-        menu = QMenu()
+        menu = qtw.QMenu()
         self.setBackgrounMenu(menu)
         self.setLineTypeMenu(menu)
         self.setTimeShiftMenu(menu)
         menu.addSeparator()
         
-        closeAction = QAction('Clos&e')
+        closeAction = qtw.QAction('Clos&e')
         menu.addAction(closeAction)
         closeAction.triggered.connect(self.close)
 
@@ -128,7 +97,7 @@ class GraphWindow(QMdiSubWindow):
     def setBackgrounMenu(self, parent):
         changeBackground = parent.addMenu('&Background')
 
-        whiteBackgroundAction = QAction('&White ', self)
+        whiteBackgroundAction = qtw.QAction('&White ', self)
         whiteBackgroundAction.setCheckable(True)
         if getattr(self.plt, '_background') == 'white':
             whiteBackgroundAction.setChecked(True)
@@ -137,7 +106,7 @@ class GraphWindow(QMdiSubWindow):
         changeBackground.addAction(whiteBackgroundAction)
         whiteBackgroundAction.triggered.connect(self.whiteBackground)
 
-        blackBackgroundAction = QAction('&Black ', self)
+        blackBackgroundAction = qtw.QAction('&Black ', self)
         blackBackgroundAction.setCheckable(True)
         if getattr(self.plt, '_background') == 'black':
             blackBackgroundAction.setChecked(True)
@@ -151,7 +120,7 @@ class GraphWindow(QMdiSubWindow):
         for name, data in self.curves.items():
             nameLine = lineType.addMenu(name)
 
-            lineGraphAction = QAction('&Line', self)
+            lineGraphAction = qtw.QAction('&Line', self)
             lineGraphAction.setCheckable(True)
             if data['curve'].opts['pen'] == data['pen']:
                 lineGraphAction.setChecked(True)
@@ -160,7 +129,7 @@ class GraphWindow(QMdiSubWindow):
             nameLine.addAction(lineGraphAction)
             lineGraphAction.triggered.connect(partial(self.lineGraph, data))
 
-            crossGraphAction = QAction('&Cross', self)
+            crossGraphAction = qtw.QAction('&Cross', self)
             crossGraphAction.setCheckable(True)
             if data['curve'].opts['symbol'] is None:
                 crossGraphAction.setChecked(False)
@@ -172,7 +141,7 @@ class GraphWindow(QMdiSubWindow):
     def setTimeShiftMenu(self, parent):
         timeShiftMenu = parent.addMenu('&Time Shift')
         for name, data in self.curves.items():
-            timeShiftAction = QAction(name, self)
+            timeShiftAction = qtw.QAction(name, self)
             timeShiftMenu.addAction(timeShiftAction)
             timeShiftAction.triggered.connect(
                 partial(self.timeShift, data['curve']))
@@ -198,18 +167,18 @@ class GraphWindow(QMdiSubWindow):
 
     def timeShift(self, curve):
         if self.shiftWidget is not None:
-            sip.delete(self.shiftWidget)
-        self.shiftWidget = QFrame()
+            delete(self.shiftWidget)
+        self.shiftWidget = qtw.QFrame()
         self.mainLayout.addWidget(self.shiftWidget)
-        self.layoutShift = QHBoxLayout()
+        self.layoutShift = qtw.QHBoxLayout()
         self.shiftWidget.setLayout(self.layoutShift)
         max = self.data.name.max()
-        self.slider = QSlider(Qt.Orientation.Horizontal, self)
+        self.slider = qtw.QSlider(Qt.Orientation.Horizontal, self)
         self.slider.setRange(-max, max)
         self.slider.setSingleStep(100)
         self.slider.setPageStep(100)
         self.slider.valueChanged.connect(partial(self.updateGraph, curve))
-        self.spinBox = QDoubleSpinBox(self)
+        self.spinBox = qtw.QDoubleSpinBox(self)
         self.spinBox.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.spinBox.setMinimumWidth(80)
         self.spinBox.setRange(-max, max)
@@ -226,51 +195,67 @@ class GraphWindow(QMdiSubWindow):
         curve.setData(x, y)
 
 
-class MapWindow(QWidget):
+class MapWindow(qtw.QWidget):
 
-    def __init__(self, controller):
+    def __init__(self, controller, parent=None):
         super().__init__()
+        self.parent = parent
         self.controller = controller
         self.initUI()
         
     def initUI(self):
         self.setGeometry(0, 0, 250, 150)
         self.setWindowTitle("Create map")
-        dlgLayout = QVBoxLayout()
-        formLayout = QFormLayout()
+        dlgLayout = qtw.QVBoxLayout()
+        formLayout = qtw.QFormLayout()
         formLayout.setVerticalSpacing(20)
-        self.jvdHMin = QLineEdit('100')
-        self.decimation = QLineEdit('20')
+        self.jvdHMin = qtw.QLineEdit('100')
+        self.decimation = qtw.QLineEdit('20')
         formLayout.addRow("JVD_H min:", self.jvdHMin)
         formLayout.addRow("decimation:", self.decimation)
-        btnBox = QDialogButtonBox()
-        btnBox.setStandardButtons(
-            QDialogButtonBox.Save | QDialogButtonBox.Cancel
-        )
-        btnBox.accepted.connect(self.createEvent)
-        btnBox.rejected.connect(self.close)
+        self.btnBox = qtw.QDialogButtonBox()
+
+        self.btnBox.setStandardButtons(qtw.QDialogButtonBox.Open |
+                                       qtw.QDialogButtonBox.Save | 
+                                       qtw.QDialogButtonBox.Cancel)
+        self.btnBox.rejected.connect(self.close)
+
+        self.openButton = self.btnBox.button(qtw.QDialogButtonBox.Open)
+        self.openButton.clicked.connect(self.openFile)
+        self.openButton.hide()
+
+        saveButton = self.btnBox.button(qtw.QDialogButtonBox.Save)
+        saveButton.clicked.connect(self.getMapEvent)
         dlgLayout.addLayout(formLayout)
-        dlgLayout.addWidget(btnBox)
+        dlgLayout.addWidget(self.btnBox)
         self.setLayout(dlgLayout)
 
-    def createEvent(self):
-        options = QFileDialog.Options()
-        filePath, _ = QFileDialog.getSaveFileName(self,
-                                                  "Save File", "", "html Files (*.html);;All Files(*)", options=options)
-        if filePath:
+    def getMapEvent(self):
+        options = qtw.QFileDialog.Options()
+        self.filePath, _ = qtw.QFileDialog.getSaveFileName(self,
+                    "Save File", "", "html Files (*.html);;All Files(*)", options=options)
+        if self.filePath:
             try:
-                self.controller.save_map(filePath,
+                self.controller.save_map(self.filePath,
                                          self.jvdHMin.text(),
                                          self.decimation.text())
-                self.hide()
-            except:
-                QMessageBox.critical(self, "Error", "Error with save file")
+                self.openButton.show()
+                self.parent.setNotify('success', f'html file saved to {self.filePath}')
+            except PermissionError:
+                self.parent.setNotify('error', 'File opened in another program')
+            except Exception as e:
+                self.parent.setNotify('error', e)
+
+    def openFile(self):
+        startfile(self.filePath)
+        self.close()
 
 
-class ReportWindow(QWidget):
+class ReportWindow(qtw.QWidget):
 
-    def __init__(self, controller) -> None:
+    def __init__(self, controller, parent=None) -> None:
         super().__init__()
+        self.parent = parent
         self.controller = controller
         self.intervalsTxt = None
         self.initUI()
@@ -278,36 +263,36 @@ class ReportWindow(QWidget):
     def initUI(self):
         self.setGeometry(0, 0, 500, 500)
         self.setWindowTitle("Create report")
-        self.setLayout(QVBoxLayout())
+        self.setLayout(qtw.QVBoxLayout())
 
-        formLayout = QFormLayout()
-        horizontalLayout = QHBoxLayout()
+        formLayout = qtw.QFormLayout()
+        horizontalLayout = qtw.QHBoxLayout()
 
         self.intervalsToggle = AnimatedToggle()
         self.intervalsToggle.setChecked(True)
         self.intervalsToggle.stateChanged.connect(self.addFormTxt)
-        self.intervalsTxt = QPlainTextEdit()
+        self.intervalsTxt = qtw.QPlainTextEdit()
 
-        self.btnBox = QDialogButtonBox()
+        self.btnBox = qtw.QDialogButtonBox()
 
-        self.btnBox.setStandardButtons(QDialogButtonBox.Open |
-                                       QDialogButtonBox.Save | 
-                                       QDialogButtonBox.Cancel)
+        self.btnBox.setStandardButtons(qtw.QDialogButtonBox.Open |
+                                       qtw.QDialogButtonBox.Save | 
+                                       qtw.QDialogButtonBox.Cancel)
         self.btnBox.rejected.connect(self.close)
 
-        self.openButton = self.btnBox.button(QDialogButtonBox.Open)
+        self.openButton = self.btnBox.button(qtw.QDialogButtonBox.Open)
         self.openButton.clicked.connect(self.openFile)
         self.openButton.hide()
 
-        saveButton = self.btnBox.button(QDialogButtonBox.Save)
-        saveButton.clicked.connect(self.getReport)
+        saveButton = self.btnBox.button(qtw.QDialogButtonBox.Save)
+        saveButton.clicked.connect(self.getReportEvent)
         
 
-        horizontalLayout.addWidget(QLabel('<b>Intervals:</b>'), 2)
-        horizontalLayout.addWidget(QLabel('auto'), 1,
+        horizontalLayout.addWidget(qtw.QLabel('<b>Intervals:</b>'), 2)
+        horizontalLayout.addWidget(qtw.QLabel('auto'), 1,
                                    alignment=Qt.AlignRight)
         horizontalLayout.addWidget(self.intervalsToggle, 1)
-        horizontalLayout.addWidget(QLabel('manual'), 2)
+        horizontalLayout.addWidget(qtw.QLabel('manual'), 2)
 
         formLayout.addRow(horizontalLayout)
         formLayout.addRow(self.intervalsTxt)
@@ -321,35 +306,38 @@ class ReportWindow(QWidget):
         else: 
             self.intervalsTxt.hide()
 
-    def getReport(self):
+    def getReportEvent(self):
         text = self.intervalsTxt.toPlainText()
         if self.intervalsToggle.isChecked() and not text:
-            QMessageBox.information(self, "Error", "Need input intervals")
+            self.parent.setNotify('warning', "Need input intervals")
             return
         if not self.intervalsToggle.isChecked():
             text = ''
-        options = QFileDialog.Options()
-        self.filePath, _ = QFileDialog.getSaveFileName(self,
+        options = qtw.QFileDialog.Options()
+        self.filePath, _ = qtw.QFileDialog.getSaveFileName(self,
                     "Save File", "", "xlsx Files (*.xlsx);;All Files(*)",
                     options=options)
         if self.filePath:
             try:
                 self.controller.save_report(self.filePath, text)
                 self.openButton.show()
+                self.parent.setNotify('success', f'xlsx file saved to {self.filePath}')
             except PermissionError:
-                QMessageBox.critical(self, 'Error', 'File opened in another program')
+                self.parent.setNotify('error', 'File opened in another program')
+            except Exception as e:
+                self.parent.setNotify('error', e)
     
     def openFile(self):
-        os.startfile(self.filePath)
+        startfile(self.filePath)
+        self.close()
 
 
 
 
-class MainWindow(QMainWindow):
+class MainWindow(qtw.QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.data = None
         self.mapWindow = None
         self.reportWindow = None
         self.controller = None
@@ -366,15 +354,16 @@ class MainWindow(QMainWindow):
         self._createToolBar()
         self._createStatusBar()
         self._connectActions()
+        self.notify = notificator()
 
-        self.mdi = QMdiArea()
+        self.mdi = qtw.QMdiArea()
         self.mdi.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.mdi.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
-        self.splitter = QSplitter(Qt.Horizontal)
-        self.setStyleSheet("QSplitter::handle{background: white;}")
+        self.splitter = qtw.QSplitter(Qt.Horizontal)
+        self.setStyleSheet("qtw.QSplitter::handle{background: white;}")
 
-        self.tree = QTreeWidget(self.splitter)
+        self.tree = qtw.QTreeWidget(self.splitter)
         self.tree.setHeaderHidden(True)
         self.tree.hide()
         self.splitter.addWidget(self.tree)
@@ -391,13 +380,18 @@ class MainWindow(QMainWindow):
         fileMenu = menuBar.addMenu('&File')
         fileMenu.addAction(self.newAction)
 
-        openMenu = fileMenu.addMenu('&Open file')
-        openMenu.setIcon(QIcon(':file-plus.svg'))
-        openMenu.addAction(self.openTxtAction)
-        openMenu.addAction(self.openPddAction)
+        openSourceMenu = fileMenu.addMenu('Open &source')
+        openSourceMenu.setIcon(QIcon(':file-plus.svg'))
+        openSourceMenu.addAction(self.openTxtAction)
+        openSourceMenu.addAction(self.openPddAction)
 
-        self.openRecentMenu = fileMenu.addMenu('Open Recent')
-        self.openRecentMenu.setIcon(QIcon(':file-minus.svg'))
+        openDataMenu = fileMenu.addMenu('&Open data')
+        openDataMenu.setIcon(QIcon(':database.svg'))
+
+        saveMenu = fileMenu.addMenu('&Save as')
+        saveMenu.setIcon(QIcon(':save'))
+        saveMenu.addAction(self.saveParquetAction)
+        saveMenu.addAction(self.saveCsvAction)
 
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAction)
@@ -412,6 +406,7 @@ class MainWindow(QMainWindow):
         viewMenu.addAction(self.closeAllAction)
 
         serviceMenu = menuBar.addMenu('&Service')
+        serviceMenu.addAction(self.calculateDataAction)
         serviceMenu.addAction(self.createMapAction)
         serviceMenu.addAction(self.createReportAction)
 
@@ -424,82 +419,98 @@ class MainWindow(QMainWindow):
         fileToolBar = self.addToolBar('File')
         fileToolBar.addAction(self.openTxtAction)
         fileToolBar.addAction(self.openPddAction)
+        fileToolBar.addAction(self.saveParquetAction)
         fileToolBar.addSeparator()
         fileToolBar.addAction(self.exitAction)
         fileToolBar.setMovable(False)
-        self.viewToolBar = self.addToolBar('View')
-        self.viewToolBar.addAction(self.createGraphAction)
-        self.spinBox = QSpinBox()
-        self.viewToolBar.addWidget(self.spinBox)
-        self.viewToolBar.addSeparator()
-        self.viewToolBar.addAction(self.cascadeAction)
-        self.viewToolBar.addAction(self.horizontalAction)
-        self.viewToolBar.addAction(self.verticalAction)
-        self.viewToolBar.addAction(self.trackGraphAction)
-        self.viewToolBar.addSeparator()
-        self.viewToolBar.addAction(self.closeAllAction)
+        serviceToolBar = self.addToolBar('Service')
+        serviceToolBar.addAction(self.calculateDataAction)
+        viewToolBar = self.addToolBar('View')
+        viewToolBar.addAction(self.createGraphAction)
+        self.spinBox = qtw.QSpinBox()
+        viewToolBar.addWidget(self.spinBox)
+        viewToolBar.addSeparator()
+        viewToolBar.addAction(self.cascadeAction)
+        viewToolBar.addAction(self.horizontalAction)
+        viewToolBar.addAction(self.verticalAction)
+        viewToolBar.addAction(self.trackGraphAction)
+        viewToolBar.addSeparator()
+        viewToolBar.addAction(self.closeAllAction)
 
     def _createStatusBar(self):
         self.statusbar = self.statusBar()
         self.statusbar.showMessage('Hello world!', 3000)
-        self.openedFilesLabel = QLabel(
+        self.openedFilesLabel = qtw.QLabel(
             f'File TXT: {self.filePathTxt}, File PDD: {self.filePathPdd}')
         self.statusbar.addPermanentWidget(self.openedFilesLabel)
 
     def _createActions(self):
-        self.newAction = QAction('&New', self)
+        self.newAction = qtw.QAction('&New', self)
         self.newAction.setIcon(QIcon(':file.svg'))
         self.newAction.setStatusTip('Clear')
 
-        self.openTxtAction = QAction('Open *.&txt...', self)
+        self.openTxtAction = qtw.QAction('Open *.&txt...', self)
         self.openTxtAction.setIcon(QIcon(':file-text.svg'))
         self.openTxtAction.setStatusTip('Open file')
         self.openTxtAction.setShortcut('Ctrl+O')
 
-        self.openPddAction = QAction('Open *.&pdd...', self)
+        self.openPddAction = qtw.QAction('Open *.&pdd...', self)
         self.openPddAction.setIcon(QIcon(':file.svg'))
         self.openPddAction.setStatusTip('Open file')
         self.openPddAction.setShortcut('Ctrl+P')
 
-        self.exitAction = QAction('&Exit', self)
+        self.saveParquetAction = qtw.QAction('Save as *.snappy...', self)
+        self.saveParquetAction.setIcon(QIcon(':save.svg'))
+        self.saveParquetAction.setStatusTip('Save data to parquet file with compression snappy')
+        self.saveParquetAction.setShortcut('Ctrl+S')
+
+        self.saveCsvAction = qtw.QAction('Save as *.csv...', self)
+        self.saveCsvAction.setIcon(QIcon(':file-text.svg'))
+        self.saveCsvAction.setStatusTip('Save data to csv file')
+
+        self.exitAction = qtw.QAction('&Exit', self)
         self.exitAction.setIcon(QIcon(':log-out.svg'))
         self.exitAction.setStatusTip('Exit application')
         self.exitAction.setShortcut('Ctrl+Q')
 
-        self.createGraphAction = QAction('&Create graph')
+        self.createGraphAction = qtw.QAction('&Create graph')
         self.createGraphAction.setIcon(QIcon(':trending-up.svg'))
         self.createGraphAction.setStatusTip('Create graph in new window')
 
-        self.cascadeAction = QAction('Casca&de Windows')
+        self.cascadeAction = qtw.QAction('Casca&de Windows')
         self.cascadeAction.setIcon(QIcon(':bar-chart.svg'))
         self.cascadeAction.setStatusTip('Cascade View Graph Windows')
 
-        self.horizontalAction = QAction('&Horizontal Windows')
+        self.horizontalAction = qtw.QAction('&Horizontal Windows')
         self.horizontalAction.setIcon(QIcon(':more-vertical.svg'))
         self.horizontalAction.setStatusTip('Horizontal View Graph Windows')
 
-        self.verticalAction = QAction('&Vertical Windows')
+        self.verticalAction = qtw.QAction('&Vertical Windows')
         self.verticalAction.setIcon(QIcon(':more-horizontal.svg'))
         self.verticalAction.setStatusTip('Vertical View Graph Windows')
 
-        self.trackGraphAction = QAction('&Track graph')
+        self.trackGraphAction = qtw.QAction('&Track graph')
         self.trackGraphAction.setIcon(QIcon(':move.svg'))
         self.trackGraphAction.setStatusTip('Track Grapth in all Windows')
         self.trackGraphAction.setCheckable(True)
 
-        self.closeAllAction = QAction('Close &all Windows')
+        self.closeAllAction = qtw.QAction('Close &all Windows')
         self.closeAllAction.setIcon(QIcon(':x-circle.svg'))
         self.closeAllAction.setStatusTip('Close all opened Windows')
 
-        self.createMapAction = QAction('Create &map', self)
+        self.calculateDataAction = qtw.QAction('&Calculate data')
+        self.calculateDataAction.setIcon(QIcon(':percent.svg'))
+        self.calculateDataAction.setStatusTip('Calculate data from source')
+
+        self.createMapAction = qtw.QAction('Create &map', self)
         self.createMapAction.setIcon(QIcon(':map.svg'))
         self.createMapAction.setStatusTip('Create interactive map')
 
-        self.createReportAction = QAction('Create &report', self)
+        self.createReportAction = qtw.QAction('Create &report', self)
         self.createReportAction.setIcon(QIcon(':mail.svg'))
         self.createReportAction.setStatusTip('Create xlsx report')
 
-        self.aboutAction = QAction('&About', self)
+        self.aboutAction = qtw.QAction('&About', self)
         self.aboutAction.setIcon(QIcon(':help-circle.svg'))
         self.aboutAction.setStatusTip('About programm')
 
@@ -507,7 +518,9 @@ class MainWindow(QMainWindow):
         self.newAction.triggered.connect(self.newFile)
         self.openTxtAction.triggered.connect(self.openFileTxt)
         self.openPddAction.triggered.connect(self.openFilePdd)
-        self.openRecentMenu.aboutToShow.connect(self.populateOpenRecent)
+        self.saveParquetAction.triggered.connect(partial(self.saveData, 'snappy'))
+        self.saveCsvAction.triggered.connect(partial(self.saveData, 'csv'))
+        self.calculateDataAction.triggered.connect(self.calculateData)
         self.createMapAction.triggered.connect(self.createMap)
         self.createReportAction.triggered.connect(self.createReport)
         self.aboutAction.triggered.connect(self.about)
@@ -521,23 +534,23 @@ class MainWindow(QMainWindow):
         self.closeAllAction.triggered.connect(self._closeAllWindows)
 
     def _createCheckBox(self, param):
-        if self.data is None:
-            error_dialog = QtWidgets.QErrorMessage()
+        if self.controller.get_data() is None:
+            error_dialog = qtw.QErrorMessage()
             error_dialog.showMessage('Oh no!')
             return
 
-        it = QTreeWidgetItemIterator(self.tree)
+        it = qtw.QTreeWidgetItemIterator(self.tree)
         while it.value():
             item = it.value()
             if item.text(0) == param:
-                sip.delete(item)
+                delete(item)
             it += 1
 
-        parent = QTreeWidgetItem(self.tree)
+        parent = qtw.QTreeWidgetItem(self.tree)
         parent.setText(0, param)
         parent.setExpanded(True)
-        for head in list(self.data.columns.values):
-            item = QTreeWidgetItem(parent)
+        for head in list(self.controller.get_data().columns.values):
+            item = qtw.QTreeWidgetItem(parent)
             item.setText(0, head)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(0, Qt.Unchecked)
@@ -557,25 +570,54 @@ class MainWindow(QMainWindow):
 
 
     def openFileTxt(self):
-        self.filePathTxt, check = QFileDialog.getOpenFileName(
+        self.filePathTxt, check = qtw.QFileDialog.getOpenFileName(
             None,
-            'QFileDialog.getOpenFileName()',
+            'qtw.QFileDialog.getOpenFileName()',
             '', 'Text Files (*.txt)')
         if check:
             self.controller = ctlr.Control(self.filePathTxt)
-            self.data = self.controller.get_data_calculate()
             self._createCheckBox('TXT')
             self._updateOpenedFiles()
+            self.setNotify('success', 'txt file opened')
 
     def openFilePdd(self):
         pass
 
+    def saveData(self, param):
+        if self.controller is None:
+            self.setNotify('warning', 'Need to select the data')
+            return
+        options = qtw.QFileDialog.Options()
+        filePath, _ = qtw.QFileDialog.getSaveFileName(self,
+                    "Save File", "", f"{param} Files (*.{param});;All Files(*)",
+                    options=options)
+        if filePath:
+            try:
+                if param == 'snappy':
+                    self.controller.save_parquet(filePath)
+                else:
+                    self.controller.save_csv(filePath)
+                self.setNotify('success', f'{param} file saved to {filePath}')
+            except PermissionError:
+                self.setNotify('error', 'File opened in another program')
+            except Exception as e:
+                self.setNotify('error', e)
+
+    def calculateData(self):
+        if self.controller is None:
+            self.setNotify('warning', 'Need to select the data')
+            return
+        self.controller.set_calculate_data()
+        self._createCheckBox('TXT')
+        self._updateOpenedFiles()
+        self.setNotify('success', 'data calculated')
+
     def createMap(self):
         if self.controller is None:
-            QMessageBox.information(self, "Error", "Need to select the data")
+            self.setNotify('warning', 'Need to select the data')
             return
         if self.mapWindow is None:
-            self.mapWindow = MapWindow(self.controller)
+            self.mapWindow = MapWindow(self.controller, self)
         else:
             self.mapWindow.hide()
         self.center(self.mapWindow)
@@ -583,45 +625,31 @@ class MainWindow(QMainWindow):
 
     def createReport(self):
         if self.controller is None:
-            QMessageBox.information(self, "Error", "Need to select the data")
+            self.setNotify('warning', 'Need to select the data')
+            return
+        if not self.controller.is_calculated():
+            self.setNotify('warning', 'Need to calcuclate the data')
             return
         if self.reportWindow is None:
-            self.reportWindow = ReportWindow(self.controller)
+            self.reportWindow = ReportWindow(self.controller, self)
         else:
             self.reportWindow.hide()
         self.center(self.reportWindow)
         self.reportWindow.show()
 
     def about(self):
-        self.centralWidget.setText('<b>Help > About</b> clicked')
+        self.setNotify('warning', 'Need to select the data')
 
-    def openRecentFile(self, filename):
-        # Logic for opening a recent file goes here...
-        # self.centralWidget.setText(f'<b>{filename}</b> opened')
-        pass
-
-    def populateOpenRecent(self):
-        pass
-        # # Step 1. Remove the old options from the menu
-        # self.openRecentMenu.clear()
-        # # Step 2. Dynamically create the actions
-        # actions = []
-        # filenames = [f'File-{n}' for n in range(5)]
-        # for filename in filenames:
-        #     action = QAction(filename, self)
-        #     action.triggered.connect(partial(self.openRecentFile, filename))
-        #     actions.append(action)
-        # # Step 3. Add the actions to the menu
-        # self.openRecentMenu.addActions(actions)
 
     def createGraph(self):
-        if self.data is None or self._getTreeSelected() == []:
+        if self.controller is None or self._getTreeSelected() == []:
+            self.setNotify('warning', 'Need to select the data or data for graph')
             return
         decimation = int(self.spinBox.text())
         if decimation == 0:
-            dataForGraph = self.data
+            dataForGraph = self.controller.get_data()
         else:
-            dataForGraph = self.data.iloc[::decimation]
+            dataForGraph = self.controller.get_data().iloc[::decimation]
         graphWindow = GraphWindow(dataForGraph, self._getTreeSelected())
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
@@ -668,13 +696,13 @@ class MainWindow(QMainWindow):
         self.mdi.closeAllSubWindows()
 
     def closeEvent(self, event):
-        QApplication.closeAllWindows()
+        qtw.QApplication.closeAllWindows()
         event.accept()
 
     def _getTreeSelected(self):
         treeSelected = []
-        iterator = QTreeWidgetItemIterator(
-            self.tree, QTreeWidgetItemIterator.Checked)
+        iterator = qtw.QTreeWidgetItemIterator(
+            self.tree, qtw.QTreeWidgetItemIterator.Checked)
         while iterator.value():
             item = iterator.value()
             treeSelected.append(item.text(0))
@@ -685,9 +713,20 @@ class MainWindow(QMainWindow):
         self.openedFilesLabel.setText(
             f'File TXT: <b>{self.filePathTxt}</b>, File PDD: <b>{self.filePathPdd}</b>')
 
+    def setNotify(self, type, txt):
+        notify = self.notify.info
+        if type == 'warning':
+            notify = self.notify.warning
+        if type == 'success':
+            notify = self.notify.sucess
+        if type == 'error':
+            notify = self.notify.critical
+        notify(type.title(), txt, self, Align=BottomRight, duracion=6)
+
+
 
 def main():
-    app = QApplication(sys.argv)
+    app = qtw.QApplication(sys.argv)
     app.setStyle('Fusion')
     iface = MainWindow()
     iface.show()

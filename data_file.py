@@ -18,6 +18,11 @@ class Datas(object):
         with open(self.filepath, 'br') as input:
             return cd.detect(input.read(1000))['encoding']
 
-    def write_xlsx(self, dictionary: dict, filepath: str) -> None:
-        result = pd.DataFrame(dictionary)
-        result.to_excel(filepath, index=False)
+    def write_xlsx(self, data: pd.DataFrame, filepath: str) -> None:
+        data.to_excel(filepath, index=False)
+
+    def write_parquet(self, data: pd.DataFrame, filepath: str):
+        data.to_parquet(filepath)
+
+    def write_csv(self, data: pd.DataFrame, filepath: str):
+        data.to_csv(filepath)
