@@ -7,7 +7,7 @@ class Datas(object):
     def __init__(self, filepath: str) -> None:
         self.filepath = filepath
 
-    def get_data(self) -> pd.DataFrame:
+    def load_txt(self) -> pd.DataFrame:
         return pd.read_csv(self.filepath, sep=self.get_sep(),
                            encoding=self.get_enc(), skiprows=[1])
 
@@ -25,4 +25,11 @@ class Datas(object):
         data.to_parquet(filepath)
 
     def write_csv(self, data: pd.DataFrame, filepath: str):
-        data.to_csv(filepath)
+        data.to_csv(filepath, index=False)
+
+    def load_parquet(self):
+        return pd.read_parquet(self.filepath)
+
+    def load_csv(self):
+        return pd.read_csv(self.filepath)
+    

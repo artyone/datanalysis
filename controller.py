@@ -125,17 +125,24 @@ class Control(object):
 
     def __init__(self, file) -> None:
         self.filepath = file
-        self.data = self.set_data_from_file(self.filepath)
+        self.fly = df.Datas(self.filepath)
+        self.data = None
         self.data_calculated = False
 
-    def set_data_from_file(self, filepath):
-        self.fly = df.Datas(filepath)
-        try:
-            data_from_file = self.fly.get_data()
-            return data_from_file
-        except Exception as error:
-            print('Ошибка чтения файла\n', error)
-            exit()
+    def load_txt(self):
+        data_from_file = self.fly.load_txt()
+        self.data = data_from_file
+        self.data_calculated = self.check_calculated()
+
+    def load_csv(self):
+        data_from_file = self.fly.load_csv()
+        self.data = data_from_file
+        self.data_calculated = self.check_calculated()
+    
+    def load_parquet(self):
+        data_from_file = self.fly.load_parquet()
+        self.data = data_from_file
+        self.data_calculated = self.check_calculated()
 
     def set_calculate_data(self):
         if self.data is None:
@@ -152,6 +159,7 @@ class Control(object):
         self.data_calculated = True
 
     def save_report(self, filepath, string):
+        self.worker = dc.Mathematical(self.data)
         if string == '':
             intervals = self.worker.get_intervals(self.koef_for_intervals)
         else:
@@ -191,6 +199,9 @@ class Control(object):
     def get_data(self):
         return self.data
 
+    def check_calculated(self):
+        if 'Wp_diss_pnki' in list(self.data.columns.values):
+            return True
 
     def is_calculated(self):
         return self.data_calculated
