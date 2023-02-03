@@ -171,7 +171,6 @@ class Control(object):
 
         self.fly.write_xlsx(data_result, filepath)
 
-
     def save_map(self, filepath, jvd_h_min='', decimation=''):
         if self.data is None:
             raise Exception('Data must be not none')
@@ -206,6 +205,3 @@ class Control(object):
     def is_calculated(self):
         return self.data_calculated
 
-
-# new = Control('26122022_ДИСС_по_эталону.txt')
-# new.save_map('26122022_ДИСС_по_эталону.html', '100', '20')

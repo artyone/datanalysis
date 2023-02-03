@@ -1,8 +1,9 @@
 import sys
 import controller as ctlr
-import view_graphWindow as GraphWindow
-import view_mapWindow as MapWindow
-import view_reportWindow as ReportWindow
+import view_graphWindow as graph
+import view_mapWindow as map
+import view_reportWindow as report
+import view_pythonConsole as console
 import qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
@@ -20,6 +21,7 @@ class MainWindow(qtw.QMainWindow):
         super().__init__()
         self.mapWindow = None
         self.reportWindow = None
+        self.consoleWindow = None
         self.controller = None
         self.filePathTxt = None
         self.filePathPdd = None
@@ -29,7 +31,6 @@ class MainWindow(qtw.QMainWindow):
         self.openFile('snappy', 'output/123.snappy')
 
     def initUI(self):
-
         self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle('Rp_datanalysis')
         self._createActions()
@@ -57,11 +58,16 @@ class MainWindow(qtw.QMainWindow):
         self.center()
         self.showMaximized()
 
-
     def _createMenuBar(self):
-        menuBar = self.menuBar()
+        self.menuBar = self.menuBar()
+        self._createFileMenu()
+        self._createViewMenu()
+        self._createServiceMenu()
+        self._createSettingsMenu()
+        self._createHelpMenu()
 
-        fileMenu = menuBar.addMenu('&File')
+    def _createFileMenu(self):
+        fileMenu = self.menuBar.addMenu('&File')
         fileMenu.addAction(self.newAction)
 
         openSourceMenu = fileMenu.addMenu('Open &source')
@@ -81,8 +87,9 @@ class MainWindow(qtw.QMainWindow):
 
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAction)
-
-        viewMenu = menuBar.addMenu('&View')
+    
+    def _createViewMenu(self):
+        viewMenu = self.menuBar.addMenu('&View')
         viewMenu.addAction(self.createGraphAction)
         viewMenu.addAction(self.cascadeAction)
         viewMenu.addAction(self.horizontalAction)
@@ -91,14 +98,18 @@ class MainWindow(qtw.QMainWindow):
         viewMenu.addSeparator()
         viewMenu.addAction(self.closeAllAction)
 
-        serviceMenu = menuBar.addMenu('&Service')
+    def _createServiceMenu(self):
+        serviceMenu = self.menuBar.addMenu('&Service')
         serviceMenu.addAction(self.calculateDataAction)
         serviceMenu.addAction(self.createMapAction)
         serviceMenu.addAction(self.createReportAction)
+        serviceMenu.addAction(self.pythonConsoleAction)
 
-        settingsMenu = menuBar.addMenu('&Settings')
-
-        helpMenu = menuBar.addMenu('&Help')
+    def _createSettingsMenu(self):
+        settingsMenu = self.menuBar.addMenu('&Settings')
+    
+    def _createHelpMenu(self):
+        helpMenu = self.menuBar.addMenu('&Help')
         helpMenu.addAction(self.aboutAction)
 
     def _createToolBar(self):
@@ -116,14 +127,13 @@ class MainWindow(qtw.QMainWindow):
         fileToolBar.setMovable(False)
 
     def _createServiceToolBar(self):
-
         serviceToolBar = self.addToolBar('Service')
         self.planeComboBox = qtw.QComboBox()
         self.planeComboBox.addItems(['mdm', 'm2', 'IL78m90a', 'IL76md90a', 'tu22', 'tu160'])
         serviceToolBar.addWidget(self.planeComboBox)
         serviceToolBar.addAction(self.calculateDataAction)
+        serviceToolBar.addAction(self.pythonConsoleAction)
         
-
     def _createViewToolBar(self):
         viewToolBar = self.addToolBar('View')
         viewToolBar.addAction(self.createGraphAction)
@@ -201,6 +211,10 @@ class MainWindow(qtw.QMainWindow):
         self.createReportAction.setIcon(QIcon(':mail.svg'))
         self.createReportAction.setStatusTip('Create xlsx report')
 
+        self.pythonConsoleAction = qtw.QAction('&Python Console', self)
+        self.pythonConsoleAction.setIcon(QIcon(':terminal'))
+        self.createReportAction.setStatusTip('Open python console window')
+
     def _createViewActions(self):
         self.createGraphAction = qtw.QAction('&Create graph')
         self.createGraphAction.setIcon(QIcon(':trending-up.svg'))
@@ -247,7 +261,7 @@ class MainWindow(qtw.QMainWindow):
         self.calculateDataAction.triggered.connect(self.calculateData)
         self.createMapAction.triggered.connect(self.createMap)
         self.createReportAction.triggered.connect(self.createReport)
-
+        self.pythonConsoleAction.triggered.connect(self.pythonConsole)
 
     def _connectViewActions(self):
         self.createGraphAction.triggered.connect(self.createGraph)
@@ -260,10 +274,9 @@ class MainWindow(qtw.QMainWindow):
 
     def _createCheckBox(self, param):
         if self.controller.get_data() is None:
-            error_dialog = qtw.QErrorMessage()
-            error_dialog.showMessage('Oh no!')
+            self.setNotify('warning', 'Need to select the data')
             return
-
+            
         it = qtw.QTreeWidgetItemIterator(self.tree)
         while it.value():
             item = it.value()
@@ -292,7 +305,7 @@ class MainWindow(qtw.QMainWindow):
 
     def newFile(self):
         pass
-
+        
 
     def openFile(self, param, filepath = None):
         #TODO передалть на ласт файл на релизе filepath
@@ -358,7 +371,7 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify('warning', 'Need to select the data')
             return
         if self.mapWindow is None:
-            self.mapWindow = MapWindow(self.controller, self)
+            self.mapWindow = map.MapWindow(self.controller, self)
         else:
             self.mapWindow.hide()
         self.center(self.mapWindow)
@@ -372,7 +385,7 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify('warning', 'Need to calcuclate the data')
             return
         if self.reportWindow is None:
-            self.reportWindow = ReportWindow(self.controller, self)
+            self.reportWindow = report.ReportWindow(self.controller, self)
         else:
             self.reportWindow.hide()
         self.center(self.reportWindow)
@@ -390,9 +403,20 @@ class MainWindow(qtw.QMainWindow):
             dataForGraph = self.controller.get_data()
         else:
             dataForGraph = self.controller.get_data().iloc[::decimation]
-        graphWindow = GraphWindow(dataForGraph, self._getTreeSelected())
+        graphWindow = graph.GraphWindow(dataForGraph, self._getTreeSelected())
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
+
+    def pythonConsole(self):
+        if self.controller is None:
+            self.setNotify('warning', 'Need to select the data')
+            return
+        if self.consoleWindow is None:
+            self.consoleWindow = console.ConsoleWindow(self.controller.get_data(), self)
+        else:
+            self.consoleWindow.hide()
+        self.center(self.consoleWindow)
+        self.consoleWindow.show()
 
     def cascadeWindows(self):
         self.mdi.cascadeSubWindows()
