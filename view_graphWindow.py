@@ -1,3 +1,4 @@
+import qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
 from PyQt5.QtCore import Qt
@@ -51,6 +52,7 @@ class GraphWindow(qtw.QMdiSubWindow):
                                         slot=self.mouseMoved)
         self.plt.scene().sigMouseClicked.connect(self.mouseClickEvent)
         self.plt.setClipToView(True)
+
 
     def mouseMoved(self, e):
         pos = e[0]

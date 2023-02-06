@@ -32,4 +32,12 @@ class Datas(object):
 
     def load_csv(self):
         return pd.read_csv(self.filepath)
+
+    def load_python(self, filepath):
+        with open(filepath, 'r', encoding='utf8') as file:
+            return file.read()
+
+    def save_python(self, filepath, data):
+        with open(filepath, 'w', encoding='utf8') as file:
+            file.write(data)
     

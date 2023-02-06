@@ -308,7 +308,7 @@ class MainWindow(qtw.QMainWindow):
         
 
     def openFile(self, param, filepath = None):
-        #TODO передалть на ласт файл на релизе filepath
+        #TODO передалть на ласт файл на filepath открыть последний открытый
         if filepath:
             self.filePathTxt = filepath
             check = True
@@ -358,7 +358,7 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify('warning', 'Need to select the data')
             return
 
-        #TODO добавить считывание с self.planeComboBox
+        #TODO добавить считывание с self.planeComboBox модель самолета
         print(self.planeComboBox.currentText())
 
         self.controller.set_calculate_data()
@@ -407,16 +407,25 @@ class MainWindow(qtw.QMainWindow):
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
 
+    def createGraphForConsole(self, data, *args):
+        if data is None:
+            return
+        graphWindow = graph.GraphWindow(data, args)
+        self.mdi.addSubWindow(graphWindow)
+        graphWindow.show()
+            
+
     def pythonConsole(self):
         if self.controller is None:
             self.setNotify('warning', 'Need to select the data')
             return
         if self.consoleWindow is None:
-            self.consoleWindow = console.ConsoleWindow(self.controller.get_data(), self)
+            self.consoleWindow = console.ConsoleWindow(self.controller, self)
         else:
             self.consoleWindow.hide()
         self.center(self.consoleWindow)
         self.consoleWindow.show()
+
 
     def cascadeWindows(self):
         self.mdi.cascadeSubWindows()

@@ -144,6 +144,13 @@ class Control(object):
         self.data = data_from_file
         self.data_calculated = self.check_calculated()
 
+    def load_pytnon_script(self, filepath):
+        data_from_script = self.fly.load_python(filepath)
+        return data_from_script
+
+    def save_python_sript(self, filepath, data):
+        self.fly.save_python(filepath, data)
+
     def set_calculate_data(self):
         if self.data is None:
             raise Exception('Data must be not none')
