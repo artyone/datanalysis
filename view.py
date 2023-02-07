@@ -8,12 +8,17 @@ import qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QCoreApplication, QSettings
 from PyQt5 import QtWidgets as qtw
 from functools import partial
 from notificator import notificator
 from notificator.alingments import BottomRight
+from collections import namedtuple
 
+ORGANIZATION_NAME = 'Radiopribor'
+ORGANIZATION_DOMAIN = 'zrp.ru'
+APPLICATION_NAME = 'Radiopribor Mkio'
+SETTINGS_TRAY = 'settings/'
 
 class MainWindow(qtw.QMainWindow):
 
@@ -23,12 +28,18 @@ class MainWindow(qtw.QMainWindow):
         self.reportWindow = None
         self.consoleWindow = None
         self.controller = None
-        self.filePathTxt = None
+        self.filePath = None
         self.filePathPdd = None
+        self.settings = QSettings()
+        if self.settings.allKeys() == []:
+            self.createSettings()
+        #self.settings.clear()
         self.initUI()
 
         #TODO удалить на релизе
-        self.openFile('snappy', 'output/123.snappy')
+        if self.settings.value('lastFile') is not None:
+            lastFile = self.settings.value('lastFile')
+            self.openFile(lastFile['param'], lastFile['filePath'])
 
     def initUI(self):
         self.setGeometry(100, 100, 800, 600)
@@ -130,6 +141,7 @@ class MainWindow(qtw.QMainWindow):
         serviceToolBar = self.addToolBar('Service')
         self.planeComboBox = qtw.QComboBox()
         self.planeComboBox.addItems(['mdm', 'm2', 'IL78m90a', 'IL76md90a', 'tu22', 'tu160'])
+        self.planeComboBox.setCurrentText(self.settings.value('planeComboBox'))
         serviceToolBar.addWidget(self.planeComboBox)
         serviceToolBar.addAction(self.calculateDataAction)
         serviceToolBar.addAction(self.pythonConsoleAction)
@@ -151,7 +163,7 @@ class MainWindow(qtw.QMainWindow):
         self.statusbar = self.statusBar()
         self.statusbar.showMessage('Hello world!', 3000)
         self.openedFilesLabel = qtw.QLabel(
-            f'File TXT: {self.filePathTxt}, File PDD: {self.filePathPdd}')
+            f'File TXT: {self.filePath}, File PDD: {self.filePathPdd}')
         self.statusbar.addPermanentWidget(self.openedFilesLabel)
 
     def _createActions(self):
@@ -262,6 +274,7 @@ class MainWindow(qtw.QMainWindow):
         self.createMapAction.triggered.connect(self.createMap)
         self.createReportAction.triggered.connect(self.createReport)
         self.pythonConsoleAction.triggered.connect(self.pythonConsole)
+        self.planeComboBox.activated.connect(self.saveComboBoxValue)
 
     def _connectViewActions(self):
         self.createGraphAction.triggered.connect(self.createGraph)
@@ -310,14 +323,14 @@ class MainWindow(qtw.QMainWindow):
     def openFile(self, param, filepath = None):
         #TODO передалть на ласт файл на filepath открыть последний открытый
         if filepath:
-            self.filePathTxt = filepath
+            self.filePath = filepath
             check = True
         else:
-            self.filePathTxt, check = qtw.QFileDialog.getOpenFileName(None, 
+            self.filePath, check = qtw.QFileDialog.getOpenFileName(None, 
                                     'Open file', '', f'Open File (*.{param})')
         if check:
             try:
-                self.controller = ctlr.Control(self.filePathTxt)
+                self.controller = ctlr.Control(self.filePath)
                 if param == 'txt':
                     self.controller.load_txt()
                 if param == 'csv':
@@ -326,7 +339,10 @@ class MainWindow(qtw.QMainWindow):
                     self.controller.load_parquet()
                 self._createCheckBox('Data')
                 self._updateOpenedFiles()
-                self.setNotify('success', f'{param} file opened')
+                self.settings.setValue('lastFile', 
+                                {'filePath':self.filePath, 
+                                 'param':param})
+                self.setNotify('success', f'{self.filePath} file opened')
             except Exception as e:
                 self.setNotify('error', e)
 
@@ -357,11 +373,8 @@ class MainWindow(qtw.QMainWindow):
         if self.controller is None:
             self.setNotify('warning', 'Need to select the data')
             return
-
-        #TODO добавить считывание с self.planeComboBox модель самолета
-        print(self.planeComboBox.currentText())
-
-        self.controller.set_calculate_data()
+        params = self.settings.value(self.planeComboBox.currentText())
+        self.controller.set_calculate_data(params)
         self._createCheckBox('Data')
         self._updateOpenedFiles()
         self.setNotify('success', 'data calculated')
@@ -414,7 +427,6 @@ class MainWindow(qtw.QMainWindow):
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
             
-
     def pythonConsole(self):
         if self.controller is None:
             self.setNotify('warning', 'Need to select the data')
@@ -425,7 +437,6 @@ class MainWindow(qtw.QMainWindow):
             self.consoleWindow.hide()
         self.center(self.consoleWindow)
         self.consoleWindow.show()
-
 
     def cascadeWindows(self):
         self.mdi.cascadeSubWindows()
@@ -485,7 +496,7 @@ class MainWindow(qtw.QMainWindow):
 
     def _updateOpenedFiles(self):
         self.openedFilesLabel.setText(
-            f'File TXT: <b>{self.filePathTxt}</b>, File PDD: <b>{self.filePathPdd}</b>')
+            f'File TXT: <b>{self.filePath}</b>, File PDD: <b>{self.filePathPdd}</b>')
 
     def setNotify(self, type, txt):
         notify = self.notify.info
@@ -497,8 +508,44 @@ class MainWindow(qtw.QMainWindow):
             notify = self.notify.critical
         notify(type.title(), txt, self, Align=BottomRight, duracion=6)
 
+    def createSettings(self):
+        self.settings.setValue('koef_for_intervals', 
+        {
+            # макс разница, макс значение
+            'tang': [4, 10],
+            # макс разница, макс значение
+            'kren': [1.4, 10],
+            # макс разница, макс значение
+            'h': [20, 200],
+            # макс отношение, макс значение,усредение до, усреднение в моменте
+            'wx': [0.025, 200, 150, 50]
+        })
+        headers = ('popr_prib_cor_V_cod',
+                            'popr_prib_cor_FI_cod',
+                            'popr_prib_cor_B_cod',
+                            'kurs_DISS_grad',
+                            'kren_DISS_grad',
+                            'tang_DISS_grad',
+                            'k',
+                            'k1')
+        self.settings.setValue('mdm', dict(zip(headers, (5, 14, 2, -0.62, 0.032, 3.33 - 0.032, 1, 1))))
+        self.settings.setValue('m2', dict(zip(headers, (7, 6, 1, 0.2833, 0.032, 3.33 - 0.2, 1, 1))))
+        self.settings.setValue('IL78m90a', dict(zip(headers, (7, 15, 1, 0.27, 0, 3.33, 1, 1))))
+        self.settings.setValue('IL76md90a', dict(zip(headers, (6, 15, 1, 0 - 0.665, -0.144, 3.33, 1, 1))))
+        self.settings.setValue('tu22', dict(zip(headers, (6, 6, 2, 0, 0, 0, 1 / 3.6, 0.00508))))
+        self.settings.setValue('tu160', dict(zip(headers, (6, 10, 1, 0, 0, -2.5, 1, 1))))
+        self.settings.setValue('map/jvdHMin', '100')
+        self.settings.setValue('map/decimation', '20')
+        self.settings.setValue('lastFile', None)
+
+    def saveComboBoxValue(self):
+        self.settings.setValue('planeComboBox', self.planeComboBox.currentText())
 
 def main():
+
+    QCoreApplication.setApplicationName(ORGANIZATION_NAME)
+    QCoreApplication.setOrganizationDomain(ORGANIZATION_DOMAIN)
+    QCoreApplication.setApplicationName(APPLICATION_NAME)
     app = qtw.QApplication(sys.argv)
     app.setStyle('Fusion')
     iface = MainWindow()

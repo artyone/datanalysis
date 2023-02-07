@@ -42,13 +42,7 @@ class Mathematical(object):
         self.d['Kurs_cos'] = self.d.I1_KursI.apply(
             lambda x: cos(radians(x + kurs)))
 
-    def calc_wg_kbti(self, tu22: bool = False) -> None:
-        if tu22:
-            k = 1 / 3.6
-            k1 = 0.00508
-        else:
-            k = 1
-            k1 = 1
+    def calc_wg_kbti(self, k:int, k1:int) -> None:
         self.d['Wxg_KBTIi'] = (self.d.JVD_VN * k * 3.6 * self.d.Kurs_cos
                                + self.d.JVD_VE * k * 3.6 * self.d.Kurs_sin)
         self.d['Wzg_KBTIi'] = (- self.d.JVD_VN * k * 3.6 * self.d.Kurs_sin

@@ -151,7 +151,7 @@ class Control(object):
     def save_python_sript(self, filepath, data):
         self.fly.save_python(filepath, data)
 
-    def set_calculate_data(self):
+    def set_calculate_data(self, params):
         if self.data is None:
             raise Exception('Data must be not none')
         self.worker = dc.Mathematical(self.data)
@@ -159,7 +159,7 @@ class Control(object):
             wx=self.koef_Wx_PNK, wz=self.koef_Wz_PNK, wy=self.koef_Wy_PNK)
         self.worker.calc_angles(kren=self.kren_correct,
                                 tang=self.tang_correct, kurs=self.kurs_correct)
-        self.worker.calc_wg_kbti(tu22=self.tu22)
+        self.worker.calc_wg_kbti(params['k'], params['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
         self.data = self.worker.get_data()
@@ -179,6 +179,7 @@ class Control(object):
         self.fly.write_xlsx(data_result, filepath)
 
     def save_map(self, filepath, jvd_h_min='', decimation=''):
+        #TODO реализовать пустые значения высоты, если высоты нету в файле
         if self.data is None:
             raise Exception('Data must be not none')
         if decimation == '':
@@ -186,7 +187,7 @@ class Control(object):
         if jvd_h_min == '':
             jvd_h_min = 0
         map = dm.Map(self.data.loc
-                     [(self.data.JVD_H > float(jvd_h_min))
+                     [(self.data.JVD_H >= float(jvd_h_min))
                       & (self.data.name % float(decimation) == 0),
                       ['name', 'latitude', 'longitude', 'JVD_H']])
         map.get_map()

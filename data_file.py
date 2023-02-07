@@ -40,4 +40,3 @@ class Datas(object):
     def save_python(self, filepath, data):
         with open(filepath, 'w', encoding='utf8') as file:
             file.write(data)
-    

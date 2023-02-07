@@ -15,8 +15,9 @@ class MapWindow(qtw.QWidget):
         dlgLayout = qtw.QVBoxLayout()
         formLayout = qtw.QFormLayout()
         formLayout.setVerticalSpacing(20)
-        self.jvdHMin = qtw.QLineEdit('100')
-        self.decimation = qtw.QLineEdit('20')
+        self.settings = self.parent.settings
+        self.jvdHMin = qtw.QLineEdit(self.settings.value('map/jvdHMin'))
+        self.decimation = qtw.QLineEdit(self.settings.value('map/decimation'))
         formLayout.addRow("JVD_H min:", self.jvdHMin)
         formLayout.addRow("decimation:", self.decimation)
         self.btnBox = qtw.QDialogButtonBox()
@@ -46,7 +47,10 @@ class MapWindow(qtw.QWidget):
                                          self.jvdHMin.text(),
                                          self.decimation.text())
                 self.openButton.show()
+                self.settings.setValue('map/jvdHMin', self.jvdHMin.text())
+                self.settings.setValue('map/decimation', self.decimation.text())
                 self.parent.setNotify('success', f'html file saved to {self.filePath}')
+
             except PermissionError:
                 self.parent.setNotify('error', 'File opened in another program')
             except Exception as e:
