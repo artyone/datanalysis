@@ -41,7 +41,9 @@ class Map(object):
 
     @staticmethod
     def _set_point(data, color, map):
-        html = f'<h5><b>time:</b> {data.name}<br><b>JVD_H:</b> {round(data.JVD_H)}</h5>'
+        html = f'<h5><b>time:</b> {data.name}'
+        if 'JVD_H' in data:
+            html += f'<br><b>JVD_H:</b> {round(data.JVD_H)}</h5>'
         icon = BeautifyIcon(icon='circle-o',
                             icon_shape='circle',
                             iconSize=[17,17],

@@ -10,7 +10,7 @@ class MapWindow(qtw.QWidget):
         self.initUI()
         
     def initUI(self):
-        self.setGeometry(0, 0, 250, 150)
+        self.setGeometry(0, 0, 300, 150)
         self.setWindowTitle("Create map")
         dlgLayout = qtw.QVBoxLayout()
         formLayout = qtw.QFormLayout()

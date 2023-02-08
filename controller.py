@@ -152,6 +152,7 @@ class Control(object):
         self.fly.save_python(filepath, data)
 
     def set_calculate_data(self, params):
+        #TODO реализовать проверку на недостающие данные для расчета
         if self.data is None:
             raise Exception('Data must be not none')
         self.worker = dc.Mathematical(self.data)
@@ -179,17 +180,15 @@ class Control(object):
         self.fly.write_xlsx(data_result, filepath)
 
     def save_map(self, filepath, jvd_h_min='', decimation=''):
-        #TODO реализовать пустые значения высоты, если высоты нету в файле
         if self.data is None:
             raise Exception('Data must be not none')
-        if decimation == '':
-            decimation = 1
-        if jvd_h_min == '':
-            jvd_h_min = 0
-        map = dm.Map(self.data.loc
-                     [(self.data.JVD_H >= float(jvd_h_min))
-                      & (self.data.name % float(decimation) == 0),
-                      ['name', 'latitude', 'longitude', 'JVD_H']])
+        data_for_map = self.data.copy()
+        if decimation != '':
+            data_for_map = data_for_map.iloc[::int(decimation)]
+        if jvd_h_min != '' and 'JVD_H' in data_for_map.columns:
+            data_for_map = data_for_map.loc[self.data.JVD_H >= float(jvd_h_min),
+                                        ['name', 'latitude', 'longitude', 'JVD_H']]
+        map = dm.Map(data_for_map)
         map.get_map()
         map.save_map(filepath)
 
