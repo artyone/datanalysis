@@ -151,16 +151,22 @@ class Control(object):
     def save_python_sript(self, filepath, data):
         self.fly.save_python(filepath, data)
 
-    def set_calculate_data(self, params):
+    def set_calculate_data(self, plane_corr, koef_Wxyz_PNK, corr_kkt):
         #TODO реализовать проверку на недостающие данные для расчета
-        if self.data is None:
-            raise Exception('Data must be not none')
+        need_headers = {'name', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren', 
+                        'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
+        if self.data is None or not need_headers.issubset(self.data.columns):
+            raise ValueError('Wrong data')
         self.worker = dc.Mathematical(self.data)
         self.worker.apply_coefficient_w_diss(
-            wx=self.koef_Wx_PNK, wz=self.koef_Wz_PNK, wy=self.koef_Wy_PNK)
-        self.worker.calc_angles(kren=self.kren_correct,
-                                tang=self.tang_correct, kurs=self.kurs_correct)
-        self.worker.calc_wg_kbti(params['k'], params['k1'])
+            wx=koef_Wxyz_PNK['koef_Wx_PNK'], 
+            wz=koef_Wxyz_PNK['koef_Wz_PNK'], 
+            wy=koef_Wxyz_PNK['koef_Wy_PNK'])
+        self.worker.calc_angles(
+            kren=corr_kkt['kren_correct'], 
+            tang=corr_kkt['tang_correct'], 
+            kurs=corr_kkt['kurs_correct'])
+        self.worker.calc_wg_kbti(plane_corr['k'], plane_corr['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
         self.data = self.worker.get_data()
@@ -180,8 +186,9 @@ class Control(object):
         self.fly.write_xlsx(data_result, filepath)
 
     def save_map(self, filepath, jvd_h_min='', decimation=''):
-        if self.data is None:
-            raise Exception('Data must be not none')
+        need_headers = {'name', 'latitude', 'longitude'}
+        if self.data is None or not need_headers.issubset(self.data.columns):
+            raise ValueError('Wrong data')
         data_for_map = self.data.copy()
         if decimation != '':
             data_for_map = data_for_map.iloc[::int(decimation)]
@@ -206,7 +213,7 @@ class Control(object):
         return self.data
 
     def check_calculated(self):
-        if 'Wp_diss_pnki' in list(self.data.columns.values):
+        if 'Wp_diss_pnki' in self.data.columns:
             return True
 
     def is_calculated(self):

@@ -1,9 +1,10 @@
 import sys
 import controller as ctlr
-import view_graphWindow as graph
-import view_mapWindow as map
-import view_reportWindow as report
-import view_pythonConsole as console
+import view_graphWindow as gw
+import view_mapWindow as mw
+import view_reportWindow as rw
+import view_consoleWindow as cw
+import view_settingsWindow as sw
 import qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
@@ -18,7 +19,6 @@ from collections import namedtuple
 ORGANIZATION_NAME = 'Radiopribor'
 ORGANIZATION_DOMAIN = 'zrp.ru'
 APPLICATION_NAME = 'Radiopribor Mkio'
-SETTINGS_TRAY = 'settings/'
 
 class MainWindow(qtw.QMainWindow):
 
@@ -27,13 +27,15 @@ class MainWindow(qtw.QMainWindow):
         self.mapWindow = None
         self.reportWindow = None
         self.consoleWindow = None
+        self.settingsWindow = None
         self.controller = None
         self.filePath = None
         self.filePathPdd = None
         self.settings = QSettings()
+        #self.settings.clear()
         if self.settings.allKeys() == []:
             self.createSettings()
-        #self.settings.clear()
+
         self.initUI()
 
         #TODO удалить на релизе
@@ -75,7 +77,6 @@ class MainWindow(qtw.QMainWindow):
         self._createViewMenu()
         self._createServiceMenu()
         self._createSettingsMenu()
-        self._createHelpMenu()
 
     def _createFileMenu(self):
         fileMenu = self.menuBar.addMenu('&File')
@@ -118,10 +119,8 @@ class MainWindow(qtw.QMainWindow):
 
     def _createSettingsMenu(self):
         settingsMenu = self.menuBar.addMenu('&Settings')
-    
-    def _createHelpMenu(self):
-        helpMenu = self.menuBar.addMenu('&Help')
-        helpMenu.addAction(self.aboutAction)
+        settingsMenu.addAction(self.openSettingsActions)
+        settingsMenu.addAction(self.aboutAction)
 
     def _createToolBar(self):
         self._createFileToolBar()
@@ -170,10 +169,7 @@ class MainWindow(qtw.QMainWindow):
         self._creteFileActions()
         self._creteServiceActions()
         self._createViewActions()
-
-        self.aboutAction = qtw.QAction('&About', self)
-        self.aboutAction.setIcon(QIcon(':help-circle.svg'))
-        self.aboutAction.setStatusTip('About programm')
+        self._createSettingsActions()
 
     def _creteFileActions(self):
         self.newAction = qtw.QAction('&New', self)
@@ -253,11 +249,21 @@ class MainWindow(qtw.QMainWindow):
         self.closeAllAction.setIcon(QIcon(':x-circle.svg'))
         self.closeAllAction.setStatusTip('Close all opened Windows')
 
+    def _createSettingsActions(self):
+        self.openSettingsActions = qtw.QAction('&Settings')
+        self.openSettingsActions.setIcon(QIcon(':settings.svg'))
+        self.openSettingsActions.setStatusTip('Settings menu')
+
+        self.aboutAction = qtw.QAction('&About')
+        self.aboutAction.setIcon(QIcon(':help-circle.svg'))
+        self.aboutAction.setStatusTip('About programm')
+
     def _connectActions(self):
         self._connectFileActions()
         self._connectServiceActions()
         self._connectViewActions()
-        self.aboutAction.triggered.connect(self.about)
+        self._connectSettingsActions()
+
         
     def _connectFileActions(self):
         self.newAction.triggered.connect(self.newFile)
@@ -284,6 +290,10 @@ class MainWindow(qtw.QMainWindow):
         self.trackGraphAction.triggered.connect(self.trackGraph)
         self.trackGraphAction.toggled.connect(self.trackGraph)
         self.closeAllAction.triggered.connect(self._closeAllWindows)
+
+    def _connectSettingsActions(self):
+        self.openSettingsActions.triggered.connect(self.openSettings)        
+        self.aboutAction.triggered.connect(self.about)
 
     def _createCheckBox(self, param):
         if self.controller.get_data() is None:
@@ -373,18 +383,23 @@ class MainWindow(qtw.QMainWindow):
         if self.controller is None:
             self.setNotify('warning', 'Need to select the data')
             return
-        params = self.settings.value(self.planeComboBox.currentText())
-        self.controller.set_calculate_data(params)
-        self._createCheckBox('Data')
-        self._updateOpenedFiles()
-        self.setNotify('success', 'data calculated')
+        plane_corr = self.settings.value(self.planeComboBox.currentText())
+        koef_Wxyz_PNK = self.settings.value('koef_Wxyz_PNK')
+        corr_kkt = self.settings.value('corr_kkt')
+        try:
+            self.controller.set_calculate_data(plane_corr, koef_Wxyz_PNK, corr_kkt)
+            self._createCheckBox('Data')
+            self._updateOpenedFiles()
+            self.setNotify('success', 'data calculated')
+        except ValueError:
+            self.setNotify('warning', 'Wrong data file')
 
     def createMap(self):
         if self.controller is None:
             self.setNotify('warning', 'Need to select the data')
             return
         if self.mapWindow is None:
-            self.mapWindow = map.MapWindow(self.controller, self)
+            self.mapWindow = mw.MapWindow(self.controller, self)
         else:
             self.mapWindow.hide()
         self.center(self.mapWindow)
@@ -398,7 +413,7 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify('warning', 'Need to calcuclate the data')
             return
         if self.reportWindow is None:
-            self.reportWindow = report.ReportWindow(self.controller, self)
+            self.reportWindow = rw.ReportWindow(self.controller, self)
         else:
             self.reportWindow.hide()
         self.center(self.reportWindow)
@@ -416,14 +431,14 @@ class MainWindow(qtw.QMainWindow):
             dataForGraph = self.controller.get_data()
         else:
             dataForGraph = self.controller.get_data().iloc[::decimation]
-        graphWindow = graph.GraphWindow(dataForGraph, self._getTreeSelected())
+        graphWindow = gw.GraphWindow(dataForGraph, self._getTreeSelected())
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
 
     def createGraphForConsole(self, data, *args):
         if data is None:
             return
-        graphWindow = graph.GraphWindow(data, args)
+        graphWindow = gw.GraphWindow(data, args)
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
             
@@ -432,7 +447,7 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify('warning', 'Need to select the data')
             return
         if self.consoleWindow is None:
-            self.consoleWindow = console.ConsoleWindow(self.controller, self)
+            self.consoleWindow = cw.ConsoleWindow(self.controller, self)
         else:
             self.consoleWindow.hide()
         self.center(self.consoleWindow)
@@ -521,13 +536,13 @@ class MainWindow(qtw.QMainWindow):
             'wx': [0.025, 200, 150, 50]
         })
         headers = ('popr_prib_cor_V_cod',
-                            'popr_prib_cor_FI_cod',
-                            'popr_prib_cor_B_cod',
-                            'kurs_DISS_grad',
-                            'kren_DISS_grad',
-                            'tang_DISS_grad',
-                            'k',
-                            'k1')
+                   'popr_prib_cor_FI_cod',
+                   'popr_prib_cor_B_cod',
+                   'kurs_DISS_grad',
+                   'kren_DISS_grad',
+                   'tang_DISS_grad',
+                   'k',
+                   'k1')
         self.settings.setValue('mdm', dict(zip(headers, (5, 14, 2, -0.62, 0.032, 3.33 - 0.032, 1, 1))))
         self.settings.setValue('m2', dict(zip(headers, (7, 6, 1, 0.2833, 0.032, 3.33 - 0.2, 1, 1))))
         self.settings.setValue('IL78m90a', dict(zip(headers, (7, 15, 1, 0.27, 0, 3.33, 1, 1))))
@@ -537,12 +552,22 @@ class MainWindow(qtw.QMainWindow):
         self.settings.setValue('map/jvdHMin', '100')
         self.settings.setValue('map/decimation', '20')
         self.settings.setValue('lastFile', None)
+        self.settings.setValue('koef_Wxyz_PNK', {'koef_Wx_PNK':1,'koef_Wy_PNK':1,'koef_Wz_PNK':1})
+        self.settings.setValue('corr_kkt', {'kurs_correct':1, 'kren_correct':1, 'tang_correct':1})
+
 
     def saveComboBoxValue(self):
         self.settings.setValue('planeComboBox', self.planeComboBox.currentText())
 
-def main():
+    def openSettings(self):
+        if self.settingsWindow is None:
+            self.settingsWindow = sw.SettingsWindow(self.controller, self)
+        else:
+            self.settingsWindow.hide()
+        self.center(self.settingsWindow)
+        self.settingsWindow.show()
 
+def main():
     QCoreApplication.setApplicationName(ORGANIZATION_NAME)
     QCoreApplication.setOrganizationDomain(ORGANIZATION_DOMAIN)
     QCoreApplication.setApplicationName(APPLICATION_NAME)

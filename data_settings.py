@@ -1,1 +1,0 @@
-from PyQt5.QtCore import QSize, QCoreApplication, QSettings
