@@ -7,8 +7,9 @@ from functools import partial
 
 class GraphWindow(qtw.QMdiSubWindow):
 
-    def __init__(self, data, treeSelected) -> None:
+    def __init__(self, data, treeSelected, parent) -> None:
         super().__init__()
+        self.parent = parent
         self.data = data
         self.columns = treeSelected
         self.colors = ['red', 'blue', 'green',
@@ -32,7 +33,8 @@ class GraphWindow(qtw.QMdiSubWindow):
             return
         ox = self.data.name
         self.plt = pg.PlotWidget()
-        self.plt.setBackground('black')
+        self.plt.setBackground(
+            self.parent.settings.value('graphs')['background'])
         self.plt.showGrid(x=True, y=True)
         self.plt.addLegend(pen='gray', offset=(0, 0))
 
@@ -143,9 +145,15 @@ class GraphWindow(qtw.QMdiSubWindow):
 
     def whiteBackground(self):
         self.plt.setBackground('white')
+        settings = self.parent.settings.value('graphs')
+        settings['background'] = 'white'
+        self.parent.settings.setValue('graphs', settings)
 
     def blackBackground(self):
         self.plt.setBackground('black')
+        settings = self.parent.settings.value('graphs')
+        settings['background'] = 'black'
+        self.parent.settings.setValue('graphs', settings)
 
     def lineGraph(self, data):
         if data['curve'].opts['pen'] == data['pen']:

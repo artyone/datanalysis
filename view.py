@@ -1,4 +1,5 @@
 import sys
+import os
 import controller as ctlr
 import view_graphWindow as gw
 import view_mapWindow as mw
@@ -9,7 +10,7 @@ import qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, QCoreApplication, QSettings
+from PyQt5.QtCore import Qt, QCoreApplication, QSettings, QProcess
 from PyQt5 import QtWidgets as qtw
 from functools import partial
 from notificator import notificator
@@ -19,6 +20,7 @@ from collections import namedtuple
 ORGANIZATION_NAME = 'Radiopribor'
 ORGANIZATION_DOMAIN = 'zrp.ru'
 APPLICATION_NAME = 'Radiopribor Mkio'
+
 
 class MainWindow(qtw.QMainWindow):
 
@@ -34,7 +36,7 @@ class MainWindow(qtw.QMainWindow):
         self.settings = QSettings()
         #self.settings.clear()
         if self.settings.allKeys() == []:
-            self.createSettings()
+            self.defaultSettings()
 
         self.initUI()
 
@@ -103,6 +105,7 @@ class MainWindow(qtw.QMainWindow):
     def _createViewMenu(self):
         viewMenu = self.menuBar.addMenu('&View')
         viewMenu.addAction(self.createGraphAction)
+        viewMenu.addAction(self.createDefaultGraphAction)
         viewMenu.addAction(self.cascadeAction)
         viewMenu.addAction(self.horizontalAction)
         viewMenu.addAction(self.verticalAction)
@@ -120,6 +123,7 @@ class MainWindow(qtw.QMainWindow):
     def _createSettingsMenu(self):
         settingsMenu = self.menuBar.addMenu('&Settings')
         settingsMenu.addAction(self.openSettingsActions)
+        settingsMenu.addAction(self.setDefaultSettingsActions)
         settingsMenu.addAction(self.aboutAction)
 
     def _createToolBar(self):
@@ -139,7 +143,7 @@ class MainWindow(qtw.QMainWindow):
     def _createServiceToolBar(self):
         serviceToolBar = self.addToolBar('Service')
         self.planeComboBox = qtw.QComboBox()
-        self.planeComboBox.addItems(['mdm', 'm2', 'IL78m90a', 'IL76md90a', 'tu22', 'tu160'])
+        self.planeComboBox.addItems(self.settings.value('planes'))
         self.planeComboBox.setCurrentText(self.settings.value('planeComboBox'))
         serviceToolBar.addWidget(self.planeComboBox)
         serviceToolBar.addAction(self.calculateDataAction)
@@ -148,6 +152,7 @@ class MainWindow(qtw.QMainWindow):
     def _createViewToolBar(self):
         viewToolBar = self.addToolBar('View')
         viewToolBar.addAction(self.createGraphAction)
+        viewToolBar.addAction(self.createDefaultGraphAction)
         self.spinBox = qtw.QSpinBox()
         viewToolBar.addWidget(self.spinBox)
         viewToolBar.addSeparator()
@@ -228,6 +233,10 @@ class MainWindow(qtw.QMainWindow):
         self.createGraphAction.setIcon(QIcon(':trending-up.svg'))
         self.createGraphAction.setStatusTip('Create graph in new window')
 
+        self.createDefaultGraphAction = qtw.QAction('&Create default graphs')
+        self.createDefaultGraphAction.setIcon(QIcon(':shuffle.svg'))
+        self.createDefaultGraphAction.setStatusTip('Create default graph in new window')
+
         self.cascadeAction = qtw.QAction('Casca&de Windows')
         self.cascadeAction.setIcon(QIcon(':bar-chart.svg'))
         self.cascadeAction.setStatusTip('Cascade View Graph Windows')
@@ -254,6 +263,10 @@ class MainWindow(qtw.QMainWindow):
         self.openSettingsActions.setIcon(QIcon(':settings.svg'))
         self.openSettingsActions.setStatusTip('Settings menu')
 
+        self.setDefaultSettingsActions = qtw.QAction('&Set default settings')
+        self.setDefaultSettingsActions.setIcon(QIcon(':sliders.svg'))
+        self.setDefaultSettingsActions.setStatusTip('Set default settings')
+
         self.aboutAction = qtw.QAction('&About')
         self.aboutAction.setIcon(QIcon(':help-circle.svg'))
         self.aboutAction.setStatusTip('About programm')
@@ -264,7 +277,6 @@ class MainWindow(qtw.QMainWindow):
         self._connectViewActions()
         self._connectSettingsActions()
 
-        
     def _connectFileActions(self):
         self.newAction.triggered.connect(self.newFile)
         self.openTxtAction.triggered.connect(partial(self.openFile, 'txt'))
@@ -284,6 +296,7 @@ class MainWindow(qtw.QMainWindow):
 
     def _connectViewActions(self):
         self.createGraphAction.triggered.connect(self.createGraph)
+        self.createDefaultGraphAction.triggered.connect(self.createDefaultGraph)
         self.cascadeAction.triggered.connect(self.cascadeWindows)
         self.horizontalAction.triggered.connect(self.horizontalWindows)
         self.verticalAction.triggered.connect(self.verticalWindows)
@@ -292,7 +305,8 @@ class MainWindow(qtw.QMainWindow):
         self.closeAllAction.triggered.connect(self._closeAllWindows)
 
     def _connectSettingsActions(self):
-        self.openSettingsActions.triggered.connect(self.openSettings)        
+        self.openSettingsActions.triggered.connect(self.openSettings)
+        self.setDefaultSettingsActions.triggered.connect(self.setDefaultSettings)
         self.aboutAction.triggered.connect(self.about)
 
     def _createCheckBox(self, param):
@@ -383,11 +397,10 @@ class MainWindow(qtw.QMainWindow):
         if self.controller is None:
             self.setNotify('warning', 'Need to select the data')
             return
-        plane_corr = self.settings.value(self.planeComboBox.currentText())
-        koef_Wxyz_PNK = self.settings.value('koef_Wxyz_PNK')
-        corr_kkt = self.settings.value('corr_kkt')
+        plane_corr = self.settings.value('planes')[self.planeComboBox.currentText()]
+        corrections = self.settings.value('corrections')
         try:
-            self.controller.set_calculate_data(plane_corr, koef_Wxyz_PNK, corr_kkt)
+            self.controller.set_calculate_data(plane_corr, corrections)
             self._createCheckBox('Data')
             self._updateOpenedFiles()
             self.setNotify('success', 'data calculated')
@@ -431,14 +444,34 @@ class MainWindow(qtw.QMainWindow):
             dataForGraph = self.controller.get_data()
         else:
             dataForGraph = self.controller.get_data().iloc[::decimation]
-        graphWindow = gw.GraphWindow(dataForGraph, self._getTreeSelected())
+        graphWindow = gw.GraphWindow(dataForGraph, self._getTreeSelected(), self)
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
+        self.trackGraph()
+
+    def createDefaultGraph(self):
+        if self.controller is None or self.settings.value('graphs')['default'] == []:
+            self.setNotify('warning', 'Need to select the data or check settings graphs')
+            return
+        decimation = int(self.spinBox.text())
+        if decimation == 0:
+            dataForGraph = self.controller.get_data()
+        else:
+            dataForGraph = self.controller.get_data().iloc[::decimation]
+        for graph in self.settings.value('graphs')['default']:
+            if not set(graph).issubset(self.controller.get_data().columns):
+                self.setNotify('warning', f'{graph} not find in data')
+                continue
+            graphWindow = gw.GraphWindow(dataForGraph, graph, self)
+            self.mdi.addSubWindow(graphWindow)
+            graphWindow.show()
+        self.horizontalWindows()
+        self.trackGraph()
 
     def createGraphForConsole(self, data, *args):
         if data is None:
             return
-        graphWindow = gw.GraphWindow(data, args)
+        graphWindow = gw.GraphWindow(data, args, self)
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
             
@@ -494,6 +527,7 @@ class MainWindow(qtw.QMainWindow):
 
     def _closeAllWindows(self):
         self.mdi.closeAllSubWindows()
+        self.trackGraph()
 
     def closeEvent(self, event):
         qtw.QApplication.closeAllWindows()
@@ -523,7 +557,7 @@ class MainWindow(qtw.QMainWindow):
             notify = self.notify.critical
         notify(type.title(), txt, self, Align=BottomRight, duracion=6)
 
-    def createSettings(self):
+    def defaultSettings(self):
         self.settings.setValue('koef_for_intervals', 
         {
             # макс разница, макс значение
@@ -543,17 +577,25 @@ class MainWindow(qtw.QMainWindow):
                    'tang_DISS_grad',
                    'k',
                    'k1')
-        self.settings.setValue('mdm', dict(zip(headers, (5, 14, 2, -0.62, 0.032, 3.33 - 0.032, 1, 1))))
-        self.settings.setValue('m2', dict(zip(headers, (7, 6, 1, 0.2833, 0.032, 3.33 - 0.2, 1, 1))))
-        self.settings.setValue('IL78m90a', dict(zip(headers, (7, 15, 1, 0.27, 0, 3.33, 1, 1))))
-        self.settings.setValue('IL76md90a', dict(zip(headers, (6, 15, 1, 0 - 0.665, -0.144, 3.33, 1, 1))))
-        self.settings.setValue('tu22', dict(zip(headers, (6, 6, 2, 0, 0, 0, 1 / 3.6, 0.00508))))
-        self.settings.setValue('tu160', dict(zip(headers, (6, 10, 1, 0, 0, -2.5, 1, 1))))
-        self.settings.setValue('map/jvdHMin', '100')
-        self.settings.setValue('map/decimation', '20')
+        planesParams = {
+            'mdm':dict(zip(headers, (5, 14, 2, -0.62, 0.032, 3.33 - 0.032, 1, 1))),
+            'm2':dict(zip(headers, (7, 6, 1, 0.2833, 0.032, 3.33 - 0.2, 1, 1))),
+            'IL78m90a':dict(zip(headers, (7, 15, 1, 0.27, 0, 3.33, 1, 1))),
+            'IL76md90a':dict(zip(headers, (6, 15, 1, 0 - 0.665, -0.144, 3.33, 1, 1))),
+            'tu22':dict(zip(headers, (6, 6, 2, 0, 0, 0, 1 / 3.6, 0.00508))),
+            'tu160':dict(zip(headers, (6, 10, 1, 0, 0, -2.5, 1, 1)))
+        }
+        self.settings.setValue('planes', planesParams)
+        self.settings.setValue('map', {'jvdHMin':'100', 'decimation':'20'})
         self.settings.setValue('lastFile', None)
-        self.settings.setValue('koef_Wxyz_PNK', {'koef_Wx_PNK':1,'koef_Wy_PNK':1,'koef_Wz_PNK':1})
-        self.settings.setValue('corr_kkt', {'kurs_correct':1, 'kren_correct':1, 'tang_correct':1})
+        corrections = {'koef_Wx_PNK': 1,'koef_Wy_PNK':  1,'koef_Wz_PNK':  1,
+                      'kurs_correct':1, 'kren_correct':1, 'tang_correct':1}
+        self.settings.setValue('corrections', corrections)
+        graphs = {
+            'background':'black', 
+            'default':[['I1_Kren','I1_Tang'], ['JVD_H'], ['Wp_KBTIi', 'Wp_diss_pnki']]}
+        self.settings.setValue('graphs', graphs)
+
 
 
     def saveComboBoxValue(self):
@@ -566,6 +608,11 @@ class MainWindow(qtw.QMainWindow):
             self.settingsWindow.hide()
         self.center(self.settingsWindow)
         self.settingsWindow.show()
+
+    def setDefaultSettings(self):
+        self.settings.clear()
+        self.defaultSettings()
+
 
 def main():
     QCoreApplication.setApplicationName(ORGANIZATION_NAME)

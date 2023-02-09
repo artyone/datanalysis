@@ -151,7 +151,7 @@ class Control(object):
     def save_python_sript(self, filepath, data):
         self.fly.save_python(filepath, data)
 
-    def set_calculate_data(self, plane_corr, koef_Wxyz_PNK, corr_kkt):
+    def set_calculate_data(self, plane_corr, corrections):
         #TODO реализовать проверку на недостающие данные для расчета
         need_headers = {'name', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren', 
                         'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
@@ -159,13 +159,13 @@ class Control(object):
             raise ValueError('Wrong data')
         self.worker = dc.Mathematical(self.data)
         self.worker.apply_coefficient_w_diss(
-            wx=koef_Wxyz_PNK['koef_Wx_PNK'], 
-            wz=koef_Wxyz_PNK['koef_Wz_PNK'], 
-            wy=koef_Wxyz_PNK['koef_Wy_PNK'])
+            wx=corrections['koef_Wx_PNK'], 
+            wz=corrections['koef_Wz_PNK'], 
+            wy=corrections['koef_Wy_PNK'])
         self.worker.calc_angles(
-            kren=corr_kkt['kren_correct'], 
-            tang=corr_kkt['tang_correct'], 
-            kurs=corr_kkt['kurs_correct'])
+            kren=corrections['kren_correct'], 
+            tang=corrections['tang_correct'], 
+            kurs=corrections['kurs_correct'])
         self.worker.calc_wg_kbti(plane_corr['k'], plane_corr['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
