@@ -6,7 +6,10 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon, QColor, QFontMetrics
 from PyQt5 import QtWidgets as qtw
 from functools import partial
-import contextlib, io, traceback, sys
+import contextlib
+import io
+import traceback
+import sys
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 
 
@@ -42,10 +45,11 @@ class SimplePythonEditor(QsciScintilla):
         # here: http://www.scintilla.org/ScintillaDoc.html)
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
         # not too small
-        #self.setMinimumSize(200, 200)
+        # self.setMinimumSize(200, 200)
+
 
 class ConsoleWindow(qtw.QMainWindow):
-    
+
     def __init__(self, controller, parent):
         super().__init__()
         self.controller = controller
@@ -73,7 +77,8 @@ class ConsoleWindow(qtw.QMainWindow):
         self.setCentralWidget(splitter)
         splitter.addWidget(self.textEdit)
         splitter.addWidget(self.label)
-        self.textEdit.setText('# Все данные хранятся в переменной "data".\n# Тип данных Dataframe из библиотеки pandas\n# Для постройки графика используется синтаксис graph(data, "JVD_H", "JVD_Vn")\n# Можно использовать numpy, math, pandas')
+        self.textEdit.setText(
+            '# Все данные хранятся в переменной "data".\n# Тип данных Dataframe из библиотеки pandas\n# Для постройки графика используется синтаксис graph(data, "JVD_H", "JVD_Vn")\n# Можно использовать numpy, math, pandas')
 
     def createMenu(self):
         fileToolBar = self.addToolBar('File')
@@ -89,7 +94,7 @@ class ConsoleWindow(qtw.QMainWindow):
         self.executeAction = qtw.QAction('&Execute script')
         self.executeAction.setIcon(QIcon(':play.svg'))
         self.executeAction.setShortcut("Ctrl+Return")
-    
+
     def connectActions(self):
         self.openScriptAction.triggered.connect(self.openScript)
         self.saveScriptAction.triggered.connect(self.saveScript)
@@ -110,11 +115,12 @@ class ConsoleWindow(qtw.QMainWindow):
         self.label.setPlainText(output)
 
     def openScript(self):
-        self.filepath_s, check = qtw.QFileDialog.getOpenFileName(None, 
-                                    'Open python file', '', 'Open File (*.py)')
+        self.filepath_s, check = qtw.QFileDialog.getOpenFileName(None,
+                                                                 'Open python file', '', 'Open File (*.py)')
         if check:
             try:
-                scriptData = self.controller.load_pytnon_script(self.filepath_s)
+                scriptData = self.controller.load_pytnon_script(
+                    self.filepath_s)
                 self.textEdit.setText(scriptData)
                 self.parent.setNotify('success', 'script file loaded')
             except Exception as e:
@@ -123,15 +129,17 @@ class ConsoleWindow(qtw.QMainWindow):
     def saveScript(self):
         options = qtw.QFileDialog.Options()
         filepath, _ = qtw.QFileDialog.getSaveFileName(self,
-                    "Save File", "", f"python Files (*.py);;All Files(*)",
-                    options=options)
+                                                      "Save File", "", f"python Files (*.py);;All Files(*)",
+                                                      options=options)
         data = self.textEdit.text()
         if filepath:
             try:
                 self.controller.save_python_sript(filepath, data)
-                self.parent.setNotify('success', f'python file saved to {filepath}')
+                self.parent.setNotify(
+                    'success', f'python file saved to {filepath}')
             except PermissionError:
-                self.parent.setNotify('error', 'File opened in another program')
+                self.parent.setNotify(
+                    'error', 'File opened in another program')
             except Exception as e:
                 self.parent.setNotify('error', e)
 
@@ -139,8 +147,10 @@ class ConsoleWindow(qtw.QMainWindow):
         data = self.textEdit.text()
         if self.filepath_s:
             try:
-                self.controller.save_python_sript(self.filepath_s + '.bck', data)
+                self.controller.save_python_sript(
+                    self.filepath_s + '.bck', data)
             except PermissionError:
-                self.parent.setNotify('error', 'File opened in another program')
+                self.parent.setNotify(
+                    'error', 'File opened in another program')
             except Exception as e:
                 self.parent.setNotify('error', e)

@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets as qtw
 from PyQt5.QtCore import Qt
 
+
 class SettingsWindow(qtw.QWidget):
     def __init__(self, controller, parent=None):
         super().__init__()
@@ -106,7 +107,7 @@ class SettingsWindow(qtw.QWidget):
     def saveSettings(self):
         newValuePlanes = {
             plane: {
-                param: float(widget.text()) 
+                param: float(widget.text())
                 for param, widget in value.items()
             }
             for plane, value in self.listPlanes.items()
@@ -118,19 +119,18 @@ class SettingsWindow(qtw.QWidget):
         }
         self.settings.setValue('corrections', newValueCorrections)
         newValueGraphs = {
-            graphs: (widget.text() 
-            if graphs != 'default' 
-            else [i.split('+') for i in widget.text().replace(' ', '').split(',')])
+            graphs: (widget.text()
+                     if graphs != 'default'
+                     else [i.split('+') for i in widget.text().replace(' ', '').split(',')])
             for graphs, widget in self.listGraphs.items()
         }
         newValueFilters = {
-            key:widget.isChecked() 
+            key: widget.isChecked()
             for key, widget in self.listMenuFilters.items()
         }
         self.settings.setValue('leftMenuFilters', newValueFilters)
         self.settings.setValue('graphs', newValueGraphs)
         self.parent.setNotify('success', 'Settings saved')
-
 
     def uncheckAllCheckBox(self):
         if self.uncheckButton.text() == 'Uncheck all':

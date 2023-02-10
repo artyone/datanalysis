@@ -29,7 +29,7 @@ class ReportWindow(qtw.QWidget):
         self.btnBox = qtw.QDialogButtonBox()
 
         self.btnBox.setStandardButtons(qtw.QDialogButtonBox.Open |
-                                       qtw.QDialogButtonBox.Save | 
+                                       qtw.QDialogButtonBox.Save |
                                        qtw.QDialogButtonBox.Cancel)
         self.btnBox.rejected.connect(self.close)
 
@@ -39,7 +39,6 @@ class ReportWindow(qtw.QWidget):
 
         saveButton = self.btnBox.button(qtw.QDialogButtonBox.Save)
         saveButton.clicked.connect(self.getReportEvent)
-        
 
         horizontalLayout.addWidget(qtw.QLabel('<b>Intervals:</b>'), 2)
         horizontalLayout.addWidget(qtw.QLabel('auto'), 1,
@@ -56,7 +55,7 @@ class ReportWindow(qtw.QWidget):
     def addFormTxt(self):
         if self.intervalsToggle.isChecked():
             self.intervalsTxt.show()
-        else: 
+        else:
             self.intervalsTxt.hide()
 
     def getReportEvent(self):
@@ -67,22 +66,23 @@ class ReportWindow(qtw.QWidget):
         if not self.intervalsToggle.isChecked():
             text = ''
         options = qtw.QFileDialog.Options()
-        self.filePath, _ = qtw.QFileDialog.getSaveFileName(self,
-                    "Save File", "", "xlsx Files (*.xlsx);;All Files(*)",
-                    options=options)
+        self.filePath, _ = qtw.QFileDialog.getSaveFileName(
+            self, "Save File", "", "xlsx Files (*.xlsx);;All Files(*)", options=options)
         if self.filePath:
             try:
                 coef = self.parent.settings.value('koef_for_intervals')
                 self.controller.save_report(self.filePath, coef, text)
                 self.openButton.show()
-                self.parent.setNotify('success', f'xlsx file saved to {self.filePath}')
+                self.parent.setNotify(
+                    'success', f'xlsx file saved to {self.filePath}')
             except PermissionError:
-                self.parent.setNotify('error', 'File opened in another program')
+                self.parent.setNotify(
+                    'error', 'File opened in another program')
             except ValueError:
                 self.parent.setNotify('warning', 'JVD_H not found in data')
             except Exception as e:
                 self.parent.setNotify('error', e)
-    
+
     def openFile(self):
         startfile(self.filePath)
         self.close()

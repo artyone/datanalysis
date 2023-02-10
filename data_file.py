@@ -37,7 +37,7 @@ class Datas(object):
     def load_python(self, filepath):
         with open(filepath, 'r', encoding='utf8') as file:
             return file.read()
-    
+
     def load_json(self, filepath):
         with open(filepath, 'r', encoding='utf8') as file:
             return js.load(file)

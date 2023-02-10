@@ -42,7 +42,7 @@ class Mathematical(object):
         self.d['Kurs_cos'] = self.d.I1_KursI.apply(
             lambda x: cos(radians(x + kurs)))
 
-    def calc_wg_kbti(self, k:int, k1:int) -> None:
+    def calc_wg_kbti(self, k: int, k1: int) -> None:
         self.d['Wxg_KBTIi'] = (self.d.JVD_VN * k * 3.6 * self.d.Kurs_cos
                                + self.d.JVD_VE * k * 3.6 * self.d.Kurs_sin)
         self.d['Wzg_KBTIi'] = (- self.d.JVD_VN * k * 3.6 * self.d.Kurs_sin
@@ -94,7 +94,7 @@ class Mathematical(object):
 
     def get_us(self) -> None:
         self.USkbti = (atan(self.Wzc_kbti_acc / self.Wxc_kbti_acc) / pi) * 180
-        self.USpnk = (atan(self.Wzc_DISS_PNK_acc 
+        self.USpnk = (atan(self.Wzc_DISS_PNK_acc
                            / self.Wxc_DISS_PNK_acc) / pi) * 180
         # USdiss=(math.atan(Wzc_DISS_r_acc/Wxc_DISS_r_acc)/math.pi)*180
 
@@ -111,10 +111,14 @@ class Mathematical(object):
             height = self.get_height(start)
             US = round(self.USpnk - self.USkbti, 3)
             # USdissms=(USdiss-USkbti)
-            Wp = round(self.get_percent(self.Wp_DISS_PNK_acc, self.Wp_kbti_acc), 3)
-            Wx = round(self.get_percent(self.Wxc_DISS_PNK_acc, self.Wxc_kbti_acc), 3)
-            Wz = round(self.get_percent(self.Wzc_DISS_PNK_acc, self.Wzc_kbti_acc), 3)
-            Wy = round(self.get_percent(self.Wyc_DISS_PNK_acc, self.Wyc_kbti_acc), 3)
+            Wp = round(self.get_percent(
+                self.Wp_DISS_PNK_acc, self.Wp_kbti_acc), 3)
+            Wx = round(self.get_percent(
+                self.Wxc_DISS_PNK_acc, self.Wxc_kbti_acc), 3)
+            Wz = round(self.get_percent(
+                self.Wzc_DISS_PNK_acc, self.Wzc_kbti_acc), 3)
+            Wy = round(self.get_percent(
+                self.Wyc_DISS_PNK_acc, self.Wyc_kbti_acc), 3)
 
             res_dict[name] = [length, height, start,
                               stop, time, US, Wp, Wx, Wz, Wy]

@@ -2,6 +2,7 @@ import folium
 from folium.plugins import MousePosition, TagFilterButton, BeautifyIcon
 import branca.colormap as cm
 
+
 class Map(object):
 
     def __init__(self, data) -> None:
@@ -9,7 +10,7 @@ class Map(object):
         self.data['group'] = self.data.name // 1000 * 1000
         self.start = self.data.name.iloc[0]
         self.finish = self.data.name.iloc[-1]
-        self.map = folium.Map(location=[self.data.latitude.iloc[0], 
+        self.map = folium.Map(location=[self.data.latitude.iloc[0],
                                         self.data.longitude.iloc[0]],
                               icon='icon_circle',
                               zoom_start=6)
@@ -46,7 +47,7 @@ class Map(object):
             html += f'<br><b>JVD_H:</b> {round(data.JVD_H)}</h5>'
         icon = BeautifyIcon(icon='circle-o',
                             icon_shape='circle',
-                            iconSize=[17,17],
+                            iconSize=[17, 17],
                             background_color=color,
                             border_width=1)
         folium.Marker(location=[data.latitude, data.longitude],
@@ -76,12 +77,12 @@ class Map(object):
         self._set_colormap()
         for row in self.data.itertuples():
             self._set_point(data=row,
-                            color=self.colormap(row.name), 
+                            color=self.colormap(row.name),
                             map=self.map)
 
         self._set_mouse_coordinates(self.map)
         self._set_tiles(self.map, self.tiles)
-        TagFilterButton(data=[str(i) for i in self.data.group.unique()], 
+        TagFilterButton(data=[str(i) for i in self.data.group.unique()],
                         openPopupOnHover=True,
                         clear_text='сбросить').add_to(self.map)
         folium.LayerControl(collapsed=False).add_to(self.map)

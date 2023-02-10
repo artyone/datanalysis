@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets as qtw
 from functools import partial
 
+
 class GraphWindow(qtw.QMdiSubWindow):
 
     def __init__(self, data, treeSelected, parent) -> None:
@@ -55,7 +56,6 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.plt.scene().sigMouseClicked.connect(self.mouseClickEvent)
         self.plt.setClipToView(True)
 
-
     def mouseMoved(self, e):
         pos = e[0]
         if self.plt.sceneBoundingRect().contains(pos):
@@ -84,7 +84,7 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.setLineTypeMenu(menu)
         self.setTimeShiftMenu(menu)
         menu.addSeparator()
-        
+
         closeAction = qtw.QAction('Clos&e')
         menu.addAction(closeAction)
         closeAction.triggered.connect(self.close)

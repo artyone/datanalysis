@@ -43,7 +43,7 @@ class MapWindow(qtw.QWidget):
     def getMapEvent(self):
         options = qtw.QFileDialog.Options()
         self.filePath, _ = qtw.QFileDialog.getSaveFileName(self,
-            "Save File", "", "html Files (*.html);;All Files(*)", options=options)
+                                                           "Save File", "", "html Files (*.html);;All Files(*)", options=options)
         if self.filePath:
             try:
                 self.controller.save_map(self.filePath,
