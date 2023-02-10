@@ -33,11 +33,10 @@ class MainWindow(qtw.QMainWindow):
         self.controller = None
         self.filePath = None
         self.filePathPdd = None
-        self.settings = QSettings()
-        #self.settings.clear()
-        if self.settings.allKeys() == []:
-            self.defaultSettings()
 
+        self.settings = QSettings()
+        if self.settings.allKeys() == [] or self.settings.value('version') != '0.01':
+            self.setDefaultSettings()
         self.initUI()
 
         #TODO удалить на релизе
@@ -558,6 +557,7 @@ class MainWindow(qtw.QMainWindow):
         notify(type.title(), txt, self, Align=BottomRight, duracion=6)
 
     def defaultSettings(self):
+        self.settings.setValue('version', '0.01')
         self.settings.setValue('koef_for_intervals', 
         {
             # макс разница, макс значение

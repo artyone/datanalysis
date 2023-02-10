@@ -95,6 +95,7 @@ class ConsoleWindow(qtw.QMainWindow):
         self.executeAction.triggered.connect(self.execute)
 
     def execute(self):
+        self.autoSave()
         f = io.StringIO()
         with contextlib.redirect_stdout(f), contextlib.redirect_stderr(f):
             try:
@@ -108,11 +109,11 @@ class ConsoleWindow(qtw.QMainWindow):
         self.label.setPlainText(output)
 
     def openScript(self):
-        filepath, check = qtw.QFileDialog.getOpenFileName(None, 
+        self.filepath_s, check = qtw.QFileDialog.getOpenFileName(None, 
                                     'Open python file', '', 'Open File (*.py)')
         if check:
             try:
-                scriptData = self.controller.load_pytnon_script(filepath)
+                scriptData = self.controller.load_pytnon_script(self.filepath_s)
                 self.textEdit.setText(scriptData)
                 self.parent.setNotify('success', 'script file loaded')
             except Exception as e:
@@ -128,6 +129,16 @@ class ConsoleWindow(qtw.QMainWindow):
             try:
                 self.controller.save_python_sript(filepath, data)
                 self.parent.setNotify('success', f'python file saved to {filepath}')
+            except PermissionError:
+                self.parent.setNotify('error', 'File opened in another program')
+            except Exception as e:
+                self.parent.setNotify('error', e)
+
+    def autoSave(self):
+        data = self.textEdit.text()
+        if self.filepath_s:
+            try:
+                self.controller.save_python_sript(self.filepath_s + '.bck', data)
             except PermissionError:
                 self.parent.setNotify('error', 'File opened in another program')
             except Exception as e:
