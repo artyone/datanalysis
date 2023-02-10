@@ -68,6 +68,8 @@ class Mathematical(object):
         return self.d[(self.d['name'] >= start) & (self.d['name'] <= stop)]
 
     def get_height(self, start: int) -> Any:
+        if not 'JVD_H' in self.d.columns:
+            return 0
         result = self.d.loc[self.d['name'] == start, 'JVD_H'].values
         if len(result) > 0:
             return result[0]

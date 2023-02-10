@@ -1,4 +1,3 @@
-from typing import LiteralString
 from PyQt5 import QtWidgets as qtw
 from PyQt5.QtCore import Qt
 
@@ -10,6 +9,7 @@ class SettingsWindow(qtw.QWidget):
         self.listPlanes = self.settings.value('planes')
         self.listCorrections = self.settings.value('corrections')
         self.listGraphs = self.settings.value('graphs')
+        self.listMenuFilters = self.settings.value('leftMenuFilters')
         self.controller = controller
         self.initUI()
 
@@ -18,6 +18,7 @@ class SettingsWindow(qtw.QWidget):
         self.setWindowTitle("Settings menu")
         layout = qtw.QVBoxLayout()
         tabWidget = qtw.QTabWidget()
+        tabWidget.addTab(self.filterMenuTab(), 'Filter left menu')
         tabWidget.addTab(self.planeTab(), 'Planes')
         tabWidget.addTab(self.correctionTab(), 'Corrections')
         tabWidget.addTab(self.graphTab(), 'Graph')
@@ -26,6 +27,26 @@ class SettingsWindow(qtw.QWidget):
         layout.addWidget(tabWidget)
         layout.addWidget(saveButton)
         self.setLayout(layout)
+
+    def filterMenuTab(self):
+        tabScrollArea = qtw.QScrollArea()
+        tabWidget = qtw.QWidget()
+        # tabScrollArea.setStyleSheet('QScrollArea{border:none}')
+        # tabWidget.setBackgroundRole('none')
+        tabLayout = qtw.QVBoxLayout()
+        self.uncheckButton = qtw.QPushButton('Uncheck all')
+        self.uncheckButton.setMaximumWidth(100)
+        self.uncheckButton.clicked.connect(self.uncheckAllCheckBox)
+        tabLayout.addWidget(self.uncheckButton)
+        for key, value in self.settings.value('leftMenuFilters').items():
+            checkBox = qtw.QCheckBox(key)
+            checkBox.setChecked(value)
+            tabLayout.addWidget(checkBox)
+            self.listMenuFilters[key] = checkBox
+        tabScrollArea.setWidgetResizable(True)
+        tabWidget.setLayout(tabLayout)
+        tabScrollArea.setWidget(tabWidget)
+        return tabScrollArea
 
     def planeTab(self):
         tabWidget = qtw.QWidget()
@@ -102,5 +123,21 @@ class SettingsWindow(qtw.QWidget):
             else [i.split('+') for i in widget.text().replace(' ', '').split(',')])
             for graphs, widget in self.listGraphs.items()
         }
+        newValueFilters = {
+            key:widget.isChecked() 
+            for key, widget in self.listMenuFilters.items()
+        }
+        self.settings.setValue('leftMenuFilters', newValueFilters)
         self.settings.setValue('graphs', newValueGraphs)
         self.parent.setNotify('success', 'Settings saved')
+
+
+    def uncheckAllCheckBox(self):
+        if self.uncheckButton.text() == 'Uncheck all':
+            for widget in self.listMenuFilters.values():
+                widget.setChecked(False)
+            self.uncheckButton.setText('Check all')
+        else:
+            for widget in self.listMenuFilters.values():
+                widget.setChecked(True)
+            self.uncheckButton.setText('Uncheck all')

@@ -50,6 +50,7 @@ class ConsoleWindow(qtw.QMainWindow):
         super().__init__()
         self.controller = controller
         self.parent = parent
+        self.filepath_s = None
         self.initUI()
 
     def initUI(self):

@@ -72,11 +72,14 @@ class ReportWindow(qtw.QWidget):
                     options=options)
         if self.filePath:
             try:
-                self.controller.save_report(self.filePath, text)
+                coef = self.parent.settings.value('koef_for_intervals')
+                self.controller.save_report(self.filePath, coef, text)
                 self.openButton.show()
                 self.parent.setNotify('success', f'xlsx file saved to {self.filePath}')
             except PermissionError:
                 self.parent.setNotify('error', 'File opened in another program')
+            except ValueError:
+                self.parent.setNotify('warning', 'JVD_H not found in data')
             except Exception as e:
                 self.parent.setNotify('error', e)
     
