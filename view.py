@@ -18,7 +18,7 @@ from notificator.alingments import BottomRight
 ORGANIZATION_NAME = 'Radiopribor'
 ORGANIZATION_DOMAIN = 'zrp.ru'
 APPLICATION_NAME = 'Radiopribor Mkio'
-VERSION = '0.1.1'
+VERSION = '0.2023.02.10'
 
 
 class MainWindow(qtw.QMainWindow):
