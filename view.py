@@ -390,7 +390,7 @@ class MainWindow(qtw.QMainWindow):
                                         'param': param})
                 self.setNotify('success', f'{self.filePath} file opened')
             except Exception as e:
-                self.setNotify('error', e)
+                self.setNotify('error', str(e))
 
     def openFilePdd(self):
         pass
@@ -413,7 +413,7 @@ class MainWindow(qtw.QMainWindow):
             except PermissionError:
                 self.setNotify('error', 'File opened in another program')
             except Exception as e:
-                self.setNotify('error', e)
+                self.setNotify('error', str(e))
 
     def calculateData(self):
         if self.controller.get_data() is None:
@@ -658,7 +658,7 @@ class MainWindow(qtw.QMainWindow):
                     self.settings.setValue(key, value)
                 self.setNotify('success', f'Settings updated')
             except Exception as e:
-                self.setNotify('error', e)
+                self.setNotify('error', str(e))
 
     def saveSettingsToFile(self):
         options = qtw.QFileDialog.Options()
@@ -674,7 +674,7 @@ class MainWindow(qtw.QMainWindow):
             except PermissionError:
                 self.setNotify('error', 'File opened in another program')
             except Exception as e:
-                self.setNotify('error', e)
+                self.setNotify('error', str(e))
 
     def setDefaultSettings(self):
         self.settings.clear()

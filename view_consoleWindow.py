@@ -124,7 +124,7 @@ class ConsoleWindow(qtw.QMainWindow):
                 self.textEdit.setText(scriptData)
                 self.parent.setNotify('success', 'script file loaded')
             except Exception as e:
-                self.parent.setNotify('error', e)
+                self.parent.setNotify('error', str(e))
 
     def saveScript(self):
         options = qtw.QFileDialog.Options()
@@ -141,7 +141,7 @@ class ConsoleWindow(qtw.QMainWindow):
                 self.parent.setNotify(
                     'error', 'File opened in another program')
             except Exception as e:
-                self.parent.setNotify('error', e)
+                self.parent.setNotify('error', str(e))
 
     def autoSave(self):
         data = self.textEdit.text()
@@ -153,4 +153,4 @@ class ConsoleWindow(qtw.QMainWindow):
                 self.parent.setNotify(
                     'error', 'File opened in another program')
             except Exception as e:
-                self.parent.setNotify('error', e)
+                self.parent.setNotify('error', str(e))

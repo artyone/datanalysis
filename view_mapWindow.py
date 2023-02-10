@@ -61,7 +61,7 @@ class MapWindow(qtw.QWidget):
                 self.parent.setNotify(
                     'error', 'File opened in another program')
             except Exception as e:
-                self.parent.setNotify('error', e)
+                self.parent.setNotify('error', str(e))
 
     def openFile(self):
         startfile(self.filePath)

@@ -81,7 +81,7 @@ class ReportWindow(qtw.QWidget):
             except ValueError:
                 self.parent.setNotify('warning', 'JVD_H not found in data')
             except Exception as e:
-                self.parent.setNotify('error', e)
+                self.parent.setNotify('error', str(e))
 
     def openFile(self):
         startfile(self.filePath)
