@@ -64,7 +64,7 @@ class Mathematical(object):
         self.d['Wp_diss_pnki'] = (
             self.d.Wx_DISS_PNK**2 + self.d.DIS_Wz**2)**0.5
 
-    def get_interval(self, start: int | float, stop: int | float) -> DataFrame:
+    def get_interval(self, start: float, stop: float) -> DataFrame:
         return self.d[(self.d['name'] >= start) & (self.d['name'] <= stop)]
 
     def get_height(self, start: int) -> Any:

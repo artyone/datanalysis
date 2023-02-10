@@ -15,7 +15,7 @@ class Datas(object):
     def get_sep(self, filepath) -> str:
         return '\t' if '.txt' in filepath else ','
 
-    def get_enc(self, filepath) -> str | None:
+    def get_enc(self, filepath) -> str:
         with open(filepath, 'br') as input:
             return cd.detect(input.read(1000))['encoding']
 
