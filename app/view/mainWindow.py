@@ -1,15 +1,14 @@
-import sys
-import controller as ctlr
-import view_graphWindow as gw
-import view_mapWindow as mw
-import view_reportWindow as rw
-import view_consoleWindow as cw
-import view_settingsWindow as sw
-import qrc_resources
+from app.controller.controller import Control
+from app.view.graphWindow import GraphWindow
+from app.view.mapWindow import MapWindow
+from app.view.reportWindow import ReportWindow
+from app.view.consoleWindow import ConsoleWindow
+from app.view.settingsWindow import SettingsWindow
+import app.view.qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, QCoreApplication, QSettings, QProcess
+from PyQt5.QtCore import Qt, QSettings
 from PyQt5 import QtWidgets as qtw
 from functools import partial
 from notificator import notificator
@@ -31,7 +30,7 @@ class MainWindow(qtw.QMainWindow):
         self.reportWindow = None
         self.consoleWindow = None
         self.settingsWindow = None
-        self.controller = ctlr.Control()
+        self.controller = Control()
         self.filePath = None
         self.filePathPdd = None
 
@@ -437,7 +436,7 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify('warning', 'Need to select the data')
             return
         if self.mapWindow is None:
-            self.mapWindow = mw.MapWindow(self.controller, self)
+            self.mapWindow = MapWindow(self.controller, self)
         else:
             self.mapWindow.hide()
         self.center(self.mapWindow)
@@ -451,7 +450,7 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify('warning', 'Need to calcuclate the data')
             return
         if self.reportWindow is None:
-            self.reportWindow = rw.ReportWindow(self.controller, self)
+            self.reportWindow = ReportWindow(self.controller, self)
         else:
             self.reportWindow.hide()
         self.center(self.reportWindow)
@@ -470,7 +469,7 @@ class MainWindow(qtw.QMainWindow):
             dataForGraph = self.controller.get_data()
         else:
             dataForGraph = self.controller.get_data().iloc[::decimation]
-        graphWindow = gw.GraphWindow(
+        graphWindow = GraphWindow(
             dataForGraph, self._getTreeSelected(), self)
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
@@ -490,7 +489,7 @@ class MainWindow(qtw.QMainWindow):
             if not set(graph).issubset(self.controller.get_data().columns):
                 self.setNotify('warning', f'{graph} not find in data')
                 continue
-            graphWindow = gw.GraphWindow(dataForGraph, graph, self)
+            graphWindow = GraphWindow(dataForGraph, graph, self)
             self.mdi.addSubWindow(graphWindow)
             graphWindow.show()
         self.horizontalWindows()
@@ -499,7 +498,7 @@ class MainWindow(qtw.QMainWindow):
     def createGraphForConsole(self, data, *args):
         if data is None:
             return
-        graphWindow = gw.GraphWindow(data, args, self)
+        graphWindow = GraphWindow(data, args, self)
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
 
@@ -508,7 +507,7 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify('warning', 'Need to select the data')
             return
         if self.consoleWindow is None:
-            self.consoleWindow = cw.ConsoleWindow(self.controller, self)
+            self.consoleWindow = ConsoleWindow(self.controller, self)
         else:
             self.consoleWindow.hide()
         self.center(self.consoleWindow)
@@ -643,7 +642,7 @@ class MainWindow(qtw.QMainWindow):
 
     def openSettings(self):
         if self.settingsWindow is None:
-            self.settingsWindow = sw.SettingsWindow(self.controller, self)
+            self.settingsWindow = SettingsWindow(self.controller, self)
         else:
             self.settingsWindow.hide()
         self.center(self.settingsWindow)
@@ -683,16 +682,4 @@ class MainWindow(qtw.QMainWindow):
         self.defaultSettings()
 
 
-def main():
-    QCoreApplication.setApplicationName(ORGANIZATION_NAME)
-    QCoreApplication.setOrganizationDomain(ORGANIZATION_DOMAIN)
-    QCoreApplication.setApplicationName(APPLICATION_NAME)
-    app = qtw.QApplication(sys.argv)
-    app.setStyle('Fusion')
-    iface = MainWindow()
-    iface.show()
-    sys.exit(app.exec_())
 
-
-if __name__ == '__main__':
-    main()

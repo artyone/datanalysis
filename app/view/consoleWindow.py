@@ -1,11 +1,10 @@
-import qrc_resources
+import app.view.qrc_resources
 import math
 import numpy
 import pandas
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon, QColor, QFontMetrics
 from PyQt5 import QtWidgets as qtw
-from functools import partial
 import contextlib
 import io
 import traceback

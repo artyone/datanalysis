@@ -1,6 +1,6 @@
-import data_calculate as dc
-import data_map as dm
-import data_file as df
+from app.model.calculate import Mathematical
+from app.model.map import Map
+from app.model.file import Datas
 import re
 
 
@@ -10,7 +10,7 @@ class Control(object):
         False, False, False)
 
     def __init__(self) -> None:
-        self.fly = df.Datas()
+        self.fly = Datas()
         self.data = None
         self.data_calculated = False
 
@@ -49,7 +49,7 @@ class Control(object):
                         'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
         if self.data is None or not need_headers.issubset(self.data.columns):
             raise ValueError('Wrong data')
-        self.worker = dc.Mathematical(self.data)
+        self.worker = Mathematical(self.data)
         self.worker.apply_coefficient_w_diss(
             wx=corrections['koef_Wx_PNK'],
             wz=corrections['koef_Wz_PNK'],
@@ -65,7 +65,7 @@ class Control(object):
         self.data_calculated = True
 
     def save_report(self, filepath, koef_for_intervals, string):
-        self.worker = dc.Mathematical(self.data)
+        self.worker = Mathematical(self.data)
         if string == '':
             if 'JVD_H' in self.data.columns:
                 intervals = self.worker.get_intervals(koef_for_intervals)
@@ -90,7 +90,7 @@ class Control(object):
         if jvd_h_min != '' and 'JVD_H' in data_for_map.columns:
             data_for_map = data_for_map.loc[self.data.JVD_H >= float(jvd_h_min),
                                             ['name', 'latitude', 'longitude', 'JVD_H']]
-        map = dm.Map(data_for_map)
+        map = Map(data_for_map)
         map.get_map()
         map.save_map(filepath)
 
