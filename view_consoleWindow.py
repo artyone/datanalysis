@@ -54,7 +54,7 @@ class ConsoleWindow(qtw.QMainWindow):
         super().__init__()
         self.controller = controller
         self.parent = parent
-        self.filepath_s = None
+        self.filepath = None
         self.initUI()
 
     def initUI(self):
@@ -115,12 +115,12 @@ class ConsoleWindow(qtw.QMainWindow):
         self.label.setPlainText(output)
 
     def openScript(self):
-        self.filepath_s, check = qtw.QFileDialog.getOpenFileName(None,
+        self.filepath, check = qtw.QFileDialog.getOpenFileName(None,
                                                                  'Open python file', '', 'Open File (*.py)')
         if check:
             try:
                 scriptData = self.controller.load_pytnon_script(
-                    self.filepath_s)
+                    self.filepath)
                 self.textEdit.setText(scriptData)
                 self.parent.setNotify('success', 'script file loaded')
             except Exception as e:
@@ -128,15 +128,15 @@ class ConsoleWindow(qtw.QMainWindow):
 
     def saveScript(self):
         options = qtw.QFileDialog.Options()
-        filepath, _ = qtw.QFileDialog.getSaveFileName(self,
+        self.filepath, _ = qtw.QFileDialog.getSaveFileName(self,
                                                       "Save File", "", f"python Files (*.py);;All Files(*)",
                                                       options=options)
         data = self.textEdit.text()
-        if filepath:
+        if self.filepath:
             try:
-                self.controller.save_python_sript(filepath, data)
+                self.controller.save_python_sript(self.filepath, data)
                 self.parent.setNotify(
-                    'success', f'python file saved to {filepath}')
+                    'success', f'python file saved to {self.filepath}')
             except PermissionError:
                 self.parent.setNotify(
                     'error', 'File opened in another program')
@@ -145,10 +145,10 @@ class ConsoleWindow(qtw.QMainWindow):
 
     def autoSave(self):
         data = self.textEdit.text()
-        if self.filepath_s:
+        if self.filepath:
             try:
                 self.controller.save_python_sript(
-                    self.filepath_s + '.bck', data)
+                    self.filepath + '.bck', data)
             except PermissionError:
                 self.parent.setNotify(
                     'error', 'File opened in another program')

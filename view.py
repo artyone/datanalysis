@@ -15,10 +15,12 @@ from functools import partial
 from notificator import notificator
 from notificator.alingments import BottomRight
 
+
+
 ORGANIZATION_NAME = 'Radiopribor'
 ORGANIZATION_DOMAIN = 'zrp.ru'
 APPLICATION_NAME = 'Radiopribor Mkio'
-VERSION = '0.2023.02.10'
+VERSION = '0.2023.02.13'
 
 
 class MainWindow(qtw.QMainWindow):
