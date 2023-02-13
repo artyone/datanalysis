@@ -1,4 +1,5 @@
 import app.view.qrc_resources
+from app.model.file import Datas
 import math
 import numpy
 import pandas
@@ -13,7 +14,9 @@ from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 
 
 class SimplePythonEditor(QsciScintilla):
-
+    '''
+    Класс для украшения окна консоли.
+    '''
     def __init__(self, font, parent=None):
         super(SimplePythonEditor, self).__init__(parent)
         self.setFont(font)
@@ -48,7 +51,12 @@ class SimplePythonEditor(QsciScintilla):
 
 
 class ConsoleWindow(qtw.QMainWindow):
-
+    '''
+    Класс для окна консоли.
+    controller - контроллер.
+    filepath - путь к файлу скрипта, если он требуется.
+    parent - окно родителя.
+    '''
     def __init__(self, controller, parent):
         super().__init__()
         self.controller = controller
@@ -57,6 +65,9 @@ class ConsoleWindow(qtw.QMainWindow):
         self.initUI()
 
     def initUI(self):
+        '''
+        Метод инициализации интерфейса окна.
+        '''
         self.setGeometry(0, 0, 600, 600)
         self.setWindowTitle("Python console")
         self.createAction()
@@ -100,10 +111,20 @@ class ConsoleWindow(qtw.QMainWindow):
         self.executeAction.triggered.connect(self.execute)
 
     def execute(self):
+        '''
+        Метод выполнения команды и установки результата в label.
+        Если filepath есть, то рядом будет сохранен бэкап файл.
+        Используется перехват вывода в консоль.
+        data - копия данных, чтобы не изменять настоящие данные.
+        graph - метод для построения графика.
+        to_csv(dataframe, filepath) - метод для сохранения датафрейма в файл
+        '''
         self.autoSave()
         f = io.StringIO()
         with contextlib.redirect_stdout(f), contextlib.redirect_stderr(f):
             try:
+                model = Datas()
+                to_csv = model.write_csv
                 data = self.controller.get_data().copy()
                 graph = self.parent.createGraphForConsole
                 command = self.textEdit.text()
@@ -114,6 +135,9 @@ class ConsoleWindow(qtw.QMainWindow):
         self.label.setPlainText(output)
 
     def openScript(self):
+        '''
+        Метод загрузки ранее сохраненного скрипта.
+        '''
         self.filepath, check = qtw.QFileDialog.getOpenFileName(None,
                                                                  'Open python file', '', 'Open File (*.py)')
         if check:
@@ -126,6 +150,9 @@ class ConsoleWindow(qtw.QMainWindow):
                 self.parent.setNotify('error', str(e))
 
     def saveScript(self):
+        '''
+        Метод сохранения скрипта.
+        '''
         options = qtw.QFileDialog.Options()
         self.filepath, _ = qtw.QFileDialog.getSaveFileName(self,
                                                       "Save File", "", f"python Files (*.py);;All Files(*)",
@@ -143,6 +170,9 @@ class ConsoleWindow(qtw.QMainWindow):
                 self.parent.setNotify('error', str(e))
 
     def autoSave(self):
+        '''
+        Метод автосхоранения, если был открыт или сохранен какой-либо скрипт.
+        '''
         data = self.textEdit.text()
         if self.filepath:
             try:

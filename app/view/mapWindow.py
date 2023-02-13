@@ -3,7 +3,12 @@ from PyQt5 import QtWidgets as qtw
 
 
 class MapWindow(qtw.QWidget):
-
+    '''
+    Класс окна построения карты полёта
+    parent - родительское окно
+    controller - контроллер для получения данных.
+    settings - настройки приложения.
+    '''
     def __init__(self, controller, parent=None):
         super().__init__()
         self.parent = parent
@@ -12,6 +17,9 @@ class MapWindow(qtw.QWidget):
         self.initUI()
 
     def initUI(self):
+        '''
+        Метод отрисовки основных элементов окна.
+        '''
         self.setGeometry(0, 0, 300, 150)
         self.setWindowTitle("Create map")
         dlgLayout = qtw.QVBoxLayout()
@@ -35,12 +43,15 @@ class MapWindow(qtw.QWidget):
         self.openButton.hide()
 
         saveButton = self.btnBox.button(qtw.QDialogButtonBox.Save)
-        saveButton.clicked.connect(self.getMapEvent)
+        saveButton.clicked.connect(self.getMap)
         dlgLayout.addLayout(formLayout)
         dlgLayout.addWidget(self.btnBox)
         self.setLayout(dlgLayout)
 
-    def getMapEvent(self):
+    def getMap(self):
+        '''
+        Метод получения и сохранения карты по указанному пользователем пути.
+        '''
         options = qtw.QFileDialog.Options()
         self.filePath, _ = qtw.QFileDialog.getSaveFileName(self,
                                                            "Save File", "", "html Files (*.html);;All Files(*)", options=options)
@@ -64,5 +75,8 @@ class MapWindow(qtw.QWidget):
                 self.parent.setNotify('error', str(e))
 
     def openFile(self):
+        '''
+        Метод открытия файла карты, если она была создана
+        '''
         startfile(self.filePath)
         self.close()

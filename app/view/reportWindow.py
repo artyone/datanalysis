@@ -5,7 +5,12 @@ from qtwidgets import AnimatedToggle
 
 
 class ReportWindow(qtw.QWidget):
-
+    '''
+    Класс окна получения отчета по полету.
+    parent - родительское окно.
+    controller - контроллер.
+    intervalsTxt - текст пользовательских интервалов.
+    '''
     def __init__(self, controller, parent=None) -> None:
         super().__init__()
         self.parent = parent
@@ -14,6 +19,9 @@ class ReportWindow(qtw.QWidget):
         self.initUI()
 
     def initUI(self):
+        '''
+        Метод инциализации главных элементов окна.
+        '''
         self.setGeometry(0, 0, 500, 500)
         self.setWindowTitle("Create report")
         self.setLayout(qtw.QVBoxLayout())
@@ -53,12 +61,20 @@ class ReportWindow(qtw.QWidget):
         self.layout().addWidget(self.btnBox, 1)
 
     def addFormTxt(self):
+        '''
+        Метод для отображения окна ввода интервалов пользователем.
+        '''
         if self.intervalsToggle.isChecked():
             self.intervalsTxt.show()
         else:
             self.intervalsTxt.hide()
 
     def getReportEvent(self):
+        '''
+        Метод генерации отчёта по полету и сохранения его на диск.
+        В зависимости от положения переключателя 
+        отчет генерируется автоматически или по данным пользователя.
+        '''
         text = self.intervalsTxt.toPlainText()
         if self.intervalsToggle.isChecked() and not text:
             self.parent.setNotify('warning', "Need input intervals")
@@ -84,5 +100,8 @@ class ReportWindow(qtw.QWidget):
                 self.parent.setNotify('error', str(e))
 
     def openFile(self):
+        '''
+        Метод открытия файла отчёта, если он был создан.
+        '''
         startfile(self.filePath)
         self.close()

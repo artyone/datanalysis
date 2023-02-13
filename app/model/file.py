@@ -4,7 +4,9 @@ import json as js
 
 
 class Datas(object):
-
+    '''
+    Класс модели для работы с файлами.
+    '''
     def __init__(self) -> None:
         pass
 

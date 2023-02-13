@@ -4,7 +4,9 @@ import branca.colormap as cm
 
 
 class Map(object):
-
+    '''
+    Класс генерации карты полёта.
+    '''
     def __init__(self, data) -> None:
         self.data = data
         self.data['group'] = self.data.name // 1000 * 1000

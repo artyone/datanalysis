@@ -11,6 +11,7 @@ VERSION = '0.2023.02.13'
 
 
 def main():
+    '''Точка входа в программу.'''
     QCoreApplication.setApplicationName(ORGANIZATION_NAME)
     QCoreApplication.setOrganizationDomain(ORGANIZATION_DOMAIN)
     QCoreApplication.setApplicationName(APPLICATION_NAME)

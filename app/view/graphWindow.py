@@ -7,7 +7,15 @@ from functools import partial
 
 
 class GraphWindow(qtw.QMdiSubWindow):
-
+    '''
+    Класс окон для построения графиков.
+    parent - родительское окно
+    data - данные для построения графика
+    columns - колонки, необходимые для построения,
+    график всегда строится Ох - name(время) Oy - выбранные колонки
+    colors - цвета для графиков
+    curves - словарь названия и объектов графиков.
+    '''
     def __init__(self, data, treeSelected, parent) -> None:
         super().__init__()
         self.parent = parent
@@ -19,6 +27,9 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.initUI()
 
     def initUI(self):
+        '''
+        Метод построения интерфейса окна.
+        '''
         self.shiftWidget = None
         self.mainWidget = qtw.QWidget()
         self.setWidget(self.mainWidget)
@@ -30,6 +41,14 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.createGraph()
 
     def createGraph(self):
+        '''
+        Метод построения непосредственно самого графика
+        с использованием библиотеки pyqtgraph.
+        Цвета берутся по кругу из массива цветов.
+        Меню библиотеки выключено. 
+        При перемещении курсора выводится информация о текущем его положении.
+        При правом клике мыши вызывается кастомное контекстное меню.
+        '''
         if self.data is None:
             return
         ox = self.data.name
@@ -57,6 +76,10 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.plt.setClipToView(True)
 
     def mouseMoved(self, e):
+        '''
+        Метод реализации высплывающей подсказки по координатам
+        при перемещении мыши.
+        '''
         pos = e[0]
         if self.plt.sceneBoundingRect().contains(pos):
             mousePoint = self.plt.getPlotItem().vb.mapSceneToView(pos)
@@ -66,6 +89,9 @@ class GraphWindow(qtw.QMdiSubWindow):
                 f'x: <b>{round(float(mousePoint.x()), 1)}</b>,<br> y: <b>{round(float(mousePoint.y()), 1)}</b>')
 
     def mouseClickEvent(self, event):
+        '''
+        Метод обработки событий нажатия мышки.
+        '''
         if event.button() == Qt.MouseButton.RightButton:
             self.contextMenu(event)
             event.accept()
@@ -79,6 +105,9 @@ class GraphWindow(qtw.QMdiSubWindow):
             self.close()
 
     def contextMenu(self, event):
+        '''
+        Метод создания кастомного контекстного меню.
+        '''
         menu = qtw.QMenu()
         self.setBackgrounMenu(menu)
         self.setLineTypeMenu(menu)
@@ -144,24 +173,36 @@ class GraphWindow(qtw.QMdiSubWindow):
                 partial(self.timeShift, data['curve']))
 
     def whiteBackground(self):
+        '''
+        Метод изменения цвета фона и запись его в настройки.
+        '''
         self.plt.setBackground('white')
         settings = self.parent.settings.value('graphs')
         settings['background'] = 'white'
         self.parent.settings.setValue('graphs', settings)
 
     def blackBackground(self):
+        '''
+        Метод изменения цвета фона и запись его в настройки.
+        '''
         self.plt.setBackground('black')
         settings = self.parent.settings.value('graphs')
         settings['background'] = 'black'
         self.parent.settings.setValue('graphs', settings)
 
     def lineGraph(self, data):
+        '''
+        Метод изменения линии графика.
+        '''
         if data['curve'].opts['pen'] == data['pen']:
             data['curve'].setPen(None)
         else:
             data['curve'].setPen(data['pen'])
 
     def crossGraph(self, data):
+        '''
+        Метод изменения линии графика.
+        '''
         if data['curve'].opts['symbol'] is None:
             data['curve'].setSymbol('+')
             data['curve'].setSymbolPen(data['pen'])
@@ -169,6 +210,9 @@ class GraphWindow(qtw.QMdiSubWindow):
             data['curve'].setSymbol(None)
 
     def timeShift(self, curve):
+        '''
+        Метод смещения графика по оси Ox.
+        '''
         if self.shiftWidget is not None:
             delete(self.shiftWidget)
         self.shiftWidget = qtw.QFrame()
@@ -191,6 +235,9 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.layoutShift.addWidget(self.spinBox)
 
     def updateGraph(self, curve, value):
+        '''
+        Метод перестроения графика после смещения данных.
+        '''
         self.slider.setValue(int(value))
         self.spinBox.setValue(value)
         x = [i + value for i in self.data['name']]

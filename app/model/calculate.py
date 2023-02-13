@@ -5,7 +5,12 @@ from math import pi, sin, cos, atan, radians
 
 
 class Mathematical(object):
-
+    '''
+    Класс основных рассчётов данных.
+    d - исходные данные, которые необходимо рассчитать.
+    *_acc - средние величины.
+    intervals_* - интервалы, получаемые рассчетным образом.
+    '''
     def __init__(self, object: DataFrame) -> None:
         self.d = object
         self.Wxc_kbti_acc = 0
@@ -24,11 +29,17 @@ class Mathematical(object):
         self.intervals_wx = [set()]
 
     def apply_coefficient_w_diss(self, wx: float, wz: float, wy: float) -> None:
+        '''
+        Метод применения коэффициентов из настроек.
+        '''
         self.d['Wx_DISS_PNK'] = self.d.DIS_Wx * wx
         self.d['Wz_DISS_PNK'] = self.d.DIS_Wz * wz
         self.d['Wy_DISS_PNK'] = self.d.DIS_Wy * wy
 
     def calc_angles(self, kren: float, tang: float, kurs: float):
+        '''
+        Метод расчета углов для рассчетов.
+        '''
         self.d['Kren_sin'] = self.d.I1_Kren.apply(
             lambda x: sin(radians(x + kren)))
         self.d['Kren_cos'] = self.d.I1_Kren.apply(
@@ -43,6 +54,9 @@ class Mathematical(object):
             lambda x: cos(radians(x + kurs)))
 
     def calc_wg_kbti(self, k: int, k1: int) -> None:
+        '''
+        Метод рассчёта с учётом коэффициента k.
+        '''
         self.d['Wxg_KBTIi'] = (self.d.JVD_VN * k * 3.6 * self.d.Kurs_cos
                                + self.d.JVD_VE * k * 3.6 * self.d.Kurs_sin)
         self.d['Wzg_KBTIi'] = (- self.d.JVD_VN * k * 3.6 * self.d.Kurs_sin
@@ -50,6 +64,9 @@ class Mathematical(object):
         self.d['Wyg_KBTIi'] = self.d.JVD_Vh * k1 * 3.6 * self.d.Kurs_sin
 
     def calc_wc_kbti(self) -> None:
+        '''
+        Метод рассчёта данных КБТИ.
+        '''
         self.d['Wxc_KBTIi'] = (self.d.Wxg_KBTIi * self.d.Tang_cos
                                + self.d.Wyg_KBTIi * self.d.Tang_sin)
         self.d['Wyc_KBTIi'] = (- self.d.Wxg_KBTIi * self.d.Tang_sin * self.d.Kren_cos
@@ -60,14 +77,23 @@ class Mathematical(object):
                                + self.d.Wzg_KBTIi * self.d.Kren_cos)
 
     def calc_wp(self) -> None:
+        '''
+        Метод рассчёта путевой скорости.
+        '''
         self.d['Wp_KBTIi'] = (self.d.Wxc_KBTIi**2 + self.d.Wzc_KBTIi**2)**0.5
         self.d['Wp_diss_pnki'] = (
             self.d.Wx_DISS_PNK**2 + self.d.DIS_Wz**2)**0.5
 
-    def get_interval(self, start: float, stop: float) -> DataFrame:
+    def _get_interval(self, start: float, stop: float) -> DataFrame:
+        '''
+        Метод получения интервала от старта до финиша.
+        '''
         return self.d[(self.d['name'] >= start) & (self.d['name'] <= stop)]
 
-    def get_height(self, start: int) -> Any:
+    def _get_height(self, start: int) -> Any:
+        '''
+        Метод получения высоты на старте интервала, если высота есть в данных.
+        '''
         if not 'JVD_H' in self.d.columns:
             return 0
         result = self.d.loc[self.d['name'] == start, 'JVD_H'].values
@@ -76,13 +102,19 @@ class Mathematical(object):
         else:
             return 0
 
-    def get_percent(self, x: float, y: float) -> float:
+    def _get_percent(self, x: float, y: float) -> float:
+        '''
+        Метод получения процентных значений.
+        '''
         if x:
             return (x - y) / x * 100
         return 0
 
-    def get_mean(self, start: int, stop: int) -> None:
-        interval = self.get_interval(start, stop)
+    def _get_mean(self, start: int, stop: int) -> None:
+        '''
+        Метод получения средних данных для отчёта.
+        '''
+        interval = self._get_interval(start, stop)
         self.Wxc_kbti_acc = interval.Wxc_KBTIi.mean()
         self.Wzc_kbti_acc = interval.Wzc_KBTIi.mean()
         self.Wyc_kbti_acc = interval.Wyc_KBTIi.mean()
@@ -92,32 +124,38 @@ class Mathematical(object):
         self.Wyc_DISS_PNK_acc = interval.Wy_DISS_PNK.mean()
         self.Wp_DISS_PNK_acc = interval.Wp_diss_pnki.mean()
 
-    def get_us(self) -> None:
+    def _get_us(self) -> None:
+        '''
+        Метод рассчёта US.
+        '''
         self.USkbti = (atan(self.Wzc_kbti_acc / self.Wxc_kbti_acc) / pi) * 180
         self.USpnk = (atan(self.Wzc_DISS_PNK_acc
                            / self.Wxc_DISS_PNK_acc) / pi) * 180
         # USdiss=(math.atan(Wzc_DISS_r_acc/Wxc_DISS_r_acc)/math.pi)*180
 
     def get_calculated_data(self, start_stop: Iterable) -> dict:
+        '''
+        Метод возврата данных после рассчёта.
+        '''
         res_dict = {}
         res_dict['name'] = ['length', 'JVD_H', 'start', 'stop',
                             'time', 'US', 'Wp', 'Wx', 'Wz', 'Wy']
         for start, stop in start_stop:
-            self.get_mean(start, stop)
-            self.get_us()
+            self._get_mean(start, stop)
+            self._get_us()
             name = f'{start}-{stop}'
             time = stop - start
             length = round((stop - start) * self.Wxc_kbti_acc / 3.6 / 1000, 3)
-            height = self.get_height(start)
+            height = self._get_height(start)
             US = round(self.USpnk - self.USkbti, 3)
             # USdissms=(USdiss-USkbti)
-            Wp = round(self.get_percent(
+            Wp = round(self._get_percent(
                 self.Wp_DISS_PNK_acc, self.Wp_kbti_acc), 3)
-            Wx = round(self.get_percent(
+            Wx = round(self._get_percent(
                 self.Wxc_DISS_PNK_acc, self.Wxc_kbti_acc), 3)
-            Wz = round(self.get_percent(
+            Wz = round(self._get_percent(
                 self.Wzc_DISS_PNK_acc, self.Wzc_kbti_acc), 3)
-            Wy = round(self.get_percent(
+            Wy = round(self._get_percent(
                 self.Wyc_DISS_PNK_acc, self.Wyc_kbti_acc), 3)
 
             res_dict[name] = [length, height, start,
@@ -125,36 +163,44 @@ class Mathematical(object):
             result = pd.DataFrame(res_dict)
         return result
 
-    def rolling_in_the_deep(self):
+    def _rolling_in_the_deep(self):
         return self.d.DIS_Wx.rolling(50).mean()
 
     def get_intervals(self, koef):
-        data = self.get_dataframe_for_intervals(koef)
+        '''
+        Метод автоматического получения интервалов по заданным
+        коэффициентам.
+        '''
+        data = self._get_dataframe_for_intervals(koef)
         for row in data.itertuples():
-            self.get_intervals_tang(time=row.name,
+            self._get_intervals_tang(time=row.name,
                                     raz=row.Tang_raz,
                                     tang=row.I1_Tang,
                                     h=row.JVD_H,
                                     k=koef)
-            self.get_intervals_kren(time=row.name,
+            self._get_intervals_kren(time=row.name,
                                     raz=row.Kren_raz,
                                     kren=row.I1_Kren,
                                     h=row.JVD_H,
                                     k=koef)
-            self.get_intervals_h(time=row.name,
+            self._get_intervals_h(time=row.name,
                                  raz=row.h_raz,
                                  h=row.JVD_H,
                                  k=koef)
-            self.get_intervals_wx(time=row.name,
+            self._get_intervals_wx(time=row.name,
                                   wx=row.DIS_Wx,
                                   raz_b=row.Wx_raz_b,
                                   h=row.JVD_H,
                                   k=koef)
-        return self.calc_intervals(self.intervals_kren,
+        return self._calc_intervals(self.intervals_kren,
                                    self.intervals_h,
                                    self.intervals_wx)
 
-    def get_dataframe_for_intervals(self, k):
+    def _get_dataframe_for_intervals(self, k):
+        '''
+        Метод формирования датафрейма для получения интервалов 
+        с разными смещениями среднего и коэффициентами.
+        '''
         df = self.d.loc[self.d.name % 1 == 0,
                         ['name', 'I1_Tang', 'I1_Kren', 'JVD_H', 'DIS_Wx']]
         df['Tang_mean_5'] = df.I1_Tang.rolling(5).mean().shift().bfill()
@@ -169,31 +215,46 @@ class Mathematical(object):
         df['Wx_raz_b'] = abs(1 - df.Wx_mean_b / df.Wx_mean_i)
         return df
 
-    def get_intervals_tang(self, time, raz, tang, h, k):
+    def _get_intervals_tang(self, time, raz, tang, h, k):
+        '''
+        Метод получения интервалов по тангажу.
+        '''
         if raz < k['tang'][0] and tang < k['tang'][1] and h > k['h'][1]:
             self.intervals_tang[-1].add(time)
         elif len(self.intervals_tang[-1]) > 0:
             self.intervals_tang.append(set())
 
-    def get_intervals_kren(self, time, raz, kren, h, k):
+    def _get_intervals_kren(self, time, raz, kren, h, k):
+        '''
+        Метод получения интервалов по крену.
+        '''
         if raz < k['kren'][0] and kren < k['kren'][1] and h > k['h'][1]:
             self.intervals_kren[-1].add(time)
         elif len(self.intervals_kren[-1]) > 0:
             self.intervals_kren.append(set())
 
-    def get_intervals_h(self, time, raz, h, k):
+    def _get_intervals_h(self, time, raz, h, k):
+        '''
+        Метод получения интервалов по высоте.
+        '''
         if raz < k['h'][0] and h > k['h'][1]:
             self.intervals_h[-1].add(time)
         elif len(self.intervals_kren[-1]) > 0:
             self.intervals_h.append(set())
 
-    def get_intervals_wx(self, time, wx, raz_b, h, k):
+    def _get_intervals_wx(self, time, wx, raz_b, h, k):
+        '''
+        Метод получения интервалов по Wx.
+        '''
         if (raz_b < k['wx'][0]) and wx > k['wx'][1] and h > k['h'][1]:
             self.intervals_wx[-1].add(time)
         elif len(self.intervals_wx[-1]) > 0:
             self.intervals_wx.append(set())
 
-    def calc_intervals(self, *args):
+    def _calc_intervals(self, *args):
+        '''
+        Метод получения интервалов всем параметрам.
+        '''
         arr = [i for i in args[0] if len(i) >= 310]
         for i in args[1:]:
             arr = [k for set1 in arr
@@ -204,4 +265,7 @@ class Mathematical(object):
         return result
 
     def get_data(self):
+        '''
+        Метод получения даты.
+        '''
         return self.d

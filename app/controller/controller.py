@@ -5,46 +5,80 @@ import re
 
 
 class Control(object):
+    '''
+    Класс контроллера для связи модели и интерфейса.
+    fly - модель полёта.
+    data - данные полёта.
+    data_calculated - признак были ли данные расчитаны или нет.
+    '''
 
     needed_usred_diss, needed_usred_kbti, needed_usred_pnk = (
         False, False, False)
 
     def __init__(self) -> None:
-        self.fly = Datas()
+        self.file_methods = Datas()
         self.data = None
         self.data_calculated = False
 
     def load_txt(self, filepath):
-        data_from_file = self.fly.load_txt(filepath)
+        '''
+        Загрузка данных из txt формата.
+        '''
+        data_from_file = self.file_methods.load_txt(filepath)
         self.data = data_from_file
         self.data_calculated = self.check_calculated()
 
     def load_csv(self, filepath):
-        data_from_file = self.fly.load_csv(filepath)
+        '''
+        Загрузка данных из csv формата.
+        '''
+        data_from_file = self.file_methods.load_csv(filepath)
         self.data = data_from_file
         self.data_calculated = self.check_calculated()
 
     def load_parquet(self, filepath):
-        data_from_file = self.fly.load_parquet(filepath)
+        '''
+        Загрузка данных из parquet формата.
+        '''
+        data_from_file = self.file_methods.load_parquet(filepath)
         self.data = data_from_file
         self.data_calculated = self.check_calculated()
 
     def load_pytnon_script(self, filepath):
-        data_from_script = self.fly.load_python(filepath)
+        '''
+        Загрузка скрипта python.
+        '''
+        data_from_script = self.file_methods.load_python(filepath)
         return data_from_script
 
     def load_settings_json(self, filepath):
-        data_from_settings = self.fly.load_json(filepath)
+        '''
+        Загрузка данных настроек из json формата.
+        '''
+        data_from_settings = self.file_methods.load_json(filepath)
         return data_from_settings
 
     def save_python_sript(self, filepath, data):
-        self.fly.save_python(filepath, data)
+        '''
+        Сохранение скрипта питона.
+        '''
+        self.file_methods.save_python(filepath, data)
 
     def save_settings_json(self, filepath, data):
-        self.fly.save_json(filepath, data)
+        '''
+        Сохранения данных настроек в json.
+        '''
+        self.file_methods.save_json(filepath, data)
 
     def set_calculate_data(self, plane_corr, corrections):
-        # TODO реализовать проверку на недостающие данные для расчета
+        '''
+        Метод расчета данных полёта.
+        Содержит базовую проверку, содержат ли данные все 
+        необходимые данные для расчетов.
+        Последовательно рассчитывает данные.
+        После всех расчетов обновляет данные в DataFrame.
+        Если все прошло успешно, data_calculated - успешно.
+        '''
         need_headers = {'name', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren',
                         'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
         if self.data is None or not need_headers.issubset(self.data.columns):
@@ -65,6 +99,17 @@ class Control(object):
         self.data_calculated = True
 
     def save_report(self, filepath, koef_for_intervals, string):
+        '''
+        Метод расчета отчёта и его сохранения на диске.
+        Создается объект класса рассчёта.
+        Обязетально проверяется высота, если её нет в данных, то 
+        автоматический рассчёт интервалов невозможен, только
+        по пользовательскому вводу.
+        Пользовательские данные регулярками обрабатываются,
+        чтобы исключить возникновения ошибок.
+        Расситываем данные с учетом коэффициентов, 
+        записываем по указанному пути.
+        '''
         self.worker = Mathematical(self.data)
         if string == '':
             if 'JVD_H' in self.data.columns:
@@ -78,9 +123,15 @@ class Control(object):
             intervals = [(int(x), int(y)) for x, y in intervals]
         data_result = self.worker.get_calculated_data(intervals)
 
-        self.fly.write_xlsx(data_result, filepath)
+        self.file_methods.write_xlsx(data_result, filepath)
 
     def save_map(self, filepath, jvd_h_min='', decimation=''):
+        '''
+        Метод построения карты и записи её на диск. 
+        Три обязательных параметра указаны в need_headers.
+        Если заданы decimation и jvd_h_min, они учитываются в данных
+        для построения карты.
+        '''
         need_headers = {'name', 'latitude', 'longitude'}
         if self.data is None or not need_headers.issubset(self.data.columns):
             raise ValueError('Wrong data')
@@ -95,21 +146,36 @@ class Control(object):
         map.save_map(filepath)
 
     def save_csv(self, filepath):
+        '''
+        Сохранение данных в формате csv.
+        '''
         if self.data is None:
             raise Exception('Data must be not none')
-        self.fly.write_csv(self.data, filepath)
+        self.file_methods.write_csv(self.data, filepath)
 
     def save_parquet(self, filepath):
+        '''
+        Сохранение данных в формате parquiet.
+        '''
         if self.data is None:
             raise Exception('Data must be not none')
-        self.fly.write_parquet(self.data, filepath)
+        self.file_methods.write_parquet(self.data, filepath)
 
     def get_data(self):
+        '''
+        Метод получения данных контроллера.
+        '''
         return self.data
 
     def check_calculated(self):
+        '''
+        Метод проверки были ли данные рассчитаны или нет.
+        '''
         if 'Wp_diss_pnki' in self.data.columns:
             return True
 
     def is_calculated(self):
+        '''
+        Получение статуса рассчёта данных.
+        '''
         return self.data_calculated
