@@ -1,8 +1,7 @@
 from app.model.calculate import Mathematical
 from app.model.map import Map
-from app.model.file import Datas
+from app.model.file import Datas as file_methods
 import re
-
 
 class Control(object):
     '''
@@ -16,7 +15,6 @@ class Control(object):
         False, False, False)
 
     def __init__(self) -> None:
-        self.file_methods = Datas()
         self.data = None
         self.data_calculated = False
 
@@ -24,7 +22,7 @@ class Control(object):
         '''
         Загрузка данных из txt формата.
         '''
-        data_from_file = self.file_methods.load_txt(filepath)
+        data_from_file = file_methods.load_txt(filepath)
         self.data = data_from_file
         self.data_calculated = self.check_calculated()
 
@@ -32,7 +30,7 @@ class Control(object):
         '''
         Загрузка данных из csv формата.
         '''
-        data_from_file = self.file_methods.load_csv(filepath)
+        data_from_file = file_methods.load_csv(filepath)
         self.data = data_from_file
         self.data_calculated = self.check_calculated()
 
@@ -40,35 +38,50 @@ class Control(object):
         '''
         Загрузка данных из parquet формата.
         '''
-        data_from_file = self.file_methods.load_parquet(filepath)
+        data_from_file = file_methods.load_parquet(filepath)
         self.data = data_from_file
         self.data_calculated = self.check_calculated()
 
-    def load_pytnon_script(self, filepath):
+    @staticmethod
+    def load_pytnon_script(filepath):
         '''
         Загрузка скрипта python.
         '''
-        data_from_script = self.file_methods.load_python(filepath)
+        data_from_script = file_methods.load_python(filepath)
         return data_from_script
 
-    def load_settings_json(self, filepath):
+    @staticmethod
+    def load_settings_json(filepath):
         '''
         Загрузка данных настроек из json формата.
         '''
-        data_from_settings = self.file_methods.load_json(filepath)
+        data_from_settings = file_methods.load_json(filepath)
         return data_from_settings
 
-    def save_python_sript(self, filepath, data):
+    def load_pdd(self, filepath):
+        '''
+        Загрузка данных из pdd формата.
+        '''
+        #TODO необходимо внедрить json файлы в настройки программы
+        #временно пока json файл стандартный
+
+        json_file = 'templates/default_adr8.json'
+        data_from_file = file_methods.load_pdd(filepath, json_file)
+        self.data = data_from_file['ADR8']
+
+    @staticmethod
+    def save_python_sript(filepath, data):
         '''
         Сохранение скрипта питона.
         '''
-        self.file_methods.save_python(filepath, data)
+        file_methods.save_python(filepath, data)
 
-    def save_settings_json(self, filepath, data):
+    @staticmethod
+    def save_settings_json(filepath, data):
         '''
         Сохранения данных настроек в json.
         '''
-        self.file_methods.save_json(filepath, data)
+        file_methods.save_json(filepath, data)
 
     def set_calculate_data(self, plane_corr, corrections):
         '''
@@ -79,7 +92,7 @@ class Control(object):
         После всех расчетов обновляет данные в DataFrame.
         Если все прошло успешно, data_calculated - успешно.
         '''
-        need_headers = {'name', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren',
+        need_headers = {'time', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren',
                         'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
         if self.data is None or not need_headers.issubset(self.data.columns):
             raise ValueError('Wrong data')
@@ -123,7 +136,7 @@ class Control(object):
             intervals = [(int(x), int(y)) for x, y in intervals]
         data_result = self.worker.get_calculated_data(intervals)
 
-        self.file_methods.write_xlsx(data_result, filepath)
+        file_methods.write_xlsx(data_result, filepath)
 
     def save_map(self, filepath, jvd_h_min='', decimation=''):
         '''
@@ -132,7 +145,7 @@ class Control(object):
         Если заданы decimation и jvd_h_min, они учитываются в данных
         для построения карты.
         '''
-        need_headers = {'name', 'latitude', 'longitude'}
+        need_headers = {'time', 'latitude', 'longitude'}
         if self.data is None or not need_headers.issubset(self.data.columns):
             raise ValueError('Wrong data')
         data_for_map = self.data.copy()
@@ -140,7 +153,7 @@ class Control(object):
             data_for_map = data_for_map.iloc[::int(decimation)]
         if jvd_h_min != '' and 'JVD_H' in data_for_map.columns:
             data_for_map = data_for_map.loc[self.data.JVD_H >= float(jvd_h_min),
-                                            ['name', 'latitude', 'longitude', 'JVD_H']]
+                                            ['time', 'latitude', 'longitude', 'JVD_H']]
         map = Map(data_for_map)
         map.get_map()
         map.save_map(filepath)
@@ -151,7 +164,7 @@ class Control(object):
         '''
         if self.data is None:
             raise Exception('Data must be not none')
-        self.file_methods.write_csv(self.data, filepath)
+        file_methods.write_csv(self.data, filepath)
 
     def save_parquet(self, filepath):
         '''
@@ -159,7 +172,7 @@ class Control(object):
         '''
         if self.data is None:
             raise Exception('Data must be not none')
-        self.file_methods.write_parquet(self.data, filepath)
+        file_methods.write_parquet(self.data, filepath)
 
     def get_data(self):
         '''

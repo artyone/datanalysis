@@ -1,0 +1,197 @@
+[
+    {
+        "name": "PMK DISS D001 IL76",
+        "adr": "ADR8",
+        "ks": "d80a",
+        "bytes_swap": false,
+        "time_koef": 0.1,
+        "data_info": [
+            {
+                "name": "DIS_Wx",
+                "position": 1,
+                "type": "int",
+                "length": 16,
+                "koef": 1,
+                "group": false
+            },
+            {
+                "name": "DIS_Wy",
+                "position": 2,
+                "type": "int",
+                "length": 16,
+                "koef": 1,
+                "group": false
+            },
+            {
+                "name": "DIS_Wz",
+                "position": 3,
+                "type": "int",
+                "length": 16,
+                "koef": 1,
+                "group": false
+            },
+            {
+                "name": "DIS_US",
+                "position": 4,
+                "type": "int",
+                "length": 16,
+                "koef": 1,
+                "group": false
+            },
+            {
+                "name": "JVD_VN",
+                "position": 5,
+                "type": "int",
+                "length": 16,
+                "koef": 0.3,
+                "group": false
+            },
+            {
+                "name": "JVD_VE",
+                "position": 6,
+                "type": "int",
+                "length": 16,
+                "koef": 0.3,
+                "group": false
+            },
+            {
+                "name": "JVD_Vh",
+                "position": 7,
+                "type": "int",
+                "length": 16,
+                "koef": 0.3,
+                "group": false
+            },
+            {
+                "name": "I1_KursI",
+                "position": 8,
+                "type": "int",
+                "length": 16,
+                "koef": 0.03,
+                "group": false
+            },
+            {
+                "name": "I1_Kren",
+                "position": 9,
+                "type": "int",
+                "length": 16,
+                "koef": 0.03,
+                "group": false
+            },
+            {
+                "name": "I1_Tang",
+                "position": 10,
+                "type": "int",
+                "length": 16,
+                "koef": 0.03,
+                "group": false
+            },
+            {
+                "name": "US",
+                "position": 11,
+                "type": "int",
+                "length": 16,
+                "koef": 1,
+                "group": false
+            },
+            {
+                "name": "W",
+                "position": 12,
+                "type": "int",
+                "length": 16,
+                "koef": 1,
+                "group": false
+            },
+            {
+                "name": "JVD_H",
+                "position": 13,
+                "type": "int",
+                "length": 16,
+                "koef": 1,
+                "group": false
+            },
+            {
+                "name": null,
+                "position": 14,
+                "type": null,
+                "length": null,
+                "koef": null,
+                "group": false
+            },
+            {
+                "name": null,
+                "position": 15,
+                "type": null,
+                "length": 8,
+                "koef": null,
+                "group": true,
+                "members": [
+                    {
+                        "name": "SHASSI_OB",
+                        "position": 1,
+                        "type": "pr",
+                        "length": 1,
+                        "koef": 1
+                    },
+                    {
+                        "name": "MORE",
+                        "position": 2,
+                        "type": "pr",
+                        "length": 1,
+                        "koef": 1
+                    },
+                    {
+                        "name": "POPRAVKI",
+                        "position": 3,
+                        "type": "pr",
+                        "length": 1,
+                        "koef": 1
+                    },
+                    {
+                        "name": "CONTROL",
+                        "position": 4,
+                        "type": "pr",
+                        "length": 1,
+                        "koef": 1
+                    },
+                    {
+                        "name": "MEMORY",
+                        "position": 5,
+                        "type": "pr",
+                        "length": 1,
+                        "koef": 1
+                    },
+                    {
+                        "name": "ISPRAV",
+                        "position": 6,
+                        "type": "pr",
+                        "length": 1,
+                        "koef": 1
+                    },
+                    {
+                        "name": "OTKAZ_US",
+                        "position": 7,
+                        "type": "pr",
+                        "length": 1,
+                        "koef": 1
+                    },
+                    {
+                        "name": "OTKAZ_MPP",
+                        "position": 8,
+                        "type": "pr",
+                        "length": 1,
+                        "koef": 1
+                    }
+                ]
+            },
+            {
+                "name": null,
+                "position": 16,
+                "type": null,
+                "length": null,
+                "koef": null,
+                "group": false
+            }
+        ]
+    }
+]

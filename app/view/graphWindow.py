@@ -12,7 +12,7 @@ class GraphWindow(qtw.QMdiSubWindow):
     parent - родительское окно
     data - данные для построения графика
     columns - колонки, необходимые для построения,
-    график всегда строится Ох - name(время) Oy - выбранные колонки
+    график всегда строится Ох - time(время) Oy - выбранные колонки
     colors - цвета для графиков
     curves - словарь названия и объектов графиков.
     '''
@@ -51,7 +51,7 @@ class GraphWindow(qtw.QMdiSubWindow):
         '''
         if self.data is None:
             return
-        ox = self.data.name
+        ox = self.data.time
         self.plt = pg.PlotWidget()
         self.plt.setBackground(
             self.parent.settings.value('graphs')['background'])
@@ -219,7 +219,7 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.mainLayout.addWidget(self.shiftWidget)
         self.layoutShift = qtw.QHBoxLayout()
         self.shiftWidget.setLayout(self.layoutShift)
-        max = self.data.name.max()
+        max = self.data.time.max()
         self.slider = qtw.QSlider(Qt.Orientation.Horizontal, self)
         self.slider.setRange(-max, max)
         self.slider.setSingleStep(100)
@@ -240,6 +240,6 @@ class GraphWindow(qtw.QMdiSubWindow):
         '''
         self.slider.setValue(int(value))
         self.spinBox.setValue(value)
-        x = [i + value for i in self.data['name']]
+        x = [i + value for i in self.data['time']]
         y = self.data[curve.name()]
         curve.setData(x, y)

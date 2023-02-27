@@ -319,7 +319,7 @@ class MainWindow(qtw.QMainWindow):
     def _connectFileActions(self):
         self.newAction.triggered.connect(self.newFile)
         self.openTxtAction.triggered.connect(partial(self.openFile, 'txt'))
-        self.openPddAction.triggered.connect(self.openFilePdd)
+        self.openPddAction.triggered.connect(partial(self.openFile, 'pdd'))
         self.openParquetAction.triggered.connect(
             partial(self.openFile, 'snappy'))
         self.openCsvAction.triggered.connect(partial(self.openFile, 'csv'))
@@ -419,17 +419,16 @@ class MainWindow(qtw.QMainWindow):
                     self.controller.load_csv(self.filePath)
                 if param == 'snappy':
                     self.controller.load_parquet(self.filePath)
+                if param == 'pdd':
+                    self.controller.load_pdd(self.filePath)
                 self._createCheckBox('Data')
                 self._updateOpenedFiles()
                 self.settings.setValue('lastFile',
                                        {'filePath': self.filePath,
                                         'param': param})
                 self.setNotify('success', f'{self.filePath} file opened')
-            except Exception as e:
+            except ValueError as e:
                 self.setNotify('error', str(e))
-
-    def openFilePdd(self):
-        pass
 
     def saveData(self, param):
         '''
@@ -713,7 +712,7 @@ class MainWindow(qtw.QMainWindow):
             'default': [['I1_Kren', 'I1_Tang'], ['JVD_H'], ['Wp_KBTIi', 'Wp_diss_pnki']]}
         self.settings.setValue('graphs', graphs)
         headers = [
-            'name', 'latitude', 'longitude', 'JVD_H', 'JVD_VN', 'JVD_VE',
+            'time', 'latitude', 'longitude', 'JVD_H', 'JVD_VN', 'JVD_VE',
             'JVD_Vh', 'DIS_S266', 'DIS_Wx30', 'DIS_Wx31', 'DIS_S264', 'DIS_Wy30',
             'DIS_Wy31', 'DIS_S267', 'DIS_Wz30', 'DIS_Wz31', 'DIS_S206', 'DIS_US30',
             'DIS_US31', 'DIS_TIME', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'DIS_W', 'DIS_US',

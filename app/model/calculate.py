@@ -88,7 +88,7 @@ class Mathematical(object):
         '''
         Метод получения интервала от старта до финиша.
         '''
-        return self.d[(self.d['name'] >= start) & (self.d['name'] <= stop)]
+        return self.d[(self.d['time'] >= start) & (self.d['time'] <= stop)]
 
     def _get_height(self, start: int) -> Any:
         '''
@@ -96,7 +96,7 @@ class Mathematical(object):
         '''
         if not 'JVD_H' in self.d.columns:
             return 0
-        result = self.d.loc[self.d['name'] == start, 'JVD_H'].values
+        result = self.d.loc[self.d['time'] == start, 'JVD_H'].values
         if len(result) > 0:
             return result[0]
         else:
@@ -173,21 +173,21 @@ class Mathematical(object):
         '''
         data = self._get_dataframe_for_intervals(koef)
         for row in data.itertuples():
-            self._get_intervals_tang(time=row.name,
+            self._get_intervals_tang(time=row.time,
                                     raz=row.Tang_raz,
                                     tang=row.I1_Tang,
                                     h=row.JVD_H,
                                     k=koef)
-            self._get_intervals_kren(time=row.name,
+            self._get_intervals_kren(time=row.time,
                                     raz=row.Kren_raz,
                                     kren=row.I1_Kren,
                                     h=row.JVD_H,
                                     k=koef)
-            self._get_intervals_h(time=row.name,
+            self._get_intervals_h(time=row.time,
                                  raz=row.h_raz,
                                  h=row.JVD_H,
                                  k=koef)
-            self._get_intervals_wx(time=row.name,
+            self._get_intervals_wx(time=row.time,
                                   wx=row.DIS_Wx,
                                   raz_b=row.Wx_raz_b,
                                   h=row.JVD_H,
@@ -201,8 +201,8 @@ class Mathematical(object):
         Метод формирования датафрейма для получения интервалов 
         с разными смещениями среднего и коэффициентами.
         '''
-        df = self.d.loc[self.d.name % 1 == 0,
-                        ['name', 'I1_Tang', 'I1_Kren', 'JVD_H', 'DIS_Wx']]
+        df = self.d.loc[self.d.time % 1 == 0,
+                        ['time', 'I1_Tang', 'I1_Kren', 'JVD_H', 'DIS_Wx']]
         df['Tang_mean_5'] = df.I1_Tang.rolling(5).mean().shift().bfill()
         df['Kren_mean_5'] = df.I1_Kren.rolling(5).mean().shift().bfill()
         df['h_mean_25'] = df.JVD_H.rolling(25).mean().shift().bfill()

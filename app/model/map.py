@@ -9,9 +9,9 @@ class Map(object):
     '''
     def __init__(self, data) -> None:
         self.data = data
-        self.data['group'] = self.data.name // 1000 * 1000
-        self.start = self.data.name.iloc[0]
-        self.finish = self.data.name.iloc[-1]
+        self.data['group'] = self.data.time // 1000 * 1000
+        self.start = self.data.time.iloc[0]
+        self.finish = self.data.time.iloc[-1]
         self.map = folium.Map(location=[self.data.latitude.iloc[0],
                                         self.data.longitude.iloc[0]],
                               icon='icon_circle',
@@ -37,14 +37,14 @@ class Map(object):
     def _set_lines(data, feature_group, colormap):
         positions = list(zip(data.latitude, data.longitude))
         folium.ColorLine(positions=positions,
-                         colors=data.name,
+                         colors=data.time,
                          colormap=colormap,
                          weight=5
                          ).add_to(feature_group)
 
     @staticmethod
     def _set_point(data, color, map):
-        html = f'<h5><b>time:</b> {data.name}'
+        html = f'<h5><b>time:</b> {data.time}'
         if 'JVD_H' in data:
             html += f'<br><b>JVD_H:</b> {round(data.JVD_H)}</h5>'
         icon = BeautifyIcon(icon='circle-o',
@@ -79,7 +79,7 @@ class Map(object):
         self._set_colormap()
         for row in self.data.itertuples():
             self._set_point(data=row,
-                            color=self.colormap(row.name),
+                            color=self.colormap(row.time),
                             map=self.map)
 
         self._set_mouse_coordinates(self.map)
