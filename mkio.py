@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication
 ORGANIZATION_NAME = 'Radiopribor'
 ORGANIZATION_DOMAIN = 'zrp.ru'
 APPLICATION_NAME = 'Radiopribor Mkio'
-VERSION = '0.2023.02.27'
+VERSION = '0.2023.02.28'
 
 
 def main():
@@ -15,6 +15,7 @@ def main():
     QCoreApplication.setApplicationName(ORGANIZATION_NAME)
     QCoreApplication.setOrganizationDomain(ORGANIZATION_DOMAIN)
     QCoreApplication.setApplicationName(APPLICATION_NAME)
+    QCoreApplication.setApplicationVersion(VERSION)
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     iface = MainWindow()

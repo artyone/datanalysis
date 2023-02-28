@@ -8,18 +8,11 @@ import app.view.qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtCore import Qt, QSettings, QCoreApplication
 from PyQt5 import QtWidgets as qtw
 from functools import partial
 from notificator import notificator
 from notificator.alingments import BottomRight
-
-
-
-ORGANIZATION_NAME = 'Radiopribor'
-ORGANIZATION_DOMAIN = 'zrp.ru'
-APPLICATION_NAME = 'Radiopribor Mkio'
-VERSION = '0.2023.02.13'
 
 
 class MainWindow(qtw.QMainWindow):
@@ -39,7 +32,8 @@ class MainWindow(qtw.QMainWindow):
         self.filePathPdd = None
 
         self.settings = QSettings()
-        if self.settings.allKeys() == [] or self.settings.value('version') != f'{VERSION}':
+        if (self.settings.allKeys() == [] or 
+            self.settings.value('version') != QCoreApplication.applicationVersion()):
             self.setDefaultSettings()
         self.initUI()
 
@@ -93,7 +87,7 @@ class MainWindow(qtw.QMainWindow):
 
     def _createFileMenu(self):
         fileMenu = self.menuBar.addMenu('&File')
-        fileMenu.addAction(self.newAction)
+        fileMenu.addAction(self.clearAction)
 
         openSourceMenu = fileMenu.addMenu('Open &source')
         openSourceMenu.setIcon(QIcon(':file-plus.svg'))
@@ -199,9 +193,9 @@ class MainWindow(qtw.QMainWindow):
         self._createSettingsActions()
 
     def _creteFileActions(self):
-        self.newAction = qtw.QAction('&New', self)
-        self.newAction.setIcon(QIcon(':file.svg'))
-        self.newAction.setStatusTip('Clear')
+        self.clearAction = qtw.QAction('Clea&r', self)
+        self.clearAction.setIcon(QIcon(':x.svg'))
+        self.clearAction.setStatusTip('Clear')
 
         self.openTxtAction = qtw.QAction('Open *.&txt...', self)
         self.openTxtAction.setIcon(QIcon(':file-text.svg'))
@@ -317,7 +311,7 @@ class MainWindow(qtw.QMainWindow):
         self._connectSettingsActions()
 
     def _connectFileActions(self):
-        self.newAction.triggered.connect(self.newFile)
+        self.clearAction.triggered.connect(self.clearMainWindow)
         self.openTxtAction.triggered.connect(partial(self.openFile, 'txt'))
         self.openPddAction.triggered.connect(partial(self.openFile, 'pdd'))
         self.openParquetAction.triggered.connect(
@@ -395,8 +389,9 @@ class MainWindow(qtw.QMainWindow):
         qr.moveCenter(cp)
         obj.move(qr.topLeft())
 
-    def newFile(self):
-        pass
+    def clearMainWindow(self):
+        self.controller = None
+
 
     def openFile(self, param, filepath=None):
         '''
@@ -673,7 +668,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод установки стандартных настроек.
         '''
-        self.settings.setValue('version', VERSION)
+        self.settings.setValue('version', QCoreApplication.applicationVersion())
         self.settings.setValue('koef_for_intervals',
                                {
                                    # макс разница, макс значение

@@ -6,7 +6,6 @@ import re
 class Control(object):
     '''
     Класс контроллера для связи модели и интерфейса.
-    fly - модель полёта.
     data - данные полёта.
     data_calculated - признак были ли данные расчитаны или нет.
     '''
@@ -24,7 +23,7 @@ class Control(object):
         '''
         data_from_file = file_methods.load_txt(filepath)
         self.data = data_from_file
-        self.data_calculated = self.check_calculated()
+        self.data_calculated = self._check_calculated()
 
     def load_csv(self, filepath):
         '''
@@ -32,7 +31,7 @@ class Control(object):
         '''
         data_from_file = file_methods.load_csv(filepath)
         self.data = data_from_file
-        self.data_calculated = self.check_calculated()
+        self.data_calculated = self._check_calculated()
 
     def load_parquet(self, filepath):
         '''
@@ -40,7 +39,7 @@ class Control(object):
         '''
         data_from_file = file_methods.load_parquet(filepath)
         self.data = data_from_file
-        self.data_calculated = self.check_calculated()
+        self.data_calculated = self._check_calculated()
 
     @staticmethod
     def load_pytnon_script(filepath):
@@ -182,7 +181,7 @@ class Control(object):
         '''
         return self.data
 
-    def check_calculated(self):
+    def _check_calculated(self):
         '''
         Метод проверки были ли данные рассчитаны или нет.
         '''
