@@ -16,11 +16,12 @@ class GraphWindow(qtw.QMdiSubWindow):
     colors - цвета для графиков
     curves - словарь названия и объектов графиков.
     '''
-    def __init__(self, data, treeSelected, parent) -> None:
+    def __init__(self, controller, treeSelected, decimation, parent) -> None:
         super().__init__()
         self.parent = parent
-        self.data = data
+        self.data = controller.get_data()
         self.columns = treeSelected
+        self.decimation = decimation
         self.colors = ['red', 'blue', 'green',
                        'orange', 'black', 'purple', 'cyan']
         self.curves = dict()
@@ -35,7 +36,7 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.setWidget(self.mainWidget)
         self.mainLayout = qtw.QVBoxLayout()
         self.mainWidget.setLayout(self.mainLayout)
-        self.setWindowTitle('/'.join(self.columns))
+        self.setWindowTitle('/'.join([i[2] for i in self.columns]))
         self.setGeometry(0, 0, 500, 300)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.createGraph()
@@ -49,22 +50,22 @@ class GraphWindow(qtw.QMdiSubWindow):
         При перемещении курсора выводится информация о текущем его положении.
         При правом клике мыши вызывается кастомное контекстное меню.
         '''
-        if self.data is None:
+        if self.data == {}:
+            self.parent.setNotify('warning', 'No data')
             return
-        ox = self.data.time
         self.plt = pg.PlotWidget()
-        self.plt.setBackground(
-            self.parent.settings.value('graphs')['background'])
+        self.plt.setBackground(self.parent.settings.value('graphs')['background'])
         self.plt.showGrid(x=True, y=True)
         self.plt.addLegend(pen='gray', offset=(0, 0))
 
-        for column in self.columns:
+        for category, adr, item in self.columns:
+            dataForGraph = self.data[category][adr]
             pen = pg.mkPen(color=self.colors[0])
-            curve = pg.PlotDataItem(ox,
-                                    self.data[column],
-                                    name=column,
+            curve = pg.PlotDataItem(dataForGraph.time,
+                                    dataForGraph[item],
+                                    name=item,
                                     pen=pen)
-            self.curves[column] = {'curve': curve, 'pen': pen}
+            self.curves[f'{category}/{adr}/{item}'] = {'curve': curve, 'pen': pen, 'adr': adr, 'category':category}
             self.plt.addItem(curve)
             self.colors.append(self.colors.pop(0))
         self.plt.setMenuEnabled(False)
@@ -170,7 +171,7 @@ class GraphWindow(qtw.QMdiSubWindow):
             timeShiftAction = qtw.QAction(name, self)
             timeShiftMenu.addAction(timeShiftAction)
             timeShiftAction.triggered.connect(
-                partial(self.timeShift, data['curve']))
+                partial(self.timeShift, data))
 
     def whiteBackground(self):
         '''
@@ -209,7 +210,7 @@ class GraphWindow(qtw.QMdiSubWindow):
         else:
             data['curve'].setSymbol(None)
 
-    def timeShift(self, curve):
+    def timeShift(self, curve_data):
         '''
         Метод смещения графика по оси Ox.
         '''
@@ -219,27 +220,31 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.mainLayout.addWidget(self.shiftWidget)
         self.layoutShift = qtw.QHBoxLayout()
         self.shiftWidget.setLayout(self.layoutShift)
-        max = self.data.time.max()
+        max = int(curve_data['curve'].getData()[0].max())
         self.slider = qtw.QSlider(Qt.Orientation.Horizontal, self)
         self.slider.setRange(-max, max)
         self.slider.setSingleStep(100)
         self.slider.setPageStep(100)
-        self.slider.valueChanged.connect(partial(self.updateGraph, curve))
+        self.slider.valueChanged.connect(partial(self.updateGraph, curve_data))
         self.spinBox = qtw.QDoubleSpinBox(self)
         self.spinBox.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.spinBox.setMinimumWidth(80)
         self.spinBox.setRange(-max, max)
         self.spinBox.setSingleStep(.1)
-        self.spinBox.valueChanged.connect(partial(self.updateGraph, curve))
+        self.spinBox.valueChanged.connect(partial(self.updateGraph, curve_data))
         self.layoutShift.addWidget(self.slider)
         self.layoutShift.addWidget(self.spinBox)
 
-    def updateGraph(self, curve, value):
+    def updateGraph(self, curveData, value):
         '''
         Метод перестроения графика после смещения данных.
         '''
         self.slider.setValue(int(value))
         self.spinBox.setValue(value)
-        x = [i + value for i in self.data['time']]
-        y = self.data[curve.name()]
+        curve = curveData['curve']
+        category = curveData['category']
+        adr = curveData['adr']
+        item = curve.name()
+        x = [i + value for i in self.data[category][adr].time]
+        y = self.data[category][adr][item]
         curve.setData(x, y)

@@ -14,7 +14,7 @@ class Control(object):
         False, False, False)
 
     def __init__(self) -> None:
-        self.data = None
+        self.data = {}
         self.data_calculated = False
 
     def load_txt(self, filepath):
@@ -22,16 +22,16 @@ class Control(object):
         Загрузка данных из txt формата.
         '''
         data_from_file = file_methods.load_txt(filepath)
-        self.data = data_from_file
-        self.data_calculated = self._check_calculated()
+        self.data['PNK'] = {'ADR8':data_from_file}
+        #self.data_calculated = self._check_calculated()
 
     def load_csv(self, filepath):
         '''
         Загрузка данных из csv формата.
         '''
         data_from_file = file_methods.load_csv(filepath)
-        self.data = data_from_file
-        self.data_calculated = self._check_calculated()
+        self.data['PNK'] = {'ADR8':data_from_file}
+        #self.data_calculated = self._check_calculated()
 
     def load_parquet(self, filepath):
         '''
@@ -39,23 +39,23 @@ class Control(object):
         '''
         data_from_file = file_methods.load_parquet(filepath)
         self.data = data_from_file
-        self.data_calculated = self._check_calculated()
+        #self.data_calculated = self._check_calculated()
 
     @staticmethod
     def load_pytnon_script(filepath):
         '''
         Загрузка скрипта python.
         '''
-        data_from_script = file_methods.load_python(filepath)
-        return data_from_script
+        data_for_script = file_methods.load_python(filepath)
+        return data_for_script
 
     @staticmethod
     def load_settings_json(filepath):
         '''
         Загрузка данных настроек из json формата.
         '''
-        data_from_settings = file_methods.load_json(filepath)
-        return data_from_settings
+        data_for_settings = file_methods.load_json(filepath)
+        return data_for_settings
 
     def load_pdd(self, filepath):
         '''
@@ -68,7 +68,7 @@ class Control(object):
 
         json_file = 'templates/default_adr8.json'
         data_from_file = file_methods.load_pdd(filepath, json_file)
-        self.data = data_from_file['adr']['ADR8']
+        self.data[data_from_file['name']] = data_from_file['adr']
 
     @staticmethod
     def save_python_sript(filepath, data):

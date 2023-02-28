@@ -6,13 +6,13 @@ from PyQt5.QtWidgets import QApplication
 
 ORGANIZATION_NAME = 'Radiopribor'
 ORGANIZATION_DOMAIN = 'zrp.ru'
-APPLICATION_NAME = 'Radiopribor Mkio'
+APPLICATION_NAME = 'DARP'
 VERSION = '0.2023.02.28'
 
 
 def main():
     '''Точка входа в программу.'''
-    QCoreApplication.setApplicationName(ORGANIZATION_NAME)
+    QCoreApplication.setOrganizationName(ORGANIZATION_NAME)
     QCoreApplication.setOrganizationDomain(ORGANIZATION_DOMAIN)
     QCoreApplication.setApplicationName(APPLICATION_NAME)
     QCoreApplication.setApplicationVersion(VERSION)

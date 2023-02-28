@@ -350,31 +350,32 @@ class MainWindow(qtw.QMainWindow):
             self.setDefaultSettings)
         self.aboutAction.triggered.connect(self.about)
 
-    def _createCheckBox(self, param):
+    def _createCheckBox(self):
         '''
         Создание бокового чек-бокс дерева для построения графиков
         '''
-        if self.controller.get_data() is None:
+        if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
 
-        it = qtw.QTreeWidgetItemIterator(self.tree)
-        while it.value():
-            item = it.value()
-            if item.text(0) == param:
-                delete(item)
-            it += 1
+        self.tree.clear()
 
-        parent = qtw.QTreeWidgetItem(self.tree)
-        parent.setText(0, param)
-        parent.setExpanded(True)
-        filters = self.settings.value('leftMenuFilters')
-        for name in list(self.controller.get_data().columns.values):
-            if filters.get(name, filters['unknown']):
-                item = qtw.QTreeWidgetItem(parent)
-                item.setText(0, name)
-                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-                item.setCheckState(0, Qt.Unchecked)
+        for name_category, adrs in self.controller.get_data().items():
+            tree_category = qtw.QTreeWidgetItem(self.tree)
+            tree_category.setText(0, name_category)
+            tree_category.setExpanded(True)
+
+            for name_adr, adr_values in adrs.items():
+                tree_adr = qtw.QTreeWidgetItem(tree_category)
+                tree_adr.setText(0, name_adr)
+                tree_adr.setExpanded(True)
+                filters = self.settings.value('leftMenuFilters')
+                for name_item in list(adr_values.columns.values):
+                    if filters.get(name_item, filters['unknown']):
+                        tree_item = qtw.QTreeWidgetItem(tree_adr)
+                        tree_item.setText(0, name_item)
+                        tree_item.setFlags(tree_item.flags() | Qt.ItemIsUserCheckable)
+                        tree_item.setCheckState(0, Qt.Unchecked)
         self.tree.show()
         self.splitter.setSizes([100, 500])
 
@@ -390,7 +391,10 @@ class MainWindow(qtw.QMainWindow):
         obj.move(qr.topLeft())
 
     def clearMainWindow(self):
-        self.controller = None
+        del self.controller
+        self.controller = Control()
+        self.tree.clear()
+        self.tree.hide()
 
 
     def openFile(self, param, filepath=None):
@@ -416,7 +420,7 @@ class MainWindow(qtw.QMainWindow):
                     self.controller.load_parquet(self.filePath)
                 if param == 'pdd':
                     self.controller.load_pdd(self.filePath)
-                self._createCheckBox('Data')
+                self._createCheckBox()
                 self._updateOpenedFiles()
                 self.settings.setValue('lastFile',
                                        {'filePath': self.filePath,
@@ -429,7 +433,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Сохранение данных в формате CSV или Parquet(snappy)
         '''
-        if self.controller.get_data() is None:
+        if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
         options = qtw.QFileDialog.Options()
@@ -452,7 +456,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для расчета данных
         '''
-        if self.controller.get_data() is None:
+        if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
         plane_corr = self.settings.value(
@@ -460,7 +464,7 @@ class MainWindow(qtw.QMainWindow):
         corrections = self.settings.value('corrections')
         try:
             self.controller.set_calculate_data(plane_corr, corrections)
-            self._createCheckBox('Data')
+            self._createCheckBox()
             self._updateOpenedFiles()
             self.setNotify('success', 'data calculated')
         except ValueError:
@@ -470,7 +474,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для открытия окна генерации карты
         '''
-        if self.controller.get_data() is None:
+        if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
         if self.mapWindow is None:
@@ -484,7 +488,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для открытия окна создания отчёта
         '''
-        if self.controller.get_data() is None:
+        if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
         if not self.controller.is_calculated():
@@ -507,17 +511,13 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для создания окон графиков по чек-боксу бокового меню
         '''
-        if self.controller.get_data() is None or self._getTreeSelected() == []:
+        selectedTree = self._getTreeSelected()
+        if self.controller.get_data() == {} or selectedTree == []:
             self.setNotify(
                 'warning', 'Need to select the data or data for graph')
             return
         decimation = int(self.spinBox.text())
-        if decimation == 0:
-            dataForGraph = self.controller.get_data()
-        else:
-            dataForGraph = self.controller.get_data().iloc[::decimation]
-        graphWindow = GraphWindow(
-            dataForGraph, self._getTreeSelected(), self)
+        graphWindow = GraphWindow(self.controller, selectedTree, decimation, self)
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
         self.trackGraph()
@@ -526,7 +526,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод создания типовых графиков, которые задаются в настройках
         '''
-        if self.controller.get_data() is None or self.settings.value('graphs')['default'] == []:
+        if self.controller.get_data() == {} or self.settings.value('graphs')['default'] == []:
             self.setNotify(
                 'warning', 'Need to select the data or check settings graphs')
             return
@@ -559,7 +559,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для открытия окна консоли
         '''
-        if self.controller.get_data() is None:
+        if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
         if self.consoleWindow is None:
@@ -640,7 +640,10 @@ class MainWindow(qtw.QMainWindow):
             self.tree, qtw.QTreeWidgetItemIterator.Checked)
         while iterator.value():
             item = iterator.value()
-            treeSelected.append(item.text(0))
+            item_name = item.text(0)
+            adr_name = item.parent().text(0)
+            category_name = item.parent().parent().text(0) 
+            treeSelected.append((category_name, adr_name, item_name))
             iterator += 1
         return treeSelected
 
