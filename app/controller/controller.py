@@ -64,10 +64,12 @@ class Control(object):
         '''
         #TODO необходимо внедрить json файлы в настройки программы
         #временно пока json файл стандартный
+        #временно пока только один адр
+        #добавить проверку jsona
 
         json_file = 'templates/default_adr8.json'
         data_from_file = file_methods.load_pdd(filepath, json_file)
-        self.data = data_from_file['ADR8']
+        self.data = data_from_file['adr']['ADR8']
 
     @staticmethod
     def save_python_sript(filepath, data):
