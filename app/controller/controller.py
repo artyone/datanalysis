@@ -63,7 +63,6 @@ class Control(object):
         '''
         #TODO необходимо внедрить json файлы в настройки программы
         #временно пока json файл стандартный
-        #временно пока только один адр
         #добавить проверку jsona
 
         json_file = 'templates/default_adr8.json'
@@ -93,6 +92,7 @@ class Control(object):
         После всех расчетов обновляет данные в DataFrame.
         Если все прошло успешно, data_calculated - успешно.
         '''
+        #TODO изменить в соответствии с новым форматом данных
         need_headers = {'time', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren',
                         'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
         if self.data is None or not need_headers.issubset(self.data.columns):
@@ -124,6 +124,7 @@ class Control(object):
         Расситываем данные с учетом коэффициентов, 
         записываем по указанному пути.
         '''
+        #TODO изменить с новым форматом данных
         self.worker = Mathematical(self.data)
         if string == '':
             if 'JVD_H' in self.data.columns:
@@ -146,6 +147,7 @@ class Control(object):
         Если заданы decimation и jvd_h_min, они учитываются в данных
         для построения карты.
         '''
+        #TODO изменить с новым форматом данных
         need_headers = {'time', 'latitude', 'longitude'}
         if self.data is None or not need_headers.issubset(self.data.columns):
             raise ValueError('Wrong data')
@@ -163,6 +165,7 @@ class Control(object):
         '''
         Сохранение данных в формате csv.
         '''
+        #TODO изменить с новым форматом данных
         if self.data is None:
             raise Exception('Data must be not none')
         file_methods.write_csv(self.data, filepath)
@@ -171,6 +174,7 @@ class Control(object):
         '''
         Сохранение данных в формате parquiet.
         '''
+        #TODO изменить с новым форматом данных
         if self.data is None:
             raise Exception('Data must be not none')
         file_methods.write_parquet(self.data, filepath)
@@ -185,6 +189,7 @@ class Control(object):
         '''
         Метод проверки были ли данные рассчитаны или нет.
         '''
+        #TODO изменить с новым форматом данных
         if 'Wp_diss_pnki' in self.data.columns:
             return True
 

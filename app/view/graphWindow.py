@@ -16,10 +16,10 @@ class GraphWindow(qtw.QMdiSubWindow):
     colors - цвета для графиков
     curves - словарь названия и объектов графиков.
     '''
-    def __init__(self, controller, treeSelected, decimation, parent) -> None:
+    def __init__(self, data, treeSelected, decimation, parent) -> None:
         super().__init__()
         self.parent = parent
-        self.data = controller.get_data()
+        self.data = data
         self.columns = treeSelected
         self.decimation = decimation
         self.colors = ['red', 'blue', 'green',
@@ -59,7 +59,7 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.plt.addLegend(pen='gray', offset=(0, 0))
 
         for category, adr, item in self.columns:
-            dataForGraph = self.data[category][adr]
+            dataForGraph = self.data[category][adr].iloc[::self.decimation]
             pen = pg.mkPen(color=self.colors[0])
             curve = pg.PlotDataItem(dataForGraph.time,
                                     dataForGraph[item],
@@ -245,6 +245,7 @@ class GraphWindow(qtw.QMdiSubWindow):
         category = curveData['category']
         adr = curveData['adr']
         item = curve.name()
-        x = [i + value for i in self.data[category][adr].time]
-        y = self.data[category][adr][item]
+        dataForGraph = self.data[category][adr].iloc[::self.decimation]
+        x = [i + value for i in dataForGraph.time]
+        y = dataForGraph[item]
         curve.setData(x, y)

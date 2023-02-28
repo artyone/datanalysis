@@ -164,6 +164,7 @@ class MainWindow(qtw.QMainWindow):
         viewToolBar.addAction(self.createGraphAction)
         viewToolBar.addAction(self.createDefaultGraphAction)
         self.spinBox = qtw.QSpinBox()
+        self.spinBox.setMinimum(1)
         viewToolBar.addWidget(self.spinBox)
         viewToolBar.addSeparator()
         viewToolBar.addAction(self.cascadeAction)
@@ -456,6 +457,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для расчета данных
         '''
+        #TODO переделать расчет данных под новый формат данных
         if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
@@ -474,6 +476,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для открытия окна генерации карты
         '''
+        #TODO обновить проверку на необходимые данные
         if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
@@ -488,6 +491,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для открытия окна создания отчёта
         '''
+        #TODO обновить проверку на необходимые данные
         if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
@@ -516,8 +520,12 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify(
                 'warning', 'Need to select the data or data for graph')
             return
-        decimation = int(self.spinBox.text())
-        graphWindow = GraphWindow(self.controller, selectedTree, decimation, self)
+        
+        if self.spinBox.text() != '0':
+            decimation = int(self.spinBox.text())
+        else: decimation = 1
+        
+        graphWindow = GraphWindow(self.controller.get_data(), selectedTree, decimation, self)
         self.mdi.addSubWindow(graphWindow)
         graphWindow.show()
         self.trackGraph()
@@ -526,20 +534,21 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод создания типовых графиков, которые задаются в настройках
         '''
+        #TODO исправить отрисовку стандратных графиков с новым форматом данных
         if self.controller.get_data() == {} or self.settings.value('graphs')['default'] == []:
             self.setNotify(
                 'warning', 'Need to select the data or check settings graphs')
             return
-        decimation = int(self.spinBox.text())
-        if decimation == 0:
-            dataForGraph = self.controller.get_data()
-        else:
-            dataForGraph = self.controller.get_data().iloc[::decimation]
+
+        if self.spinBox.text() != '0':
+            decimation = int(self.spinBox.text())
+        else: decimation = 1
+
         for graph in self.settings.value('graphs')['default']:
             if not set(graph).issubset(self.controller.get_data().columns):
                 self.setNotify('warning', f'{graph} not find in data')
                 continue
-            graphWindow = GraphWindow(dataForGraph, graph, self)
+            graphWindow = GraphWindow(self.controller.get_data(), graph, decimation, self)
             self.mdi.addSubWindow(graphWindow)
             graphWindow.show()
         self.horizontalWindows()
@@ -547,8 +556,9 @@ class MainWindow(qtw.QMainWindow):
 
     def createGraphForConsole(self, data, *args):
         '''
-        Вспомогательная Метод для создания графика из консоли.
+        Вспомогательный Метод для создания графика из консоли.
         '''
+        #TODO продумать и изменить метод для консоли из-за нового формата данных
         if data is None:
             return
         graphWindow = GraphWindow(data, args, self)
@@ -651,6 +661,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод обновления открытых файлов.
         '''
+        #TODO необходимо продумать как отображать открытые файлы и надо ли это вообще
         self.openedFilesLabel.setText(
             f'File TXT: <b>{self.filePath}</b>, File PDD: <b>{self.filePathPdd}</b>')
 
@@ -705,6 +716,8 @@ class MainWindow(qtw.QMainWindow):
         corrections = {'koef_Wx_PNK': 1, 'koef_Wy_PNK': 1, 'koef_Wz_PNK': 1,
                        'kurs_correct': 1, 'kren_correct': 1, 'tang_correct': 1}
         self.settings.setValue('corrections', corrections)
+        #TODO изменить формат хранения стандартных графиков под новый вид даты
+        #добавить возможность настройки цветов графиков
         graphs = {
             'background': 'black',
             'default': [['I1_Kren', 'I1_Tang'], ['JVD_H'], ['Wp_KBTIi', 'Wp_diss_pnki']]}

@@ -143,6 +143,7 @@ class SettingsWindow(qtw.QWidget):
             for correction, widget in self.listCorrections.items()
         }
         self.settings.setValue('corrections', newValueCorrections)
+        #TODO изменить сохранения настроек для графиков
         newValueGraphs = {
             graphs: (widget.text()
                      if graphs != 'default'

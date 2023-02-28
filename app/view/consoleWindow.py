@@ -1,16 +1,16 @@
-import app.view.qrc_resources
-from app.model.file import Datas
-import math
-import numpy
-import pandas
-from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon, QColor, QFontMetrics
-from PyQt5 import QtWidgets as qtw
-import contextlib
-import io
-import traceback
-import sys
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
+from PyQt5 import QtWidgets as qtw
+from app.model.file import Datas
+from PyQt5.QtCore import Qt
+import app.view.qrc_resources
+import contextlib
+import traceback
+import pandas
+import numpy
+import math
+import sys
+import io
 
 
 class SimplePythonEditor(QsciScintilla):

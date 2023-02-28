@@ -29,6 +29,7 @@ class Datas(object):
     def write_xlsx(data: pd.DataFrame, filepath: str) -> None:
         data.to_excel(filepath, index=False)
 
+    #TODO изменить с новым форматом данных
     @staticmethod
     def write_parquet(data: pd.DataFrame, filepath: str):
         data.to_parquet(filepath)
