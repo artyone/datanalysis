@@ -50,6 +50,7 @@ class CalcWindow(qtw.QWidget):
         self.formLayout.addRow(self.adrDissComboBox)
 
     def initPnkBlock(self):
+        '''Метод инициализации блока пнк'''
         self.calcPnkCheckBox = qtw.QCheckBox()
         self.calcPnkCheckBox.stateChanged.connect(self.hideUnhidePnk)
 
@@ -67,6 +68,7 @@ class CalcWindow(qtw.QWidget):
         self.adrPnkComboBox.hide()
 
     def initDissBlock(self):
+        '''Метод инициализации блока дисс'''
         self.calcDissCheckBox = qtw.QCheckBox()
         self.calcDissCheckBox.stateChanged.connect(self.hideUnhideDiss)
 
@@ -82,7 +84,6 @@ class CalcWindow(qtw.QWidget):
 
         self.categoryDissComboBox.hide()
         self.adrDissComboBox.hide()
-
     
     def initButtonBlock(self):
         '''Метод инициализации кнопок на форме'''
@@ -93,6 +94,7 @@ class CalcWindow(qtw.QWidget):
         self.btnBox.accepted.connect(self.calculate)
 
     def hideUnhidePnk(self):
+        '''Метод скрытия/отображения выбора категории и адр пнк'''
         if self.calcPnkCheckBox.isChecked():
             self.categoryPnkComboBox.show()
             self.adrPnkComboBox.show()
@@ -102,6 +104,7 @@ class CalcWindow(qtw.QWidget):
             self.calcDissCheckBox.setChecked(False)
 
     def hideUnhideDiss(self):
+        '''Метод скрытия/отображения выбора категории и адр дисс'''
         if self.calcDissCheckBox.isChecked():
             self.categoryPnkComboBox.show()
             self.adrPnkComboBox.show()
@@ -113,12 +116,14 @@ class CalcWindow(qtw.QWidget):
             self.adrDissComboBox.hide()
 
     def updateAdrPnkComboBox(self):
+        '''Метод обновления пнк адр комбобокса'''
         current_category = self.categoryPnkComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrPnkComboBox.clear()
         self.adrPnkComboBox.addItems(adrs)
 
     def updateAdrDissComboBox(self):
+        '''Метод обновления дисс адр комбобокса'''
         current_category = self.categoryDissComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrDissComboBox.clear()
@@ -132,6 +137,12 @@ class CalcWindow(qtw.QWidget):
             'planeComboBox', self.planeComboBox.currentText())
 
     def calculate(self):
+        '''
+        Метод по нажатию кнопки ОК, который непосредственно запускает
+        рассчет значений с их последующей передачей в главное окно
+        '''
+        #TODO в дальнейшейм необходимо будет добавить рассчеты
+        # дисс, пока только пнк
         if not self.calcPnkCheckBox.isChecked():
             self.parent.setNotify('warning', 'pnk checkbox required')
 

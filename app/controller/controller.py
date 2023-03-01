@@ -36,7 +36,7 @@ class Control(object):
         data_from_file = file_methods.load_csv(filepath)
         self.data['PNK'] = {'ADR8':data_from_file}
         #self.data_calculated = self._check_calculated()
-
+    
     def load_pickle(self, filepath):
         '''
         Загрузка данных из pickle формата.
@@ -167,20 +167,19 @@ class Control(object):
         map.get_map()
         map.save_map(filepath)
 
-    def save_csv(self, filepath):
+    def save_csv(self, filepath, category, adr):
         '''
         Сохранение данных в формате csv.
         '''
-        #TODO изменить с новым форматом данных
         if self.data is None:
             raise Exception('Data must be not none')
-        file_methods.write_csv(self.data, filepath)
+        data_for_csv = self.data[category][adr]
+        file_methods.write_csv(data_for_csv, filepath)
 
     def save_pickle(self, filepath):
         '''
         Сохранение данных в формате pickle.
         '''
-        #TODO изменить с новым форматом данных
         if self.data == {}:
             raise Exception('Data must be not none')
         file_methods.write_pickle(self.data, filepath)

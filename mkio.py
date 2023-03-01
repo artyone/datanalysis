@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication
 ORGANIZATION_NAME = 'Radiopribor'
 ORGANIZATION_DOMAIN = 'zrp.ru'
 APPLICATION_NAME = 'DARP'
-VERSION = '0.2023.02.28'
+VERSION = '0.2023.02.29'
 
 
 def main():

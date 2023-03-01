@@ -2,26 +2,24 @@ from os import startfile
 from PyQt5 import QtWidgets as qtw
 
 
-class MapWindow(qtw.QWidget):
+class SaveCsvWindow(qtw.QWidget):
     '''
-    Класс окна построения карты полёта
+    Класс окна выбора категории и адр для сохранения csv файла
     parent - родительское окно
     controller - контроллер для получения данных.
-    settings - настройки приложения.
     '''
     def __init__(self, controller, parent=None):
         super().__init__()
         self.parent = parent
         self.controller = controller
-        self.settings = self.parent.settings
         self.initUI()
 
     def initUI(self):
         '''
         Метод отрисовки основных элементов окна.
         '''
-        self.setGeometry(0, 0, 400, 200)
-        self.setWindowTitle("Create map")
+        self.setGeometry(0, 0, 350, 200)
+        self.setWindowTitle("Save CSV as...")
         dlgLayout = qtw.QVBoxLayout()
 
         self.initInputBlock()
@@ -49,13 +47,6 @@ class MapWindow(qtw.QWidget):
         self.formLayout.addRow('category', self.categoryComboBox)
         self.formLayout.addRow('adr', self.adrComboBox)
 
-
-        self.jvdHMinLineEdit = qtw.QLineEdit(
-            self.settings.value('map')['jvdHMin'])
-        self.decimationLineEdit = qtw.QLineEdit(
-            self.settings.value('map')['decimation'])
-        self.formLayout.addRow('JVD_H min:', self.jvdHMinLineEdit)
-        self.formLayout.addRow('decimation:', self.decimationLineEdit)
     
     def initButtonBlock(self):
         '''Метод инициализации кнопок на форме'''
@@ -70,48 +61,37 @@ class MapWindow(qtw.QWidget):
         self.openButton.hide()
 
         saveButton = self.btnBox.button(qtw.QDialogButtonBox.Save)
-        saveButton.clicked.connect(self.getMap)
+        saveButton.clicked.connect(self.saveCsv)
 
     def updateAdrComboBox(self):
         current_category = self.categoryComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrComboBox.clear()
         self.adrComboBox.addItems(adrs)
-
-    def getMap(self):
-        '''
-        Метод получения и сохранения карты по указанному пользователем пути.
-        '''
+    
+    def saveCsv(self):
+        category = self.categoryComboBox.currentText()
+        adr = self.adrComboBox.currentText()
         options = qtw.QFileDialog.Options()
         filePath, _ = qtw.QFileDialog.getSaveFileName(self,
-            "Save File", "", "html Files (*.html);;All Files(*)", options=options)
+            "Save File", "", f"CSV Files (*.csv);;All Files(*)",
+                                                      options=options)
         if filePath:
             try:
-                self.controller.save_map(filePath,
-                                         self.categoryComboBox.currentText(),
-                                         self.adrComboBox.currentText(),
-                                         self.jvdHMinLineEdit.text(),
-                                         self.decimationLineEdit.text())
-                self.settings.setValue('map', {
-                    'jvdHMin': self.jvdHMinLineEdit.text(),
-                    'decimation': self.decimationLineEdit.text()
-                })
+                self.controller.save_csv(filePath, category, adr)
                 self.parent.setNotify(
-                    'success', f'html file saved to {filePath}')
-                self.filePath = filePath
+                    'success', f'CSV file saved to {filePath}')
                 self.openButton.show()
-
+                self.filePath = filePath
             except PermissionError:
                 self.parent.setNotify(
                     'error', 'File opened in another program')
-            except ValueError as e:
-                self.parent.setNotify('error', str(e))
             except Exception as e:
                 self.parent.setNotify('error', str(e))
 
     def openFile(self):
         '''
-        Метод открытия файла карты, если она была создана
+        Метод открытия файла csv, если она был сохранён
         '''
         startfile(self.filePath)
         self.close()

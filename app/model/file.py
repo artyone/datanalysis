@@ -37,7 +37,7 @@ class Datas(object):
 
     @staticmethod
     def write_csv(data: pd.DataFrame, filepath: str):
-        data.to_csv(filepath, index=False)
+        data.to_csv(filepath, index=False, sep=',')
 
     @staticmethod
     def load_pickle(filepath: str):

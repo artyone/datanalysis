@@ -5,6 +5,7 @@ from app.view.reportWindow import ReportWindow
 from app.view.consoleWindow import ConsoleWindow
 from app.view.settingsWindow import SettingsWindow
 from app.view.calculateWindow import CalcWindow
+from app.view.saveCsvWindow import SaveCsvWindow
 import app.view.qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
@@ -29,13 +30,16 @@ class MainWindow(qtw.QMainWindow):
         self.consoleWindow = None
         self.settingsWindow = None
         self.calcWindow = None
+        self.saveCsvWindow = None
         self.controller = Control()
         self.filePath = None
         self.filePathPdd = None
+        self.app_version = QCoreApplication.applicationVersion()
+        self.app_name = QCoreApplication.applicationName()
 
         self.settings = QSettings()
         if (self.settings.allKeys() == [] or 
-            self.settings.value('version') != QCoreApplication.applicationVersion()):
+            self.settings.value('version') != self.app_version):
             self.setDefaultSettings()
         self.initUI()
 
@@ -51,7 +55,7 @@ class MainWindow(qtw.QMainWindow):
         Для уведомлений используется сторонняя библиотека.
         '''
         self.setGeometry(100, 100, 800, 600)
-        self.setWindowTitle('Rp_datanalysis')
+        self.setWindowTitle(f'{self.app_name} {self.app_version}')
         self._createActions()
         self._createMenuBar()
         self._createToolBar()
@@ -316,9 +320,8 @@ class MainWindow(qtw.QMainWindow):
         self.openPickleAction.triggered.connect(
             partial(self.openFile, 'pickle'))
         self.openCsvAction.triggered.connect(partial(self.openFile, 'csv'))
-        self.savePickleAction.triggered.connect(
-            partial(self.saveData, 'pickle'))
-        self.saveCsvAction.triggered.connect(partial(self.saveData, 'csv'))
+        self.savePickleAction.triggered.connect(self.savePickleData)
+        self.saveCsvAction.triggered.connect(self.saveCsvData)
         self.exitAction.triggered.connect(self.close)
 
     def _connectServiceActions(self):
@@ -443,25 +446,38 @@ class MainWindow(qtw.QMainWindow):
             delete(self.mapWindow)
             self.mapWindow = None
 
-    def saveData(self, param):
+    def saveCsvData(self):
         '''
-        Сохранение данных в формате CSV или Pickle
+        Сохранение данных в формате CSV
         '''
         #TODO реализовать выгрузку в CSV
+
+        if self.controller.get_data() == {}:
+            self.setNotify('warning', 'Need to select the data')
+            return
+
+        if self.saveCsvWindow is None:
+            self.saveCsvWindow = SaveCsvWindow(self.controller, self)
+        else:
+            self.saveCsvWindow.hide()
+        self.center(self.saveCsvWindow)
+        self.saveCsvWindow.show()
+
+    def savePickleData(self):
+        '''
+        Сохранение данных в формате pickle
+        '''
         if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
         options = qtw.QFileDialog.Options()
         filePath, _ = qtw.QFileDialog.getSaveFileName(self,
-            "Save File", "", f"{param} Files (*.{param});;All Files(*)",
+            "Save File", "", "Pickle Files (*.pkl);;All Files(*)",
                                                       options=options)
         if filePath:
             try:
-                if param == 'pickle':
-                    self.controller.save_pickle(filePath)
-                else:
-                    self.controller.save_csv(filePath)
-                self.setNotify('success', f'{param} file saved to {filePath}')
+                self.controller.save_pickle(filePath)
+                self.setNotify('success', f'Pickle file saved to {filePath}')
             except PermissionError:
                 self.setNotify('error', 'File opened in another program')
             except Exception as e:
@@ -471,7 +487,6 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для расчета данных
         '''
-        #TODO переделать расчет данных под новый формат данных
         if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return

@@ -268,7 +268,6 @@ class Mathematical(object):
         '''
         Метод получения даты.
         '''
-        print(self.d.columns)
         headers = ['time', 
                    'Wx_DISS_PNK', 'Wz_DISS_PNK', 'Wy_DISS_PNK',
                    'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
