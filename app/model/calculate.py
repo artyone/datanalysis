@@ -264,8 +264,14 @@ class Mathematical(object):
         result = [(min(i) + 15, max(i) - 5) for i in arr]
         return result
 
-    def get_data(self):
+    def get_only_calculated_data_pnk(self):
         '''
         Метод получения даты.
         '''
-        return self.d
+        print(self.d.columns)
+        headers = ['time', 
+                   'Wx_DISS_PNK', 'Wz_DISS_PNK', 'Wy_DISS_PNK',
+                   'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
+                   'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi',
+                   'Wp_KBTIi', 'Wp_diss_pnki']
+        return self.d.loc[:, headers]

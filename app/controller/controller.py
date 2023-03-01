@@ -87,7 +87,7 @@ class Control(object):
         '''
         file_methods.save_json(filepath, data)
 
-    def set_calculate_data(self, plane_corr, corrections):
+    def set_calculate_data_pnk(self, category, adr, plane_corr, corrections):
         '''
         Метод расчета данных полёта.
         Содержит базовую проверку, содержат ли данные все 
@@ -99,9 +99,10 @@ class Control(object):
         #TODO изменить в соответствии с новым форматом данных
         need_headers = {'time', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren',
                         'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
-        if self.data is None or not need_headers.issubset(self.data.columns):
+        headers = self.data[category][adr].columns
+        if self.data == {} or not need_headers.issubset(headers):
             raise ValueError('Wrong data')
-        self.worker = Mathematical(self.data)
+        self.worker = Mathematical(self.data[category][adr])
         self.worker.apply_coefficient_w_diss(
             wx=corrections['koef_Wx_PNK'],
             wz=corrections['koef_Wz_PNK'],
@@ -113,7 +114,7 @@ class Control(object):
         self.worker.calc_wg_kbti(plane_corr['k'], plane_corr['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
-        self.data = self.worker.get_data()
+        self.data['Calc'] = {'PNK':self.worker.get_only_calculated_data_pnk()}
         self.data_calculated = True
 
     def save_report(self, filepath, koef_for_intervals, string):

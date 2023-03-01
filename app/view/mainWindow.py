@@ -4,6 +4,7 @@ from app.view.mapWindow import MapWindow
 from app.view.reportWindow import ReportWindow
 from app.view.consoleWindow import ConsoleWindow
 from app.view.settingsWindow import SettingsWindow
+from app.view.calculateWindow import CalcWindow
 import app.view.qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
@@ -27,6 +28,7 @@ class MainWindow(qtw.QMainWindow):
         self.reportWindow = None
         self.consoleWindow = None
         self.settingsWindow = None
+        self.calcWindow = None
         self.controller = Control()
         self.filePath = None
         self.filePathPdd = None
@@ -152,10 +154,6 @@ class MainWindow(qtw.QMainWindow):
 
     def _createServiceToolBar(self):
         serviceToolBar = self.addToolBar('Service')
-        self.planeComboBox = qtw.QComboBox()
-        self.planeComboBox.addItems(self.settings.value('planes'))
-        self.planeComboBox.setCurrentText(self.settings.value('planeComboBox'))
-        serviceToolBar.addWidget(self.planeComboBox)
         serviceToolBar.addAction(self.calculateDataAction)
         serviceToolBar.addAction(self.pythonConsoleAction)
 
@@ -328,7 +326,6 @@ class MainWindow(qtw.QMainWindow):
         self.createMapAction.triggered.connect(self.createMap)
         self.createReportAction.triggered.connect(self.createReport)
         self.pythonConsoleAction.triggered.connect(self.pythonConsole)
-        self.planeComboBox.activated.connect(self.saveComboBoxValue)
 
     def _connectViewActions(self):
         self.createGraphAction.triggered.connect(self.createGraph)
@@ -351,7 +348,7 @@ class MainWindow(qtw.QMainWindow):
             self.setDefaultSettings)
         self.aboutAction.triggered.connect(self.about)
 
-    def _createCheckBox(self):
+    def createCheckBox(self):
         '''
         Создание бокового чек-бокс дерева для построения графиков
         '''
@@ -360,8 +357,8 @@ class MainWindow(qtw.QMainWindow):
             return
 
         self.tree.clear()
-
-        for name_category, adrs in self.controller.get_data().items():
+        data = self.controller.get_data()
+        for name_category, adrs in sorted(data.items(), key=lambda x: x[0]):
             tree_category = qtw.QTreeWidgetItem(self.tree)
             tree_category.setText(0, name_category)
             tree_category.setExpanded(True)
@@ -422,8 +419,8 @@ class MainWindow(qtw.QMainWindow):
                     self.controller.load_pickle(self.filePath)
                 if param == 'pdd':
                     self.controller.load_pdd(self.filePath)
-                self._createCheckBox()
-                self._updateOpenedFiles()
+                self.createCheckBox()
+                self.updateOpenedFiles()
                 self._destroyChildWindow()
                 self.settings.setValue('lastFile',
                                        {'filePath': self.filePath,
@@ -450,6 +447,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Сохранение данных в формате CSV или Pickle
         '''
+        #TODO реализовать выгрузку в CSV
         if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
@@ -477,16 +475,13 @@ class MainWindow(qtw.QMainWindow):
         if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
-        plane_corr = self.settings.value(
-            'planes')[self.planeComboBox.currentText()]
-        corrections = self.settings.value('corrections')
-        try:
-            self.controller.set_calculate_data(plane_corr, corrections)
-            self._createCheckBox()
-            self._updateOpenedFiles()
-            self.setNotify('success', 'data calculated')
-        except ValueError:
-            self.setNotify('warning', 'Wrong data file')
+
+        if self.calcWindow is None:
+            self.calcWindow = CalcWindow(self.controller, self)
+        else:
+            self.calcWindow.hide()
+        self.center(self.calcWindow)
+        self.calcWindow.show()
 
     def createMap(self):
         '''
@@ -672,7 +667,7 @@ class MainWindow(qtw.QMainWindow):
             iterator += 1
         return treeSelected
 
-    def _updateOpenedFiles(self):
+    def updateOpenedFiles(self):
         '''
         Метод обновления открытых файлов.
         '''
@@ -749,13 +744,6 @@ class MainWindow(qtw.QMainWindow):
         ]
         leftMenuFilters = {head: True for head in headers}
         self.settings.setValue('leftMenuFilters', leftMenuFilters)
-
-    def saveComboBoxValue(self):
-        '''
-        Метод для сохранения в настройках самолета по умолчанию.
-        '''
-        self.settings.setValue(
-            'planeComboBox', self.planeComboBox.currentText())
 
     def openSettings(self):
         '''
