@@ -27,7 +27,7 @@ class Control(object):
         self.data['PNK'] = {'ADR8':data_from_file}
         self.data['PNK']['ADR9'] = data_from_file
         self.data['PNK']['ADR10'] = data_from_file
-        #self.data_calculated = self._check_calculated()
+        self.data_calculated = self._check_calculated()
 
     def load_csv(self, filepath):
         '''
@@ -35,7 +35,7 @@ class Control(object):
         '''
         data_from_file = file_methods.load_csv(filepath)
         self.data['PNK'] = {'ADR8':data_from_file}
-        #self.data_calculated = self._check_calculated()
+        self.data_calculated = self._check_calculated()
     
     def load_pickle(self, filepath):
         '''
@@ -43,7 +43,7 @@ class Control(object):
         '''
         data_from_file = file_methods.load_pickle(filepath)
         self.data = data_from_file
-        #self.data_calculated = self._check_calculated()
+        self.data_calculated = self._check_calculated()
 
     @staticmethod
     def load_pytnon_script(filepath):
@@ -96,7 +96,6 @@ class Control(object):
         После всех расчетов обновляет данные в DataFrame.
         Если все прошло успешно, data_calculated - успешно.
         '''
-        #TODO изменить в соответствии с новым форматом данных
         need_headers = {'time', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren',
                         'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
         headers = self.data[category][adr].columns
@@ -194,8 +193,7 @@ class Control(object):
         '''
         Метод проверки были ли данные рассчитаны или нет.
         '''
-        #TODO изменить с новым форматом данных
-        if 'Wp_diss_pnki' in self.data.columns:
+        if 'Calc' in self.data:
             return True
 
     def is_calculated(self):

@@ -13,6 +13,7 @@ class SettingsWindow(qtw.QWidget):
         super().__init__()
         self.parent = parent
         self.settings = self.parent.settings
+        self.listMainSettings = self.settings.value('mainSettings')
         self.listPlanes = self.settings.value('planes')
         self.listCorrections = self.settings.value('corrections')
         self.listGraphs = self.settings.value('graphs')
@@ -28,6 +29,7 @@ class SettingsWindow(qtw.QWidget):
         self.setWindowTitle("Settings menu")
         layout = qtw.QVBoxLayout()
         tabWidget = qtw.QTabWidget()
+        tabWidget.addTab(self.mainTab(), 'Main settings')
         tabWidget.addTab(self.filterMenuTab(), 'Filter left menu')
         tabWidget.addTab(self.planeTab(), 'Planes')
         tabWidget.addTab(self.correctionTab(), 'Corrections')
@@ -37,6 +39,21 @@ class SettingsWindow(qtw.QWidget):
         layout.addWidget(tabWidget)
         layout.addWidget(saveButton)
         self.setLayout(layout)
+
+    def mainTab(self):
+        '''
+        Вкладка основных настроек.
+        '''
+        tabWidget = qtw.QWidget()
+        tabLayout = qtw.QFormLayout()
+
+        for name, value in self.listMainSettings.items():
+            lineEdit = qtw.QLineEdit(str(value))
+            tabLayout.addRow(name, lineEdit)
+            self.listMainSettings[name] = lineEdit
+
+        tabWidget.setLayout(tabLayout)
+        return tabWidget
 
     def filterMenuTab(self):
         '''
@@ -130,6 +147,12 @@ class SettingsWindow(qtw.QWidget):
         '''
         Метод сохранения всех настроек.
         '''
+        newValueMainSettings = {
+            key: widget.text()
+            for key, widget in self.listMainSettings.items()
+        }
+        self.settings.setValue('mainSettings', newValueMainSettings)
+
         newValuePlanes = {
             plane: {
                 param: float(widget.text())
@@ -138,25 +161,28 @@ class SettingsWindow(qtw.QWidget):
             for plane, value in self.listPlanes.items()
         }
         self.settings.setValue('planes', newValuePlanes)
+
         newValueCorrections = {
             correction: float(widget.text())
             for correction, widget in self.listCorrections.items()
         }
         self.settings.setValue('corrections', newValueCorrections)
-        #TODO изменить сохранения настроек для графиков
+        #TODO изменить сохранения настроек для стандартных графиков
         newValueGraphs = {
             graphs: (widget.text()
                      if graphs != 'default'
                      else [i.split('+') for i in widget.text().replace(' ', '').split(',')])
             for graphs, widget in self.listGraphs.items()
         }
+        self.settings.setValue('graphs', newValueGraphs)
+
         newValueFilters = {
             key: widget.isChecked()
             for key, widget in self.listMenuFilters.items()
         }
         self.settings.setValue('leftMenuFilters', newValueFilters)
-        self.settings.setValue('graphs', newValueGraphs)
-        self.parent.setNotify('success', 'Settings saved')
+
+        self.parent.setNotify('success', 'Settings saved. Restart program.')
 
     def uncheckAllCheckBox(self):
         '''

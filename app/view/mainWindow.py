@@ -450,8 +450,6 @@ class MainWindow(qtw.QMainWindow):
         '''
         Сохранение данных в формате CSV
         '''
-        #TODO реализовать выгрузку в CSV
-
         if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return
@@ -707,7 +705,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод установки стандартных настроек.
         '''
-        self.settings.setValue('version', QCoreApplication.applicationVersion())
+        self.settings.setValue('version', self.app_version)
         self.settings.setValue('koef_for_intervals',
                                {
                                    # макс разница, макс значение
@@ -759,6 +757,8 @@ class MainWindow(qtw.QMainWindow):
         ]
         leftMenuFilters = {head: True for head in headers}
         self.settings.setValue('leftMenuFilters', leftMenuFilters)
+        jsonPath = 'templates'
+        self.settings.setValue('mainSettings', {'jsonPath':jsonPath} )
 
     def openSettings(self):
         '''
@@ -783,7 +783,7 @@ class MainWindow(qtw.QMainWindow):
                 self.settings.clear()
                 for key, value in data.items():
                     self.settings.setValue(key, value)
-                self.setNotify('success', f'Settings updated')
+                self.setNotify('success', f'Settings updated. Restart program.')
             except Exception as e:
                 self.setNotify('error', str(e))
 
@@ -800,7 +800,7 @@ class MainWindow(qtw.QMainWindow):
         if filepath:
             try:
                 self.controller.save_settings_json(filepath, data)
-                self.setNotify('success', f'settings file saved to {filepath}')
+                self.setNotify('success', f'Settings file saved to {filepath}')
             except PermissionError:
                 self.setNotify('error', 'File opened in another program')
             except Exception as e:
@@ -812,6 +812,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         self.settings.clear()
         self.defaultSettings()
+        self.setNotify('success', 'Default settings are set. Restart program.')
 
 
 
