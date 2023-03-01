@@ -396,7 +396,8 @@ class MainWindow(qtw.QMainWindow):
         self.controller = Control()
         self.tree.clear()
         self.tree.hide()
-
+        self.mdi.closeAllSubWindows()
+        self.trackGraph()
 
     def openFile(self, param, filepath=None):
         '''
@@ -423,12 +424,27 @@ class MainWindow(qtw.QMainWindow):
                     self.controller.load_pdd(self.filePath)
                 self._createCheckBox()
                 self._updateOpenedFiles()
+                self._destroyChildWindow()
                 self.settings.setValue('lastFile',
                                        {'filePath': self.filePath,
                                         'param': param})
                 self.setNotify('success', f'{self.filePath} file opened')
             except ValueError as e:
                 self.setNotify('error', str(e))
+
+    def _destroyChildWindow(self):
+        '''
+        Метод удаления дочерних окон.
+        Необходим для обновления информации в них. Временное решение.
+        '''
+        #TODO на подумать, можно в этих окнах реализовать апдейт
+        #при открытии нового файла
+        if self.reportWindow: 
+            delete(self.reportWindow)
+            self.reportWindow = None
+        if self.mapWindow: 
+            delete(self.mapWindow)
+            self.mapWindow = None
 
     def saveData(self, param):
         '''
@@ -476,7 +492,6 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для открытия окна генерации карты
         '''
-        #TODO обновить проверку на необходимые данные
         if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
             return

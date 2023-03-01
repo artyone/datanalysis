@@ -20,19 +20,46 @@ class MapWindow(qtw.QWidget):
         '''
         Метод отрисовки основных элементов окна.
         '''
-        self.setGeometry(0, 0, 300, 150)
+        self.setGeometry(0, 0, 400, 200)
         self.setWindowTitle("Create map")
         dlgLayout = qtw.QVBoxLayout()
-        formLayout = qtw.QFormLayout()
-        formLayout.setVerticalSpacing(20)
+
+        self.initInputBlock()
+        self.initButtonBlock()
+
+        dlgLayout.addLayout(self.formLayout)
+        dlgLayout.addWidget(self.btnBox)
+        self.setLayout(dlgLayout)
+
+    def initInputBlock(self):
+        '''Метод инициализации элементов ввода и выбора пользователя'''
+        self.formLayout = qtw.QFormLayout()
+        self.formLayout.setVerticalSpacing(20)
+
+        self.categoryComboBox = qtw.QComboBox()
+        categories = self.controller.get_data().keys()
+        self.categoryComboBox.addItems(categories)
+        self.categoryComboBox.activated.connect(self.updateAdrComboBox)
+
+        self.adrComboBox = qtw.QComboBox()
+        current_category = self.categoryComboBox.currentText()
+        adrs = self.controller.get_data()[current_category].keys()
+        self.adrComboBox.addItems(adrs)
+
+        self.formLayout.addRow('category', self.categoryComboBox)
+        self.formLayout.addRow('adr', self.adrComboBox)
+
+
         self.jvdHMinLineEdit = qtw.QLineEdit(
             self.settings.value('map')['jvdHMin'])
         self.decimationLineEdit = qtw.QLineEdit(
             self.settings.value('map')['decimation'])
-        formLayout.addRow("JVD_H min:", self.jvdHMinLineEdit)
-        formLayout.addRow("decimation:", self.decimationLineEdit)
+        self.formLayout.addRow('JVD_H min:', self.jvdHMinLineEdit)
+        self.formLayout.addRow('decimation:', self.decimationLineEdit)
+    
+    def initButtonBlock(self):
+        '''Метод инициализации кнопок на форме'''
         self.btnBox = qtw.QDialogButtonBox()
-
         self.btnBox.setStandardButtons(qtw.QDialogButtonBox.Open |
                                        qtw.QDialogButtonBox.Save |
                                        qtw.QDialogButtonBox.Cancel)
@@ -44,9 +71,12 @@ class MapWindow(qtw.QWidget):
 
         saveButton = self.btnBox.button(qtw.QDialogButtonBox.Save)
         saveButton.clicked.connect(self.getMap)
-        dlgLayout.addLayout(formLayout)
-        dlgLayout.addWidget(self.btnBox)
-        self.setLayout(dlgLayout)
+
+    def updateAdrComboBox(self):
+        current_category = self.categoryComboBox.currentText()
+        adrs = self.controller.get_data()[current_category].keys()
+        self.adrComboBox.clear()
+        self.adrComboBox.addItems(adrs)
 
     def getMap(self):
         '''
@@ -54,10 +84,12 @@ class MapWindow(qtw.QWidget):
         '''
         options = qtw.QFileDialog.Options()
         self.filePath, _ = qtw.QFileDialog.getSaveFileName(self,
-                                                           "Save File", "", "html Files (*.html);;All Files(*)", options=options)
+            "Save File", "", "html Files (*.html);;All Files(*)", options=options)
         if self.filePath:
             try:
                 self.controller.save_map(self.filePath,
+                                         self.categoryComboBox.currentText(),
+                                         self.adrComboBox.currentText(),
                                          self.jvdHMinLineEdit.text(),
                                          self.decimationLineEdit.text())
                 self.openButton.show()
@@ -71,6 +103,8 @@ class MapWindow(qtw.QWidget):
             except PermissionError:
                 self.parent.setNotify(
                     'error', 'File opened in another program')
+            except ValueError as e:
+                self.parent.setNotify('error', str(e))
             except Exception as e:
                 self.parent.setNotify('error', str(e))
 

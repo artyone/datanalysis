@@ -9,6 +9,7 @@ class Map(object):
     '''
     def __init__(self, data) -> None:
         self.data = data
+        self.jvd_h_in = 'JVD_H' in list(data.columns)
         self.data['group'] = self.data.time // 1000 * 1000
         self.start = self.data.time.iloc[0]
         self.finish = self.data.time.iloc[-1]
@@ -43,9 +44,9 @@ class Map(object):
                          ).add_to(feature_group)
 
     @staticmethod
-    def _set_point(data, color, map):
+    def _set_point(data, color, map, jvd_h_in):
         html = f'<h5><b>time:</b> {data.time}'
-        if 'JVD_H' in data:
+        if jvd_h_in:
             html += f'<br><b>JVD_H:</b> {round(data.JVD_H)}</h5>'
         icon = BeautifyIcon(icon='circle-o',
                             icon_shape='circle',
@@ -80,7 +81,8 @@ class Map(object):
         for row in self.data.itertuples():
             self._set_point(data=row,
                             color=self.colormap(row.time),
-                            map=self.map)
+                            map=self.map,
+                            jvd_h_in=self.jvd_h_in)
 
         self._set_mouse_coordinates(self.map)
         self._set_tiles(self.map, self.tiles)

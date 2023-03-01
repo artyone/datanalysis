@@ -21,8 +21,12 @@ class Control(object):
         '''
         Загрузка данных из txt формата.
         '''
+        #TODO уточнить категорию и ADR загрузки из текстового файла
+        #удалить доп адр на релизе
         data_from_file = file_methods.load_txt(filepath)
         self.data['PNK'] = {'ADR8':data_from_file}
+        self.data['PNK']['ADR9'] = data_from_file
+        self.data['PNK']['ADR10'] = data_from_file
         #self.data_calculated = self._check_calculated()
 
     def load_csv(self, filepath):
@@ -140,22 +144,23 @@ class Control(object):
 
         file_methods.write_xlsx(data_result, filepath)
 
-    def save_map(self, filepath, jvd_h_min='', decimation=''):
+    def save_map(self, filepath, category, adr, jvd_h_min='', decimation=''):
         '''
         Метод построения карты и записи её на диск. 
         Три обязательных параметра указаны в need_headers.
         Если заданы decimation и jvd_h_min, они учитываются в данных
         для построения карты.
         '''
-        #TODO изменить с новым форматом данных
         need_headers = {'time', 'latitude', 'longitude'}
-        if self.data is None or not need_headers.issubset(self.data.columns):
+        if self.data == {}:
             raise ValueError('Wrong data')
-        data_for_map = self.data.copy()
+        if not need_headers.issubset(self.data[category][adr].columns):
+            raise ValueError('Wrong data, check time, latitude, longitude')
+        data_for_map = self.data[category][adr].copy()
         if decimation != '':
             data_for_map = data_for_map.iloc[::int(decimation)]
         if jvd_h_min != '' and 'JVD_H' in data_for_map.columns:
-            data_for_map = data_for_map.loc[self.data.JVD_H >= float(jvd_h_min),
+            data_for_map = data_for_map.loc[data_for_map.JVD_H >= float(jvd_h_min),
                                             ['time', 'latitude', 'longitude', 'JVD_H']]
         map = Map(data_for_map)
         map.get_map()
