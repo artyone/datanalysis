@@ -37,11 +37,11 @@ class Control(object):
         self.data['PNK'] = {'ADR8':data_from_file}
         #self.data_calculated = self._check_calculated()
 
-    def load_parquet(self, filepath):
+    def load_pickle(self, filepath):
         '''
-        Загрузка данных из parquet формата.
+        Загрузка данных из pickle формата.
         '''
-        data_from_file = file_methods.load_parquet(filepath)
+        data_from_file = file_methods.load_pickle(filepath)
         self.data = data_from_file
         #self.data_calculated = self._check_calculated()
 
@@ -175,14 +175,14 @@ class Control(object):
             raise Exception('Data must be not none')
         file_methods.write_csv(self.data, filepath)
 
-    def save_parquet(self, filepath):
+    def save_pickle(self, filepath):
         '''
-        Сохранение данных в формате parquiet.
+        Сохранение данных в формате pickle.
         '''
         #TODO изменить с новым форматом данных
-        if self.data is None:
+        if self.data == {}:
             raise Exception('Data must be not none')
-        file_methods.write_parquet(self.data, filepath)
+        file_methods.write_pickle(self.data, filepath)
 
     def get_data(self):
         '''

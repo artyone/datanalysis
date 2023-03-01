@@ -96,12 +96,12 @@ class MainWindow(qtw.QMainWindow):
 
         openDataMenu = fileMenu.addMenu('&Open data')
         openDataMenu.setIcon(QIcon(':database.svg'))
-        openDataMenu.addAction(self.openParquetAction)
+        openDataMenu.addAction(self.openPickleAction)
         openDataMenu.addAction(self.openCsvAction)
 
         saveMenu = fileMenu.addMenu('&Save as')
         saveMenu.setIcon(QIcon(':save'))
-        saveMenu.addAction(self.saveParquetAction)
+        saveMenu.addAction(self.savePickleAction)
         saveMenu.addAction(self.saveCsvAction)
 
         fileMenu.addSeparator()
@@ -144,8 +144,8 @@ class MainWindow(qtw.QMainWindow):
     def _createFileToolBar(self):
         fileToolBar = self.addToolBar('File')
         fileToolBar.addAction(self.openTxtAction)
-        fileToolBar.addAction(self.openParquetAction)
-        fileToolBar.addAction(self.saveParquetAction)
+        fileToolBar.addAction(self.openPickleAction)
+        fileToolBar.addAction(self.savePickleAction)
         fileToolBar.addSeparator()
         fileToolBar.addAction(self.exitAction)
         fileToolBar.setMovable(False)
@@ -210,16 +210,16 @@ class MainWindow(qtw.QMainWindow):
         self.openCsvAction.setIcon(QIcon(':file-text.svg'))
         self.openCsvAction.setStatusTip('Open CSV file')
 
-        self.openParquetAction = qtw.QAction('Open *.&snappy...', self)
-        self.openParquetAction.setIcon(QIcon(':file.svg'))
-        self.openParquetAction.setStatusTip(
-            'Open Parquet with compression snappy file')
+        self.openPickleAction = qtw.QAction('Open *.&pickle...', self)
+        self.openPickleAction.setIcon(QIcon(':file.svg'))
+        self.openPickleAction.setStatusTip(
+            'Open pickle file')
 
-        self.saveParquetAction = qtw.QAction('Save as *.snappy...', self)
-        self.saveParquetAction.setIcon(QIcon(':save.svg'))
-        self.saveParquetAction.setStatusTip(
-            'Save data to parquet file with compression snappy')
-        self.saveParquetAction.setShortcut('Ctrl+S')
+        self.savePickleAction = qtw.QAction('Save as *.pickle...', self)
+        self.savePickleAction.setIcon(QIcon(':save.svg'))
+        self.savePickleAction.setStatusTip(
+            'Save data to pickle file')
+        self.savePickleAction.setShortcut('Ctrl+S')
 
         self.saveCsvAction = qtw.QAction('Save as *.csv...', self)
         self.saveCsvAction.setIcon(QIcon(':file-text.svg'))
@@ -315,11 +315,11 @@ class MainWindow(qtw.QMainWindow):
         self.clearAction.triggered.connect(self.clearMainWindow)
         self.openTxtAction.triggered.connect(partial(self.openFile, 'txt'))
         self.openPddAction.triggered.connect(partial(self.openFile, 'pdd'))
-        self.openParquetAction.triggered.connect(
-            partial(self.openFile, 'snappy'))
+        self.openPickleAction.triggered.connect(
+            partial(self.openFile, 'pickle'))
         self.openCsvAction.triggered.connect(partial(self.openFile, 'csv'))
-        self.saveParquetAction.triggered.connect(
-            partial(self.saveData, 'snappy'))
+        self.savePickleAction.triggered.connect(
+            partial(self.saveData, 'pickle'))
         self.saveCsvAction.triggered.connect(partial(self.saveData, 'csv'))
         self.exitAction.triggered.connect(self.close)
 
@@ -418,8 +418,8 @@ class MainWindow(qtw.QMainWindow):
                     self.controller.load_txt(self.filePath)
                 if param == 'csv':
                     self.controller.load_csv(self.filePath)
-                if param == 'snappy':
-                    self.controller.load_parquet(self.filePath)
+                if param == 'pickle':
+                    self.controller.load_pickle(self.filePath)
                 if param == 'pdd':
                     self.controller.load_pdd(self.filePath)
                 self._createCheckBox()
@@ -448,7 +448,7 @@ class MainWindow(qtw.QMainWindow):
 
     def saveData(self, param):
         '''
-        Сохранение данных в формате CSV или Parquet(snappy)
+        Сохранение данных в формате CSV или Pickle
         '''
         if self.controller.get_data() == {}:
             self.setNotify('warning', 'Need to select the data')
@@ -459,8 +459,8 @@ class MainWindow(qtw.QMainWindow):
                                                       options=options)
         if filePath:
             try:
-                if param == 'snappy':
-                    self.controller.save_parquet(filePath)
+                if param == 'pickle':
+                    self.controller.save_pickle(filePath)
                 else:
                     self.controller.save_csv(filePath)
                 self.setNotify('success', f'{param} file saved to {filePath}')

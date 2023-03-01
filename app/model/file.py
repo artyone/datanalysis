@@ -2,6 +2,7 @@ import pandas as pd
 import chardet as cd
 import json as js
 from collections import defaultdict
+import pickle
 
 
 class Datas(object):
@@ -29,18 +30,19 @@ class Datas(object):
     def write_xlsx(data: pd.DataFrame, filepath: str) -> None:
         data.to_excel(filepath, index=False)
 
-    #TODO изменить с новым форматом данных
     @staticmethod
-    def write_parquet(data: pd.DataFrame, filepath: str):
-        data.to_parquet(filepath)
+    def write_pickle(data: dict, filepath: str):
+        with open(filepath, 'wb') as f:
+            pickle.dump(data, f, protocol=4)
 
     @staticmethod
     def write_csv(data: pd.DataFrame, filepath: str):
         data.to_csv(filepath, index=False)
 
     @staticmethod
-    def load_parquet(filepath):
-        return pd.read_parquet(filepath)
+    def load_pickle(filepath: str):
+        with open(filepath, 'rb') as f:
+            return pickle.load(f)
 
     @staticmethod
     def load_csv(filepath):
