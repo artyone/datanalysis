@@ -34,6 +34,7 @@ class MainWindow(qtw.QMainWindow):
         self.controller = Control()
         self.filePath = None
         self.filePathPdd = None
+        self.notify = None
         self.app_version = QCoreApplication.applicationVersion()
         self.app_name = QCoreApplication.applicationName()
 
@@ -812,7 +813,9 @@ class MainWindow(qtw.QMainWindow):
         '''
         self.settings.clear()
         self.defaultSettings()
-        self.setNotify('success', 'Default settings are set. Restart program.')
+        if self.notify:
+            self.setNotify(
+                'success', 'Default settings are set. Restart program.')
 
 
 
