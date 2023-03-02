@@ -6,6 +6,7 @@ from app.view.consoleWindow import ConsoleWindow
 from app.view.settingsWindow import SettingsWindow
 from app.view.calculateWindow import CalcWindow
 from app.view.saveCsvWindow import SaveCsvWindow
+from app.view.openFileWindow import OpenFileWindow
 import app.view.qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
@@ -31,6 +32,7 @@ class MainWindow(qtw.QMainWindow):
         self.settingsWindow = None
         self.calcWindow = None
         self.saveCsvWindow = None
+        self.openFileWindow = None
         self.controller = Control()
         self.filePath = None
         self.filePathPdd = None
@@ -74,13 +76,10 @@ class MainWindow(qtw.QMainWindow):
         self.tree = qtw.QTreeWidget(self.splitter)
         self.tree.setColumnCount(2)
         self.tree.setHeaderLabels(['name', 'count'])
-        #self.tree.setHeaderHidden(True)
         self.tree.hide()
-
 
         self.splitter.addWidget(self.tree)
         self.splitter.addWidget(self.mdi)
-
 
         self.setCentralWidget(self.splitter)
         self.center()
@@ -328,11 +327,11 @@ class MainWindow(qtw.QMainWindow):
 
     def _connectFileActions(self):
         self.clearAction.triggered.connect(self.clearMainWindow)
-        self.openTxtAction.triggered.connect(partial(self.openFile, 'txt'))
+        self.openTxtAction.triggered.connect(partial(self.openTextFile, 'txt'))
         self.openPddAction.triggered.connect(partial(self.openFile, 'pdd'))
         self.openPickleAction.triggered.connect(
             partial(self.openFile, 'pkl'))
-        self.openCsvAction.triggered.connect(partial(self.openFile, 'csv'))
+        self.openCsvAction.triggered.connect(partial(self.openTextFile, 'csv'))
         self.savePickleAction.triggered.connect(self.savePickleData)
         self.saveCsvAction.triggered.connect(self.saveCsvData)
         self.exitAction.triggered.connect(self.close)
@@ -379,8 +378,6 @@ class MainWindow(qtw.QMainWindow):
             treeCategory = qtw.QTreeWidgetItem(self.tree)
             treeCategory.setText(0, nameCategory)
             treeCategory.setExpanded(True)
-
-
             for nameAdr, adrValues in adrs.items():
                 treeAdr = qtw.QTreeWidgetItem(treeCategory)
                 treeAdr.setText(0, nameAdr)
@@ -390,9 +387,13 @@ class MainWindow(qtw.QMainWindow):
                     if filters.get(nameItem, filters['unknown']):
                         treeItem = qtw.QTreeWidgetItem(treeAdr)
                         treeItem.setText(0, nameItem)
-                        treeItem.setText(1, str(len(adrValues[nameItem])))
+                        count = len(adrValues[nameItem])
+                        treeItem.setText(1, str(count))
                         treeItem.setFont(1, QFont('Arial', 8, 1, True))
-                        treeItem.setForeground(1, QColor('gray'))
+                        if count:
+                            treeItem.setForeground(1, QColor('gray'))
+                        else:
+                            treeItem.setForeground(1, QColor('red'))
                         treeItem.setTextAlignment(1, 2)
                         treeItem.setFlags(treeItem.flags() | Qt.ItemIsUserCheckable)
                         treeItem.setCheckState(0, Qt.Unchecked)
@@ -429,7 +430,7 @@ class MainWindow(qtw.QMainWindow):
             self.hideLeftMenuAction.setIcon(QIcon(':eye-off'))
             self.tree.show()
 
-    def openFile(self, param, filepath=None):
+    def openFile(self, filetype, filepath=None):
         '''
         Метод открытия файлов в зависимостиот параметра.
         Открывает любые типы файлов, которые могут использоваться
@@ -441,27 +442,35 @@ class MainWindow(qtw.QMainWindow):
             check = True
         else:
             self.filePath, check = qtw.QFileDialog.getOpenFileName(None,
-                                                                   'Open file', '', f'Open File (*.{param})')
+                                                                   'Open file', '', f'Open File (*.{filetype})')
         if check:
             try:
-                if param == 'txt':
-                    self.controller.load_txt(self.filePath)
-                if param == 'csv':
-                    self.controller.load_csv(self.filePath)
-                if param == 'pkl':
+                # if param == 'txt':
+                #     self.controller.load_txt(self.filePath)
+                # if param == 'csv':
+                #     self.controller.load_csv(self.filePath)
+                if filetype == 'pkl':
                     self.controller.load_pickle(self.filePath)
-                if param == 'pdd':
+                if filetype == 'pdd':
                     self.controller.load_pdd(self.filePath)
                 self.createCheckBox()
                 self.updateOpenedFiles()
                 self._destroyChildWindow()
                 self.settings.setValue('lastFile',
                                        {'filePath': self.filePath,
-                                        'param': param})
+                                        'param': filetype})
                 self.setNotify('success', f'{self.filePath} file opened')
             except ValueError as e:
                 self.setNotify('error', str(e))
 
+    def openTextFile(self, filetype):
+        if self.openFileWindow is None:
+            self.openFileWindow = OpenFileWindow(self.controller, filetype, self)
+        else:
+            self.openFileWindow.hide()
+        self.center(self.openFileWindow)
+        self.openFileWindow.show()
+    
     def _destroyChildWindow(self):
         '''
         Метод удаления дочерних окон.
@@ -478,6 +487,9 @@ class MainWindow(qtw.QMainWindow):
         if self.calcWindow:
             delete(self.calcWindow)
             self.calcWindow = None
+        if self.openFileWindow:
+            delete(self.openFileWindow)
+            self.openFileWindow = None
 
     def saveCsvData(self):
         '''
@@ -791,7 +803,7 @@ class MainWindow(qtw.QMainWindow):
         leftMenuFilters = {head: True for head in headers}
         self.settings.setValue('leftMenuFilters', leftMenuFilters)
         jsonPath = 'templates'
-        self.settings.setValue('mainSettings', {'jsonPath':jsonPath} )
+        self.settings.setValue('mainSettings', {'jsonDir':jsonPath} )
 
     def openSettings(self):
         '''

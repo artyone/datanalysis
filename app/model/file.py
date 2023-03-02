@@ -1,8 +1,9 @@
-import pandas as pd
-import chardet as cd
-import json as js
 from collections import defaultdict
+import chardet as cd
+import pandas as pd
+import json as js
 import pickle
+import os
 
 
 class Datas(object):
@@ -166,3 +167,17 @@ class Datas(object):
                 string = file.read(42)
         result['adr'] = {key: pd.DataFrame(value) for key, value in result['adr'].items()}
         return result
+
+    @staticmethod
+    def get_list_json_in_folder(dirpath):
+        '''Метод получения списка всех json файлов в папке'''
+        result = []
+        for item in os.scandir(dirpath):
+            if item.is_file() and '.json' in item.name:
+                result.append(item.path)
+        return result
+
+    @classmethod
+    def get_jsons_data(cls, list_json):
+        '''Метод получения данных все json файлов'''
+        return [cls.load_json(filepath) for filepath in list_json]

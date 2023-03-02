@@ -3,6 +3,8 @@ from app.model.map import Map
 from app.model.file import Datas as file_methods
 import re
 
+class NoneJsonError(Exception): pass
+
 class Control(object):
     '''
     Класс контроллера для связи модели и интерфейса.
@@ -22,11 +24,8 @@ class Control(object):
         Загрузка данных из txt формата.
         '''
         #TODO уточнить категорию и ADR загрузки из текстового файла
-        #удалить доп адр на релизе
         data_from_file = file_methods.load_txt(filepath)
         self.data['PNK'] = {'ADR8':data_from_file}
-        self.data['PNK']['ADR9'] = data_from_file
-        self.data['PNK']['ADR10'] = data_from_file
         self.data_calculated = self._check_calculated()
 
     def load_csv(self, filepath):
@@ -69,7 +68,7 @@ class Control(object):
         #временно пока json файл стандартный
         #добавить проверку jsona
 
-        json_file = 'templates/default_adr8.json'
+        json_file = 'templates/default_pnk.json'
         data_from_file = file_methods.load_pdd(filepath, json_file)
         self.data[data_from_file['name']] = data_from_file['adr']
 
@@ -128,7 +127,6 @@ class Control(object):
         Расситываем данные с учетом коэффициентов, 
         записываем по указанному пути.
         '''
-        #TODO изменить с новым форматом данных
         data_source = self.data[category][adr]
         data_calc = self.data['Calc']['PNK']
         self.worker = Mathematical(data_source.merge(data_calc, on='time'))
@@ -203,3 +201,12 @@ class Control(object):
         Получение статуса рассчёта данных.
         '''
         return self.data_calculated
+
+    @staticmethod
+    def get_jsons_data(dirpath):
+        json_list = file_methods.get_list_json_in_folder(dirpath)
+        if not json_list:
+            raise NoneJsonError
+        return file_methods.get_jsons_data(json_list)
+
+

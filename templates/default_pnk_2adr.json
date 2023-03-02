@@ -1,5 +1,5 @@
 {
-    "name": "PMK DISS D001 IL76",
+    "name": "PNK 2ADR",
     "adr": [
         {
             "adr_name": "ADR8",
@@ -191,6 +191,134 @@
                     "type": null,
                     "length": null,
                     "koef": null,
+                    "group": false
+                }
+            ]
+        },
+        {
+            "adr_name": "ADR9",
+            "ks": "d80b",
+            "bytes_swap": false,
+            "time_koef": 0.1,
+            "data_info": [
+                {
+                    "name": "DIS_Wx",
+                    "position": 1,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 1,
+                    "group": false
+                },
+                {
+                    "name": "DIS_Wy",
+                    "position": 2,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 1,
+                    "group": false
+                },
+                {
+                    "name": "DIS_Wz",
+                    "position": 3,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 1,
+                    "group": false
+                },
+                {
+                    "name": "DIS_US",
+                    "position": 4,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 1,
+                    "group": false
+                },
+                {
+                    "name": "JVD_VN",
+                    "position": 5,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 0.3,
+                    "group": false
+                },
+                {
+                    "name": "JVD_VE",
+                    "position": 6,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 0.3,
+                    "group": false
+                },
+                {
+                    "name": "JVD_Vh",
+                    "position": 7,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 0.3,
+                    "group": false
+                },
+                {
+                    "name": "I1_KursI",
+                    "position": 8,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 0.03,
+                    "group": false
+                },
+                {
+                    "name": "I1_Kren",
+                    "position": 9,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 0.03,
+                    "group": false
+                },
+                {
+                    "name": "I1_Tang",
+                    "position": 10,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 0.03,
+                    "group": false
+                },
+                {
+                    "name": "US",
+                    "position": 11,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 1,
+                    "group": false
+                },
+                {
+                    "name": "W",
+                    "position": 12,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 1,
+                    "group": false
+                },
+                {
+                    "name": "JVD_H",
+                    "position": 13,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 1,
+                    "group": false
+                },
+                {
+                    "name": "latitude",
+                    "position": 14,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 1,
+                    "group": false
+                },
+                {
+                    "name": "longitude",
+                    "position": 15,
+                    "type": "int",
+                    "length": 16,
+                    "koef": 1,
                     "group": false
                 }
             ]
