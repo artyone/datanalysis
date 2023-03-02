@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets as qtw
 from PyQt5.QtCore import Qt
-
+from functools import partial
 
 class SettingsWindow(qtw.QWidget):
     '''
@@ -34,10 +34,10 @@ class SettingsWindow(qtw.QWidget):
         tabWidget.addTab(self.planeTab(), 'Planes')
         tabWidget.addTab(self.correctionTab(), 'Corrections')
         tabWidget.addTab(self.graphTab(), 'Graph')
-        saveButton = qtw.QPushButton('Save')
-        saveButton.clicked.connect(self.saveSettings)
+        self.saveButton = qtw.QPushButton('Save')
+        self.saveButton.clicked.connect(self.saveSettings)
         layout.addWidget(tabWidget)
-        layout.addWidget(saveButton)
+        layout.addWidget(self.saveButton)
         self.setLayout(layout)
 
     def mainTab(self):
@@ -104,6 +104,7 @@ class SettingsWindow(qtw.QWidget):
         pageLayout = qtw.QFormLayout()
         for param, value in self.settings.value('planes')[plane].items():
             lineEdit = qtw.QLineEdit(str(value))
+            lineEdit.textChanged.connect(partial(self.checkDigit, lineEdit))
             pageLayout.addRow(param, lineEdit)
             self.listPlanes[plane][param] = lineEdit
         pageWidget.setLayout(pageLayout)
@@ -117,6 +118,7 @@ class SettingsWindow(qtw.QWidget):
         tabLayout = qtw.QFormLayout()
         for correction, value in self.listCorrections.items():
             lineEdit = qtw.QLineEdit(str(value))
+            lineEdit.textChanged.connect(partial(self.checkDigit, lineEdit))
             tabLayout.addRow(correction, lineEdit)
             self.listCorrections[correction] = lineEdit
         tabWidget.setLayout(tabLayout)
@@ -128,12 +130,16 @@ class SettingsWindow(qtw.QWidget):
         '''
         tabWidget = qtw.QWidget()
         tabLayout = qtw.QFormLayout()
-        for graph, value in self.listGraphs.items():
-            if graph == 'default':
-                value = ','.join(['+'.join(i) for i in value])
-            lineEdit = qtw.QLineEdit(str(value))
-            tabLayout.addRow(graph, lineEdit)
-            self.listGraphs[graph] = lineEdit
+        bground = qtw.QComboBox()
+        bground.addItems(['black', 'white', 'red', 'green', 'pink', 'blue', 'gray'])
+        bground.setCurrentText(self.listGraphs['background'])
+        tabLayout.addRow('background', bground)
+        self.listGraphs['background'] = bground
+
+        string = ','.join(['+'.join(i) for i in self.listGraphs['default']])
+        defaultLineEdit = qtw.QLineEdit(string)
+        tabLayout.addRow('default', defaultLineEdit)
+        self.listGraphs['default'] = defaultLineEdit
         tabWidget.setLayout(tabLayout)
         return tabWidget
 
@@ -168,13 +174,13 @@ class SettingsWindow(qtw.QWidget):
         }
         self.settings.setValue('corrections', newValueCorrections)
         #TODO изменить сохранения настроек для стандартных графиков
-        newValueGraphs = {
-            graphs: (widget.text()
-                     if graphs != 'default'
-                     else [i.split('+') for i in widget.text().replace(' ', '').split(',')])
-            for graphs, widget in self.listGraphs.items()
-        }
-        self.settings.setValue('graphs', newValueGraphs)
+        graphBackground = self.listGraphs['background'].currentText()
+        graphDefault = [i.split('+')
+                        for i in self.listGraphs['default'].text().replace(' ', '').split(',')]
+        graphSettings = {'background':graphBackground, 
+                         'default':graphDefault}
+
+        self.settings.setValue('graphs', graphSettings)
 
         newValueFilters = {
             key: widget.isChecked()
@@ -183,6 +189,15 @@ class SettingsWindow(qtw.QWidget):
         self.settings.setValue('leftMenuFilters', newValueFilters)
 
         self.parent.setNotify('success', 'Settings saved. Restart program.')
+
+    def checkDigit(self, widget: qtw.QLineEdit):
+        try:
+            float(widget.text())
+            widget.setStyleSheet("background:#FFFFFF;")
+            self.saveButton.setDisabled(False)
+        except ValueError:
+            widget.setStyleSheet("background:#FA8072;")
+            self.saveButton.setDisabled(True)
 
     def uncheckAllCheckBox(self):
         '''

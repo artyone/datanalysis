@@ -319,7 +319,7 @@ class MainWindow(qtw.QMainWindow):
         self.openTxtAction.triggered.connect(partial(self.openFile, 'txt'))
         self.openPddAction.triggered.connect(partial(self.openFile, 'pdd'))
         self.openPickleAction.triggered.connect(
-            partial(self.openFile, 'pickle'))
+            partial(self.openFile, 'pkl'))
         self.openCsvAction.triggered.connect(partial(self.openFile, 'csv'))
         self.savePickleAction.triggered.connect(self.savePickleData)
         self.saveCsvAction.triggered.connect(self.saveCsvData)
@@ -419,7 +419,7 @@ class MainWindow(qtw.QMainWindow):
                     self.controller.load_txt(self.filePath)
                 if param == 'csv':
                     self.controller.load_csv(self.filePath)
-                if param == 'pickle':
+                if param == 'pkl':
                     self.controller.load_pickle(self.filePath)
                 if param == 'pdd':
                     self.controller.load_pdd(self.filePath)
@@ -446,6 +446,9 @@ class MainWindow(qtw.QMainWindow):
         if self.mapWindow: 
             delete(self.mapWindow)
             self.mapWindow = None
+        if self.calcWindow:
+            delete(self.calcWindow)
+            self.calcWindow = None
 
     def saveCsvData(self):
         '''

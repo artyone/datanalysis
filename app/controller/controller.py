@@ -101,7 +101,7 @@ class Control(object):
         headers = self.data[category][adr].columns
         if self.data == {} or not need_headers.issubset(headers):
             raise ValueError('Wrong data')
-        self.worker = Mathematical(self.data[category][adr])
+        self.worker = Mathematical(self.data[category][adr].copy())
         self.worker.apply_coefficient_w_diss(
             wx=corrections['koef_Wx_PNK'],
             wz=corrections['koef_Wz_PNK'],
@@ -116,7 +116,7 @@ class Control(object):
         self.data['Calc'] = {'PNK':self.worker.get_only_calculated_data_pnk()}
         self.data_calculated = True
 
-    def save_report(self, filepath, koef_for_intervals, string):
+    def save_report(self, filepath, category, adr, koef_for_intervals, string):
         '''
         Метод расчета отчёта и его сохранения на диске.
         Создается объект класса рассчёта.
@@ -129,9 +129,11 @@ class Control(object):
         записываем по указанному пути.
         '''
         #TODO изменить с новым форматом данных
-        self.worker = Mathematical(self.data)
+        data_source = self.data[category][adr]
+        data_calc = self.data['Calc']['PNK']
+        self.worker = Mathematical(data_source.merge(data_calc, on='time'))
         if string == '':
-            if 'JVD_H' in self.data.columns:
+            if 'JVD_H' in self.data[category][adr].columns:
                 intervals = self.worker.get_intervals(koef_for_intervals)
             else:
                 raise ValueError('JVD_H not found in data')
