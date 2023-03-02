@@ -9,7 +9,7 @@ from app.view.saveCsvWindow import SaveCsvWindow
 import app.view.qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFont, QColor
 from PyQt5.QtCore import Qt, QSettings, QCoreApplication
 from PyQt5 import QtWidgets as qtw
 from functools import partial
@@ -72,15 +72,20 @@ class MainWindow(qtw.QMainWindow):
         self.setStyleSheet("qtw.QSplitter::handle{background: white;}")
 
         self.tree = qtw.QTreeWidget(self.splitter)
-        self.tree.setHeaderHidden(True)
+        self.tree.setColumnCount(2)
+        self.tree.setHeaderLabels(['name', 'count'])
+        #self.tree.setHeaderHidden(True)
         self.tree.hide()
+
 
         self.splitter.addWidget(self.tree)
         self.splitter.addWidget(self.mdi)
 
+
         self.setCentralWidget(self.splitter)
         self.center()
         self.showMaximized()
+ 
 
     def _createMenuBar(self):
         '''
@@ -116,6 +121,7 @@ class MainWindow(qtw.QMainWindow):
 
     def _createViewMenu(self):
         viewMenu = self.menuBar.addMenu('&View')
+        viewMenu.addAction(self.hideLeftMenuAction)
         viewMenu.addAction(self.createGraphAction)
         viewMenu.addAction(self.createDefaultGraphAction)
         viewMenu.addAction(self.cascadeAction)
@@ -164,6 +170,7 @@ class MainWindow(qtw.QMainWindow):
 
     def _createViewToolBar(self):
         viewToolBar = self.addToolBar('View')
+        viewToolBar.addAction(self.hideLeftMenuAction)
         viewToolBar.addAction(self.createGraphAction)
         viewToolBar.addAction(self.createDefaultGraphAction)
         self.spinBox = qtw.QSpinBox()
@@ -251,6 +258,11 @@ class MainWindow(qtw.QMainWindow):
         self.createReportAction.setStatusTip('Open python console window')
 
     def _createViewActions(self):
+        self.hideLeftMenuAction = qtw.QAction('&Hide left menu')
+        self.hideLeftMenuAction.setIcon(QIcon(':eye-off'))
+        self.hideLeftMenuAction.setStatusTip('Hide/Unhide left menu')
+        self.hideLeftMenuAction.setCheckable(True)
+
         self.createGraphAction = qtw.QAction('&Create graph')
         self.createGraphAction.setIcon(QIcon(':trending-up.svg'))
         self.createGraphAction.setStatusTip('Create graph in new window')
@@ -332,6 +344,7 @@ class MainWindow(qtw.QMainWindow):
         self.pythonConsoleAction.triggered.connect(self.pythonConsole)
 
     def _connectViewActions(self):
+        self.hideLeftMenuAction.triggered.connect(self.hideLeftMenu)
         self.createGraphAction.triggered.connect(self.createGraph)
         self.createDefaultGraphAction.triggered.connect(
             self.createDefaultGraph)
@@ -362,24 +375,31 @@ class MainWindow(qtw.QMainWindow):
 
         self.tree.clear()
         data = self.controller.get_data()
-        for name_category, adrs in sorted(data.items(), key=lambda x: x[0]):
-            tree_category = qtw.QTreeWidgetItem(self.tree)
-            tree_category.setText(0, name_category)
-            tree_category.setExpanded(True)
+        for nameCategory, adrs in sorted(data.items(), key=lambda x: x[0]):
+            treeCategory = qtw.QTreeWidgetItem(self.tree)
+            treeCategory.setText(0, nameCategory)
+            treeCategory.setExpanded(True)
 
-            for name_adr, adr_values in adrs.items():
-                tree_adr = qtw.QTreeWidgetItem(tree_category)
-                tree_adr.setText(0, name_adr)
-                tree_adr.setExpanded(True)
+
+            for nameAdr, adrValues in adrs.items():
+                treeAdr = qtw.QTreeWidgetItem(treeCategory)
+                treeAdr.setText(0, nameAdr)
+                treeAdr.setExpanded(True)
                 filters = self.settings.value('leftMenuFilters')
-                for name_item in list(adr_values.columns.values):
-                    if filters.get(name_item, filters['unknown']):
-                        tree_item = qtw.QTreeWidgetItem(tree_adr)
-                        tree_item.setText(0, name_item)
-                        tree_item.setFlags(tree_item.flags() | Qt.ItemIsUserCheckable)
-                        tree_item.setCheckState(0, Qt.Unchecked)
+                for nameItem in list(adrValues.columns.values):
+                    if filters.get(nameItem, filters['unknown']):
+                        treeItem = qtw.QTreeWidgetItem(treeAdr)
+                        treeItem.setText(0, nameItem)
+                        treeItem.setText(1, str(len(adrValues[nameItem])))
+                        treeItem.setFont(1, QFont('Arial', 8, 1, True))
+                        treeItem.setForeground(1, QColor('gray'))
+                        treeItem.setTextAlignment(1, 2)
+                        treeItem.setFlags(treeItem.flags() | Qt.ItemIsUserCheckable)
+                        treeItem.setCheckState(0, Qt.Unchecked)
         self.tree.show()
-        self.splitter.setSizes([100, 500])
+        self.tree.resizeColumnToContents(0)
+        self.tree.resizeColumnToContents(1)
+        self.splitter.setSizes([120, 500])
 
     def center(self, obj=None):
         '''
@@ -398,7 +418,16 @@ class MainWindow(qtw.QMainWindow):
         self.tree.clear()
         self.tree.hide()
         self.mdi.closeAllSubWindows()
+        self._destroyChildWindow()
         self.trackGraph()
+
+    def hideLeftMenu(self):
+        if self.hideLeftMenuAction.isChecked():
+            self.hideLeftMenuAction.setIcon(QIcon(':eye'))
+            self.tree.hide()
+        else: 
+            self.hideLeftMenuAction.setIcon(QIcon(':eye-off'))
+            self.tree.show()
 
     def openFile(self, param, filepath=None):
         '''

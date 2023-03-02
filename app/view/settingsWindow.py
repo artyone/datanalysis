@@ -179,7 +179,6 @@ class SettingsWindow(qtw.QWidget):
                         for i in self.listGraphs['default'].text().replace(' ', '').split(',')]
         graphSettings = {'background':graphBackground, 
                          'default':graphDefault}
-
         self.settings.setValue('graphs', graphSettings)
 
         newValueFilters = {

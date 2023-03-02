@@ -133,8 +133,8 @@ class ReportWindow(qtw.QWidget):
                 self.parent.setNotify('warning', 'check settings coefficient')
             except ValueError:
                 self.parent.setNotify('warning', 'JVD_H not found in data')
-            # except Exception as e:
-            #     self.parent.setNotify('error', str(e))
+            except Exception as e:
+                self.parent.setNotify('error', str(e))
 
     def openFile(self):
         '''
