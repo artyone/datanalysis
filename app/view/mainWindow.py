@@ -51,7 +51,7 @@ class MainWindow(qtw.QMainWindow):
         # TODO удалить на релизе
         if self.settings.value('lastFile') is not None:
             lastFile = self.settings.value('lastFile')
-            self.openFile(lastFile['param'], lastFile['filePath'])
+            self.openBinaryFile(lastFile['param'], lastFile['filePath'])
 
     def initUI(self):
         '''
@@ -350,9 +350,9 @@ class MainWindow(qtw.QMainWindow):
     def _connectFileActions(self):
         self.clearAction.triggered.connect(self.clearMainWindow)
         self.openTxtAction.triggered.connect(partial(self.openTextFile, 'txt'))
-        self.openPddAction.triggered.connect(partial(self.openFile, 'pdd'))
+        self.openPddAction.triggered.connect(partial(self.openBinaryFile, 'pdd'))
         self.openPickleAction.triggered.connect(
-            partial(self.openFile, 'pkl'))
+            partial(self.openBinaryFile, 'pkl'))
         self.openCsvAction.triggered.connect(partial(self.openTextFile, 'csv'))
         self.savePickleAction.triggered.connect(self.savePickleData)
         self.saveCsvAction.triggered.connect(self.saveCsvData)
@@ -441,7 +441,7 @@ class MainWindow(qtw.QMainWindow):
         self.tree.clear()
         self.tree.hide()
         self.mdi.closeAllSubWindows()
-        self._destroyChildWindow()
+        self.destroyChildWindow()
         self.trackGraph()
 
     def hideLeftMenu(self):
@@ -463,7 +463,7 @@ class MainWindow(qtw.QMainWindow):
         painter.fillRect(pixmap.rect(), color)
         painter.end()
         return QIcon(pixmap)
-    def openFile(self, filetype, filepath=None):
+    def openBinaryFile(self, filetype, filepath=None):
         '''
         Метод открытия файлов в зависимостиот параметра.
         Открывает любые типы файлов, которые могут использоваться
@@ -475,20 +475,16 @@ class MainWindow(qtw.QMainWindow):
             check = True
         else:
             self.filePath, check = qtw.QFileDialog.getOpenFileName(None,
-                                                                   'Open file', '', f'Open File (*.{filetype})')
+                'Open file', '', f'Open File (*.{filetype})')
         if check:
             try:
-                # if param == 'txt':
-                #     self.controller.load_txt(self.filePath)
-                # if param == 'csv':
-                #     self.controller.load_csv(self.filePath)
                 if filetype == 'pkl':
                     self.controller.load_pickle(self.filePath)
                 if filetype == 'pdd':
                     self.controller.load_pdd(self.filePath)
                 self.createCheckBox()
                 self.updateOpenedFiles()
-                self._destroyChildWindow()
+                self.destroyChildWindow()
                 self.settings.setValue('lastFile',
                                        {'filePath': self.filePath,
                                         'param': filetype})
@@ -516,7 +512,7 @@ class MainWindow(qtw.QMainWindow):
         self.center(self.openFileWindow)
         self.openFileWindow.show()
     
-    def _destroyChildWindow(self):
+    def destroyChildWindow(self):
         '''
         Метод удаления дочерних окон.
         Необходим для обновления информации в них. Временное решение.

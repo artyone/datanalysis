@@ -2,7 +2,6 @@ import sys
 from app.view.mainWindow import MainWindow
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import Qt
 
 
 ORGANIZATION_NAME = 'Radiopribor'

@@ -19,13 +19,18 @@ class Control(object):
         self.data = {}
         self.data_calculated = False
 
-    def load_txt(self, filepath):
+    def load_text(self, filepath: str, category: str, adr: str, type: str, load_unknown: bool):
         '''
         Загрузка данных из txt формата.
         '''
-        #TODO уточнить категорию и ADR загрузки из текстового файла
-        data_from_file = file_methods.load_txt(filepath)
-        self.data['PNK'] = {'ADR8':data_from_file}
+        #TODO добавить проверку load_unknown
+        if type == 'txt':
+            data_from_file = file_methods.load_txt(filepath)
+        else:
+            data_from_file = file_methods.load_csv(filepath)
+        
+        print(data_from_file)
+        self.data[category] = {adr:data_from_file}
         self.data_calculated = self._check_calculated()
 
     def load_csv(self, filepath):

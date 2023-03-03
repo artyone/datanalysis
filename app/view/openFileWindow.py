@@ -1,8 +1,6 @@
 from os import startfile
 from PyQt5 import QtWidgets as qtw
 
-from app.controller.controller import NoneJsonError
-
 
 class OpenFileWindow(qtw.QWidget):
     '''
@@ -94,5 +92,20 @@ class OpenFileWindow(qtw.QWidget):
             self.browseLineEdit.setText(filePath)
     
     def openFile(self):
-        pass
+        try:
+            self.controller.load_text(self.browseLineEdit.text(),
+                                    self.categoryComboBox.currentText(),
+                                    self.adrComboBox.currentText(), 
+                                    self.filetype,
+                                    self.loadUnknownCheckBox.isChecked())
+            self.parent.createCheckBox()
+            self.parent.updateOpenedFiles()
+            self.parent.destroyChildWindow()
+            self.settings.setValue('lastFile',
+                                    {'filePath': self.filePath,
+                                    'param': self.filetype})
+            self.parent.setNotify('success', f'{self.filePath} file opened')
+        except ValueError as e:
+            self.setNotify('error', str(e))
+
 
