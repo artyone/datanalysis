@@ -3,7 +3,7 @@ from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5 import QtWidgets as qtw
 from app.model.file import Datas
 from PyQt5.QtCore import Qt
-import app.view.qrc_resources
+import app.resource.qrc_resources
 import contextlib
 import traceback
 import pandas

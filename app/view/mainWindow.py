@@ -1,14 +1,17 @@
 from app.controller.controller import Control, NoneJsonError
-from app.view.graphWindow import GraphWindow
-from app.view.mapWindow import MapWindow
-from app.view.reportWindow import ReportWindow
-from app.view.consoleWindow import ConsoleWindow
-from app.view.settingsWindow import SettingsWindow
-from app.view.calculateWindow import CalcWindow
-from app.view.saveCsvWindow import SaveCsvWindow
-from app.view.openFileWindow import OpenFileWindow
-import app.view.qrc_resources
+from app.view.servicesWindows.graphWindow import GraphWindow
+from app.view.servicesWindows.mapWindow import MapWindow
+from app.view.servicesWindows.reportWindow import ReportWindow
+from app.view.servicesWindows.consoleWindow import ConsoleWindow
+from app.view.helpersWindows.settingsWindow import SettingsWindow
+from app.view.servicesWindows.calculateWindow import CalcWindow
+from app.view.helpersWindows.saveCsvWindow import SaveCsvWindow
+from app.view.helpersWindows.openFileWindow import OpenFileWindow
+from app.resource.constants import EXIT_CODE_REBOOT
+import app.resource.qrc_resources
 import pyqtgraph as pg
+import os
+import sys
 from PyQt5.sip import delete
 from PyQt5.QtGui import QIcon, QFont, QColor, QPalette, QPainter
 from PyQt5.QtCore import Qt, QSettings, QCoreApplication
@@ -846,7 +849,6 @@ class MainWindow(qtw.QMainWindow):
         mainSettings = {'theme':'black', 'jsonDir':'templates'}
         self.settings.setValue('mainSettings', mainSettings)
 
-
     def openSettings(self):
         '''
         Метод открытия окна настроек.
@@ -902,6 +904,9 @@ class MainWindow(qtw.QMainWindow):
         if self.notify:
             self.setNotify(
                 'success', 'Default settings are set. Restart program.')
-
+    @staticmethod
+    def restartApp():
+        #TODO пока не работает            
+        return QCoreApplication.exit(EXIT_CODE_REBOOT)   
 
 

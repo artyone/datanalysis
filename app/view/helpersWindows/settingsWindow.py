@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets as qtw
 from PyQt5.QtCore import Qt
 from functools import partial
 
+
 class SettingsWindow(qtw.QWidget):
     '''
     Класс окна настроек.
@@ -174,10 +175,20 @@ class SettingsWindow(qtw.QWidget):
         '''
         Метод сохранения всех настроек.
         '''
+        self.saveMainSettings()
+        self.savePlanesSettings()
+        self.saveCorrectionsSettings()
+        self.saveGraphSettings()
+        self.saveLeftMenuFilterSettings()
+        self.parent.setNotify('success', 'Settings saved. Restart program.')
+        self.parent.restartApp()
+
+    def saveMainSettings(self):
         newValueMainSettings = {'theme': self.themeComboBox.currentText(), 
                                 'jsonDir': self.browseLineEdit.text()}
         self.settings.setValue('mainSettings', newValueMainSettings)
 
+    def savePlanesSettings(self):
         newValuePlanes = {
             plane: {
                 param: float(widget.text())
@@ -187,11 +198,14 @@ class SettingsWindow(qtw.QWidget):
         }
         self.settings.setValue('planes', newValuePlanes)
 
+    def saveCorrectionsSettings(self):
         newValueCorrections = {
             correction: float(widget.text())
             for correction, widget in self.listCorrections.items()
         }
         self.settings.setValue('corrections', newValueCorrections)
+
+    def saveGraphSettings(self):
         #TODO изменить сохранения настроек для стандартных графиков
         graphBackground = self.listGraphs['background'].currentText()
         graphDefault = [i.split('+')
@@ -200,13 +214,12 @@ class SettingsWindow(qtw.QWidget):
                          'default':graphDefault}
         self.settings.setValue('graphs', graphSettings)
 
+    def saveLeftMenuFilterSettings(self):
         newValueFilters = {
             key: widget.isChecked()
             for key, widget in self.listMenuFilters.items()
         }
         self.settings.setValue('leftMenuFilters', newValueFilters)
-
-        self.parent.setNotify('success', 'Settings saved. Restart program.')
 
     def checkDigit(self, widget: qtw.QLineEdit):
         try:

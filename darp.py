@@ -2,12 +2,13 @@ import sys
 from app.view.mainWindow import MainWindow
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QApplication
-
-
-ORGANIZATION_NAME = 'Radiopribor'
-ORGANIZATION_DOMAIN = 'zrp.ru'
-APPLICATION_NAME = 'DARP'
-VERSION = '0.2023.03.03'
+from app.resource.constants import (
+    ORGANIZATION_DOMAIN, 
+    ORGANIZATION_NAME, 
+    APPLICATION_NAME, 
+    VERSION, 
+    EXIT_CODE_REBOOT
+    )
 
 
 def main():
@@ -16,11 +17,15 @@ def main():
     QCoreApplication.setOrganizationDomain(ORGANIZATION_DOMAIN)
     QCoreApplication.setApplicationName(APPLICATION_NAME)
     QCoreApplication.setApplicationVersion(VERSION)
-    app = QApplication(sys.argv)
-    app.setStyle('Fusion')
-    iface = MainWindow(app)
-    iface.show()
-    sys.exit(app.exec_())
+
+    while True:
+        app = QApplication(sys.argv)
+        app.setStyle('Fusion')
+        iface = MainWindow(app)
+        iface.show()
+        exit_code = app.exec_()
+        if exit_code != EXIT_CODE_REBOOT:
+            break
 
 
 if __name__ == '__main__':

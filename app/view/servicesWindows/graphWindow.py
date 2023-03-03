@@ -1,4 +1,4 @@
-import app.view.qrc_resources
+import app.resource.qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
 from PyQt5.QtCore import Qt
