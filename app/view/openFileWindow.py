@@ -1,6 +1,8 @@
 from os import startfile
 from PyQt5 import QtWidgets as qtw
 
+from app.controller.controller import NoneJsonError
+
 
 class OpenFileWindow(qtw.QWidget):
     '''
@@ -9,11 +11,12 @@ class OpenFileWindow(qtw.QWidget):
     controller - контроллер для получения данных.
     settings - настройки приложения.
     '''
-    def __init__(self, controller, filetype, parent=None):
+    def __init__(self, controller, filetype, categories, parent=None):
         super().__init__()
         self.parent = parent
         self.controller = controller
         self.filetype = filetype
+        self.categories = categories
         self.settings = self.parent.settings
         self.initUI()
 
@@ -39,8 +42,6 @@ class OpenFileWindow(qtw.QWidget):
 
         self.initCategoryBlock()
 
-
-
         self.loadUnknownCheckBox = qtw.QCheckBox()
         self.loadUnknownCheckBox.setChecked(True)
         self.loadUnknownCheckBox.setText('load unknown elements')
@@ -51,18 +52,12 @@ class OpenFileWindow(qtw.QWidget):
         self.formLayout.addRow(self.loadUnknownCheckBox)
 
     def initCategoryBlock(self):
-        jsonDir = self.settings.value('mainSettings')['jsonDir']
-        self.jsonsData = self.controller.get_jsons_data(jsonDir)
-
         self.categoryComboBox = qtw.QComboBox()
-        categories = [json['name'] for json in self.jsonsData]
-        self.categoryComboBox.addItems(categories)
-        self.categoryComboBox.activated.connect(self.updateAdrComboBox)
-
+        self.categoryComboBox.addItems(self.categories.keys())
         self.adrComboBox = qtw.QComboBox()
-        current_category = self.jsonsData[self.categoryComboBox.currentIndex()]
-        adrs = [adr['adr_name'] for adr in current_category['adr']]
-        self.adrComboBox.addItems(adrs)
+        adrs = self.categories[self.categoryComboBox.currentText()]
+        self.adrComboBox.addItems([adr['adr_name'] for adr in adrs])
+        self.categoryComboBox.activated.connect(self.updateAdrComboBox)
 
     def initBrowseBlock(self):
         horizontalLayer = qtw.QHBoxLayout()
@@ -88,10 +83,9 @@ class OpenFileWindow(qtw.QWidget):
 
 
     def updateAdrComboBox(self):
-        current_category = self.jsonsData[self.categoryComboBox.currentIndex()]
-        adrs = [adr['adr_name'] for adr in current_category['adr']]
+        adrs = self.categories[self.categoryComboBox.currentText()]
         self.adrComboBox.clear()
-        self.adrComboBox.addItems(adrs)
+        self.adrComboBox.addItems([adr['adr_name'] for adr in adrs])
 
     def openFileDialog(self):
         filePath, check = qtw.QFileDialog.getOpenFileName(None,

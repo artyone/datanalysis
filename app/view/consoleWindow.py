@@ -63,6 +63,7 @@ class ConsoleWindow(qtw.QMainWindow):
         self.parent = parent
         self.filepath = None
         self.initUI()
+        #TODO решить проблему с темной темой
 
     def initUI(self):
         '''

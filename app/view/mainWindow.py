@@ -1,4 +1,4 @@
-from app.controller.controller import Control
+from app.controller.controller import Control, NoneJsonError
 from app.view.graphWindow import GraphWindow
 from app.view.mapWindow import MapWindow
 from app.view.reportWindow import ReportWindow
@@ -10,7 +10,7 @@ from app.view.openFileWindow import OpenFileWindow
 import app.view.qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
-from PyQt5.QtGui import QIcon, QFont, QColor
+from PyQt5.QtGui import QIcon, QFont, QColor, QPalette, QPainter
 from PyQt5.QtCore import Qt, QSettings, QCoreApplication
 from PyQt5 import QtWidgets as qtw
 from functools import partial
@@ -24,8 +24,9 @@ class MainWindow(qtw.QMainWindow):
     При инициализаци создается контроллер и переменны для окон.
     Если настройки пустые или устарели - создаются настройки по-умолчанию.
     '''
-    def __init__(self):
+    def __init__(self, app):
         super().__init__()
+        self.app = app
         self.mapWindow = None
         self.reportWindow = None
         self.consoleWindow = None
@@ -44,6 +45,7 @@ class MainWindow(qtw.QMainWindow):
         if (self.settings.allKeys() == [] or 
             self.settings.value('version') != self.app_version):
             self.setDefaultSettings()
+        self.setTheme()
         self.initUI()
 
         # TODO удалить на релизе
@@ -84,7 +86,27 @@ class MainWindow(qtw.QMainWindow):
         self.setCentralWidget(self.splitter)
         self.center()
         self.showMaximized()
- 
+
+    @staticmethod
+    def getPalette():
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        palette.setColor(QPalette.WindowText, Qt.white)
+        palette.setColor(QPalette.Button, QColor(53, 53, 53))
+        palette.setColor(QPalette.ButtonText, Qt.white)
+        palette.setColor(QPalette.Base, QColor(25, 25, 25))
+        palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+        palette.setColor(QPalette.ToolTipBase, Qt.white)
+        palette.setColor(QPalette.ToolTipText, Qt.white)
+        palette.setColor(QPalette.Text, Qt.white)
+        palette.setColor(QPalette.Link, QColor(42, 130, 218))
+        palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+        palette.setColor(QPalette.HighlightedText, Qt.white)
+        return palette
+
+    def setTheme(self):
+        if self.settings.value('mainSettings')['theme'] == 'black':
+            self.app.setPalette(self.getPalette())
 
     def _createMenuBar(self):
         '''
@@ -101,17 +123,17 @@ class MainWindow(qtw.QMainWindow):
         fileMenu.addAction(self.clearAction)
 
         openSourceMenu = fileMenu.addMenu('Open &source')
-        openSourceMenu.setIcon(QIcon(':file-plus.svg'))
+        openSourceMenu.setIcon(self.getIcon(':file-plus.svg'))
         openSourceMenu.addAction(self.openTxtAction)
         openSourceMenu.addAction(self.openPddAction)
 
         openDataMenu = fileMenu.addMenu('&Open data')
-        openDataMenu.setIcon(QIcon(':database.svg'))
+        openDataMenu.setIcon(self.getIcon(':database.svg'))
         openDataMenu.addAction(self.openPickleAction)
         openDataMenu.addAction(self.openCsvAction)
 
         saveMenu = fileMenu.addMenu('&Save as')
-        saveMenu.setIcon(QIcon(':save'))
+        saveMenu.setIcon(self.getIcon(':save'))
         saveMenu.addAction(self.savePickleAction)
         saveMenu.addAction(self.saveCsvAction)
 
@@ -204,116 +226,116 @@ class MainWindow(qtw.QMainWindow):
 
     def _creteFileActions(self):
         self.clearAction = qtw.QAction('Clea&r', self)
-        self.clearAction.setIcon(QIcon(':x.svg'))
+        self.clearAction.setIcon(self.getIcon(':x.svg'))
         self.clearAction.setStatusTip('Clear')
 
         self.openTxtAction = qtw.QAction('Open *.&txt...', self)
-        self.openTxtAction.setIcon(QIcon(':file-text.svg'))
+        self.openTxtAction.setIcon(self.getIcon(':file-plus.svg'))
         self.openTxtAction.setStatusTip('Open TXT file')
 
         self.openPddAction = qtw.QAction('Open *.&pdd...', self)
-        self.openPddAction.setIcon(QIcon(':file.svg'))
+        self.openPddAction.setIcon(self.getIcon(':file.svg'))
         self.openPddAction.setStatusTip('Open file')
 
         self.openCsvAction = qtw.QAction('Open *.&csv...', self)
-        self.openCsvAction.setIcon(QIcon(':file-text.svg'))
+        self.openCsvAction.setIcon(self.getIcon(':file-text.svg'))
         self.openCsvAction.setStatusTip('Open CSV file')
 
         self.openPickleAction = qtw.QAction('Open *.&pickle...', self)
-        self.openPickleAction.setIcon(QIcon(':file.svg'))
+        self.openPickleAction.setIcon(self.getIcon(':file.svg'))
         self.openPickleAction.setStatusTip(
             'Open pickle file')
 
         self.savePickleAction = qtw.QAction('Save as *.pickle...', self)
-        self.savePickleAction.setIcon(QIcon(':save.svg'))
+        self.savePickleAction.setIcon(self.getIcon(':save.svg'))
         self.savePickleAction.setStatusTip(
             'Save data to pickle file')
         self.savePickleAction.setShortcut('Ctrl+S')
 
         self.saveCsvAction = qtw.QAction('Save as *.csv...', self)
-        self.saveCsvAction.setIcon(QIcon(':file-text.svg'))
+        self.saveCsvAction.setIcon(self.getIcon(':file-text.svg'))
         self.saveCsvAction.setStatusTip('Save data to csv file')
 
         self.exitAction = qtw.QAction('&Exit', self)
-        self.exitAction.setIcon(QIcon(':log-out.svg'))
+        self.exitAction.setIcon(self.getIcon(':log-out.svg'))
         self.exitAction.setStatusTip('Exit application')
         self.exitAction.setShortcut('Ctrl+Q')
 
     def _creteServiceActions(self):
         self.calculateDataAction = qtw.QAction('&Calculate data')
-        self.calculateDataAction.setIcon(QIcon(':percent.svg'))
+        self.calculateDataAction.setIcon(self.getIcon(':percent.svg'))
         self.calculateDataAction.setStatusTip('Calculate data from source')
 
         self.createMapAction = qtw.QAction('Create &map', self)
-        self.createMapAction.setIcon(QIcon(':map.svg'))
+        self.createMapAction.setIcon(self.getIcon(':map.svg'))
         self.createMapAction.setStatusTip('Create interactive map')
 
         self.createReportAction = qtw.QAction('Create &report', self)
-        self.createReportAction.setIcon(QIcon(':mail.svg'))
+        self.createReportAction.setIcon(self.getIcon(':mail.svg'))
         self.createReportAction.setStatusTip('Create xlsx report')
 
         self.pythonConsoleAction = qtw.QAction('&Python Console', self)
-        self.pythonConsoleAction.setIcon(QIcon(':terminal'))
+        self.pythonConsoleAction.setIcon(self.getIcon(':terminal'))
         self.createReportAction.setStatusTip('Open python console window')
 
     def _createViewActions(self):
         self.hideLeftMenuAction = qtw.QAction('&Hide left menu')
-        self.hideLeftMenuAction.setIcon(QIcon(':eye-off'))
+        self.hideLeftMenuAction.setIcon(self.getIcon(':eye-off'))
         self.hideLeftMenuAction.setStatusTip('Hide/Unhide left menu')
         self.hideLeftMenuAction.setCheckable(True)
 
         self.createGraphAction = qtw.QAction('&Create graph')
-        self.createGraphAction.setIcon(QIcon(':trending-up.svg'))
+        self.createGraphAction.setIcon(self.getIcon(':trending-up.svg'))
         self.createGraphAction.setStatusTip('Create graph in new window')
 
         self.createDefaultGraphAction = qtw.QAction('&Create default graphs')
-        self.createDefaultGraphAction.setIcon(QIcon(':shuffle.svg'))
+        self.createDefaultGraphAction.setIcon(self.getIcon(':shuffle.svg'))
         self.createDefaultGraphAction.setStatusTip(
             'Create default graph in new window')
 
         self.cascadeAction = qtw.QAction('Casca&de Windows')
-        self.cascadeAction.setIcon(QIcon(':bar-chart.svg'))
+        self.cascadeAction.setIcon(self.getIcon(':bar-chart.svg'))
         self.cascadeAction.setStatusTip('Cascade View Graph Windows')
 
         self.horizontalAction = qtw.QAction('&Horizontal Windows')
-        self.horizontalAction.setIcon(QIcon(':more-vertical.svg'))
+        self.horizontalAction.setIcon(self.getIcon(':more-vertical.svg'))
         self.horizontalAction.setStatusTip('Horizontal View Graph Windows')
 
         self.verticalAction = qtw.QAction('&Vertical Windows')
-        self.verticalAction.setIcon(QIcon(':more-horizontal.svg'))
+        self.verticalAction.setIcon(self.getIcon(':more-horizontal.svg'))
         self.verticalAction.setStatusTip('Vertical View Graph Windows')
 
         self.trackGraphAction = qtw.QAction('&Track graph')
-        self.trackGraphAction.setIcon(QIcon(':move.svg'))
+        self.trackGraphAction.setIcon(self.getIcon(':move.svg'))
         self.trackGraphAction.setStatusTip('Track Grapth in all Windows')
         self.trackGraphAction.setCheckable(True)
 
         self.closeAllAction = qtw.QAction('Close &all Windows')
-        self.closeAllAction.setIcon(QIcon(':x-circle.svg'))
+        self.closeAllAction.setIcon(self.getIcon(':x-circle.svg'))
         self.closeAllAction.setStatusTip('Close all opened Windows')
 
     def _createSettingsActions(self):
         self.openSettingsActions = qtw.QAction('&Settings')
-        self.openSettingsActions.setIcon(QIcon(':settings.svg'))
+        self.openSettingsActions.setIcon(self.getIcon(':settings.svg'))
         self.openSettingsActions.setStatusTip('Settings menu')
 
         self.setDefaultSettingsActions = qtw.QAction('Set &default settings')
-        self.setDefaultSettingsActions.setIcon(QIcon(':sliders.svg'))
+        self.setDefaultSettingsActions.setIcon(self.getIcon(':sliders.svg'))
         self.setDefaultSettingsActions.setStatusTip('Set default settings')
 
         self.loadSettingsFromFileActions = qtw.QAction(
             'Load settings from file')
-        self.loadSettingsFromFileActions.setIcon(QIcon(':download.svg'))
+        self.loadSettingsFromFileActions.setIcon(self.getIcon(':download.svg'))
         self.loadSettingsFromFileActions.setStatusTip(
             'Save settings to file json')
 
         self.saveSettingsToFileActions = qtw.QAction('Sa&ve settings to file')
-        self.saveSettingsToFileActions.setIcon(QIcon(':save.svg'))
+        self.saveSettingsToFileActions.setIcon(self.getIcon(':save.svg'))
         self.saveSettingsToFileActions.setStatusTip(
             'Save settings to file json')
 
         self.aboutAction = qtw.QAction('&About')
-        self.aboutAction.setIcon(QIcon(':help-circle.svg'))
+        self.aboutAction.setIcon(self.getIcon(':help-circle.svg'))
         self.aboutAction.setStatusTip('About programm')
 
     def _connectActions(self):
@@ -424,12 +446,23 @@ class MainWindow(qtw.QMainWindow):
 
     def hideLeftMenu(self):
         if self.hideLeftMenuAction.isChecked():
-            self.hideLeftMenuAction.setIcon(QIcon(':eye'))
+            self.hideLeftMenuAction.setIcon(self.getIcon(':eye'))
             self.tree.hide()
         else: 
-            self.hideLeftMenuAction.setIcon(QIcon(':eye-off'))
+            self.hideLeftMenuAction.setIcon(self.getIcon(':eye-off'))
             self.tree.show()
 
+    def getIcon(self, name):
+        icon = QIcon(name)
+        if self.settings.value('mainSettings')['theme'] == 'white':
+            return icon
+        pixmap = icon.pixmap(50,50)
+        color = QColor(255, 255, 255)
+        painter = QPainter(pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        painter.fillRect(pixmap.rect(), color)
+        painter.end()
+        return QIcon(pixmap)
     def openFile(self, filetype, filepath=None):
         '''
         Метод открытия файлов в зависимостиот параметра.
@@ -465,7 +498,19 @@ class MainWindow(qtw.QMainWindow):
 
     def openTextFile(self, filetype):
         if self.openFileWindow is None:
-            self.openFileWindow = OpenFileWindow(self.controller, filetype, self)
+            try:
+                categories = self.controller.get_json_categories(
+                    self.settings.value('mainSettings')['jsonDir'])
+                self.openFileWindow = OpenFileWindow(self.controller, filetype, categories, self)
+            except KeyError:
+                self.setNotify('error', 'bad json data in json folder')
+                return
+            except NoneJsonError:
+                self.setNotify('error', 'not json in folder')
+                return
+            except Exception as e:
+                self.setNotify('error', str(e))
+                return
         else:
             self.openFileWindow.hide()
         self.center(self.openFileWindow)
@@ -802,8 +847,9 @@ class MainWindow(qtw.QMainWindow):
         ]
         leftMenuFilters = {head: True for head in headers}
         self.settings.setValue('leftMenuFilters', leftMenuFilters)
-        jsonPath = 'templates'
-        self.settings.setValue('mainSettings', {'jsonDir':jsonPath} )
+        mainSettings = {'theme':'black', 'jsonDir':'templates'}
+        self.settings.setValue('mainSettings', mainSettings)
+
 
     def openSettings(self):
         '''

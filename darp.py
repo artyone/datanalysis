@@ -2,12 +2,13 @@ import sys
 from app.view.mainWindow import MainWindow
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import Qt
 
 
 ORGANIZATION_NAME = 'Radiopribor'
 ORGANIZATION_DOMAIN = 'zrp.ru'
 APPLICATION_NAME = 'DARP'
-VERSION = '0.2023.03.02'
+VERSION = '0.2023.03.03'
 
 
 def main():
@@ -18,7 +19,7 @@ def main():
     QCoreApplication.setApplicationVersion(VERSION)
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    iface = MainWindow()
+    iface = MainWindow(app)
     iface.show()
     sys.exit(app.exec_())
 

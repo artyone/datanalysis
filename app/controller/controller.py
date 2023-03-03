@@ -205,8 +205,14 @@ class Control(object):
     @staticmethod
     def get_jsons_data(dirpath):
         json_list = file_methods.get_list_json_in_folder(dirpath)
-        if not json_list:
+        if json_list == []:
             raise NoneJsonError
         return file_methods.get_jsons_data(json_list)
+
+    @classmethod
+    def get_json_categories(cls, dirpath):
+        json_categories = {json['name']:json['adr'] for json in cls.get_jsons_data(dirpath)}
+        return json_categories
+
 
 

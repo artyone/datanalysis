@@ -47,13 +47,34 @@ class SettingsWindow(qtw.QWidget):
         tabWidget = qtw.QWidget()
         tabLayout = qtw.QFormLayout()
 
-        for name, value in self.listMainSettings.items():
-            lineEdit = qtw.QLineEdit(str(value))
-            tabLayout.addRow(name, lineEdit)
-            self.listMainSettings[name] = lineEdit
+        lineEdit = self.initBrowseBlock()
+        tabLayout.addRow('json dir', lineEdit)
+
+        self.themeComboBox = qtw.QComboBox()
+        self.themeComboBox.addItems(['black', 'white'])
+        tabLayout.addRow('theme', self.themeComboBox)
 
         tabWidget.setLayout(tabLayout)
         return tabWidget
+
+    def initBrowseBlock(self):
+        horizontalLayer = qtw.QHBoxLayout()
+        self.browseLineEdit = qtw.QLineEdit()
+        self.browseLineEdit.setText(self.listMainSettings['jsonDir'])
+        browseButton = qtw.QPushButton()
+        browseButton.setText('...')
+        browseButton.setFixedSize(40, 22)
+        browseButton.clicked.connect(self.openDirectoryDialog)
+        horizontalLayer.addWidget(self.browseLineEdit)
+        horizontalLayer.addWidget(browseButton)
+        horizontalLayer.setSpacing(15)
+        return horizontalLayer
+
+    def openDirectoryDialog(self):
+        directoryPath = qtw.QFileDialog.getExistingDirectory(None,
+            "Select Directory")
+        if directoryPath:
+            self.browseLineEdit.setText(directoryPath)
 
     def filterMenuTab(self):
         '''
@@ -153,10 +174,8 @@ class SettingsWindow(qtw.QWidget):
         '''
         Метод сохранения всех настроек.
         '''
-        newValueMainSettings = {
-            key: widget.text()
-            for key, widget in self.listMainSettings.items()
-        }
+        newValueMainSettings = {'theme': self.themeComboBox.currentText(), 
+                                'jsonDir': self.browseLineEdit.text()}
         self.settings.setValue('mainSettings', newValueMainSettings)
 
         newValuePlanes = {
