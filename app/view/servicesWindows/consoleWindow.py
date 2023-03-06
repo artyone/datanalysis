@@ -3,6 +3,7 @@ from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5 import QtWidgets as qtw
 from app.model.file import Datas
 from PyQt5.QtCore import Qt
+from app.view.servicesWindows.graphWindow import GraphWindow
 import app.resource.qrc_resources
 import contextlib
 import traceback
@@ -89,7 +90,12 @@ class ConsoleWindow(qtw.QMainWindow):
         splitter.addWidget(self.textEdit)
         splitter.addWidget(self.label)
         self.textEdit.setText(
-            '# Все данные хранятся в переменной "data".\n# Тип данных Dataframe из библиотеки pandas\n# Для постройки графика используется синтаксис graph(data, "JVD_H", "JVD_Vn")\n# Можно использовать numpy, math, pandas')
+            '# Все данные хранятся в переменной "data" print(data).\n' +
+            '# Тип данных Dataframe из библиотеки pandas\n' +
+            '# Для постройки графика используется синтаксис graph(data["PNK"]["ADR8"], "time", "JVD_H")\n' +
+            '# Можно использовать numpy, math, pandas\n' +
+            '# Для выгрузки данных используем код to_csv(data["PNK"]["ADR8"], "123.csv")'
+        )
 
     def createMenu(self):
         fileToolBar = self.addToolBar('File')
@@ -124,11 +130,11 @@ class ConsoleWindow(qtw.QMainWindow):
         f = io.StringIO()
         with contextlib.redirect_stdout(f), contextlib.redirect_stderr(f):
             try:
+                command = self.textEdit.text()
                 model = Datas()
                 to_csv = model.write_csv
                 data = self.controller.get_data().copy()
-                graph = self.parent.createGraphForConsole
-                command = self.textEdit.text()
+                graph = self.graph
                 exec(command)
             except:
                 print(traceback.format_exc(), file=sys.stderr)
@@ -184,3 +190,23 @@ class ConsoleWindow(qtw.QMainWindow):
                     'error', 'File opened in another program')
             except Exception as e:
                 self.parent.setNotify('error', str(e))
+
+    def graph(self, data, *args):
+        '''
+        Вспомогательный Метод для создания графика из консоли.
+        '''
+        dataForGraph = {'console': {'ADR0': data}}
+        treeSelected = [('console', 'ADR0', arg) for arg in args]
+
+        try:
+            graphWindow = GraphWindow(dataForGraph, treeSelected, 1, self.parent)
+            self.parent.mdi.addSubWindow(graphWindow)
+            graphWindow.show()
+            self.parent.trackGraph()
+        except AttributeError:
+            self.parent.setNotify('warning', 'Data not is dataframe')
+        except KeyError:
+            self.parent.setNotify('warning', 'Need select data or error with elements name')
+        except ValueError:
+            self.parent.setNotify('warning', 'Choose element on left bare')
+

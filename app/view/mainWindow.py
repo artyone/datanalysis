@@ -445,6 +445,7 @@ class MainWindow(qtw.QMainWindow):
         self.mdi.closeAllSubWindows()
         self.destroyChildWindow()
         self.trackGraph()
+        self.settings.setValue('lastFile', None)
 
     def hideLeftMenu(self):
         if self.hideLeftMenuAction.isChecked():
@@ -630,20 +631,27 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для создания окон графиков по чек-боксу бокового меню
         '''
-        selectedTree = self._getTreeSelected()
-        if self.controller.get_data() == {} or selectedTree == []:
-            self.setNotify(
-                'warning', 'Need to select the data or data for graph')
-            return
+        treeSelected = self._getTreeSelected()
         
         if self.spinBox.text() != '0':
             decimation = int(self.spinBox.text())
         else: decimation = 1
-        
-        graphWindow = GraphWindow(self.controller.get_data(), selectedTree, decimation, self)
-        self.mdi.addSubWindow(graphWindow)
-        graphWindow.show()
-        self.trackGraph()
+        # print(self.controller.get_data())
+        # print(selectedTree)
+        # print(type(self.controller.get_data()['PNK']['ADR8']))
+        try:
+            graphWindow = GraphWindow(self.controller.get_data(), treeSelected, decimation, self)
+            self.mdi.addSubWindow(graphWindow)
+            graphWindow.show()
+            self.trackGraph()
+        except AttributeError:
+            self.setNotify('warning', 'Data not is dataframe')
+        except KeyError:
+            self.setNotify('warning', 'Need select data')
+        except ValueError:
+            self.setNotify('warning', 'Choose element on left bare')
+
+
 
     def createDefaultGraph(self):
         '''
@@ -668,17 +676,6 @@ class MainWindow(qtw.QMainWindow):
             graphWindow.show()
         self.horizontalWindows()
         self.trackGraph()
-
-    def createGraphForConsole(self, data, *args):
-        '''
-        Вспомогательный Метод для создания графика из консоли.
-        '''
-        #TODO продумать и изменить метод для консоли из-за нового формата данных
-        if data is None:
-            return
-        graphWindow = GraphWindow(data, args, self)
-        self.mdi.addSubWindow(graphWindow)
-        graphWindow.show()
 
     def pythonConsole(self):
         '''

@@ -28,8 +28,6 @@ class Control(object):
             data_from_file = file_methods.load_txt(filepath)
         else:
             data_from_file = file_methods.load_csv(filepath)
-        
-        print(data_from_file)
         self.data[category] = {adr:data_from_file}
         self.data_calculated = self._check_calculated()
 

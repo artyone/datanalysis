@@ -52,8 +52,10 @@ class GraphWindow(qtw.QMdiSubWindow):
         При правом клике мыши вызывается кастомное контекстное меню.
         '''
         if self.data == {}:
-            self.parent.setNotify('warning', 'No data')
-            return
+            raise KeyError
+        if self.columns == []:
+            raise ValueError
+
         self.plt = pg.PlotWidget()
         self.plt.setBackground(self.parent.settings.value('graphs')['background'])
         self.plt.showGrid(x=True, y=True)
