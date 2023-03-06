@@ -7,14 +7,13 @@ from app.view.helpersWindows.settingsWindow import SettingsWindow
 from app.view.servicesWindows.calculateWindow import CalcWindow
 from app.view.helpersWindows.saveCsvWindow import SaveCsvWindow
 from app.view.helpersWindows.openFileWindow import OpenFileWindow
-from app.resource.constants import EXIT_CODE_REBOOT
 import app.resource.qrc_resources
 import pyqtgraph as pg
 import os
 import sys
 from PyQt5.sip import delete
 from PyQt5.QtGui import QIcon, QFont, QColor, QPalette, QPainter
-from PyQt5.QtCore import Qt, QSettings, QCoreApplication
+from PyQt5.QtCore import Qt, QSettings, QCoreApplication, QProcess
 from PyQt5 import QtWidgets as qtw
 from functools import partial
 from notificator import notificator
@@ -466,6 +465,7 @@ class MainWindow(qtw.QMainWindow):
         painter.fillRect(pixmap.rect(), color)
         painter.end()
         return QIcon(pixmap)
+
     def openBinaryFile(self, filetype, filepath=None):
         '''
         Метод открытия файлов в зависимостиот параметра.
@@ -534,6 +534,9 @@ class MainWindow(qtw.QMainWindow):
         if self.openFileWindow:
             delete(self.openFileWindow)
             self.openFileWindow = None
+        if self.settingsWindow:
+            delete(self.settingsWindow)
+            self.settingsWindow = None
 
     def saveCsvData(self):
         '''
@@ -904,9 +907,9 @@ class MainWindow(qtw.QMainWindow):
         if self.notify:
             self.setNotify(
                 'success', 'Default settings are set. Restart program.')
-    @staticmethod
-    def restartApp():
-        #TODO пока не работает            
-        return QCoreApplication.exit(EXIT_CODE_REBOOT)   
-
+    
+    def restartApp(self):   
+        program = sys.executable
+        QProcess.startDetached(program, sys.argv)
+        QCoreApplication.quit()
 

@@ -3,12 +3,11 @@ from app.view.mainWindow import MainWindow
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QApplication
 from app.resource.constants import (
-    ORGANIZATION_DOMAIN, 
-    ORGANIZATION_NAME, 
-    APPLICATION_NAME, 
-    VERSION, 
-    EXIT_CODE_REBOOT
-    )
+    ORGANIZATION_DOMAIN,
+    ORGANIZATION_NAME,
+    APPLICATION_NAME,
+    VERSION,
+)
 
 
 def main():
@@ -18,14 +17,11 @@ def main():
     QCoreApplication.setApplicationName(APPLICATION_NAME)
     QCoreApplication.setApplicationVersion(VERSION)
 
-    while True:
-        app = QApplication(sys.argv)
-        app.setStyle('Fusion')
-        iface = MainWindow(app)
-        iface.show()
-        exit_code = app.exec_()
-        if exit_code != EXIT_CODE_REBOOT:
-            break
+    app = QApplication(sys.argv)
+    app.setStyle('Fusion')
+    iface = MainWindow(app)
+    iface.show()
+    app.exec_()
 
 
 if __name__ == '__main__':
