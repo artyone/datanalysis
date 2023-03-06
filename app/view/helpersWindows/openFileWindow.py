@@ -99,12 +99,8 @@ class OpenFileWindow(qtw.QWidget):
                                     self.filetype,
                                     self.loadUnknownCheckBox.isChecked())
             self.parent.createCheckBox()
-            self.parent.updateOpenedFiles()
+            self.parent.setNotify('success', f'{self.browseLineEdit.text()} file opened')
             self.parent.destroyChildWindow()
-            self.settings.setValue('lastFile',
-                                    {'filePath': self.filePath,
-                                    'param': self.filetype})
-            self.parent.setNotify('success', f'{self.filePath} file opened')
         except ValueError as e:
             self.setNotify('error', str(e))
 

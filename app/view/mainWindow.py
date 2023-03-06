@@ -37,8 +37,6 @@ class MainWindow(qtw.QMainWindow):
         self.saveCsvWindow = None
         self.openFileWindow = None
         self.controller = Control()
-        self.filePath = None
-        self.filePathPdd = None
         self.notify = None
         self.app_version = QCoreApplication.applicationVersion()
         self.app_name = QCoreApplication.applicationName()
@@ -51,8 +49,8 @@ class MainWindow(qtw.QMainWindow):
         self.initUI()
 
         # TODO удалить на релизе
-        if self.settings.value('lastFile') is not None:
-            lastFile = self.settings.value('lastFile')
+        lastFile = self.settings.value('lastFile')
+        if lastFile is not None:
             self.openBinaryFile(lastFile['param'], lastFile['filePath'])
 
     def initUI(self):
@@ -213,9 +211,6 @@ class MainWindow(qtw.QMainWindow):
         '''
         self.statusbar = self.statusBar()
         self.statusbar.showMessage('Hello world!', 3000)
-        self.openedFilesLabel = qtw.QLabel(
-            f'File TXT: {self.filePath}, File PDD: {self.filePathPdd}')
-        self.statusbar.addPermanentWidget(self.openedFilesLabel)
 
     def _createActions(self):
         '''
@@ -475,24 +470,24 @@ class MainWindow(qtw.QMainWindow):
         '''
         # TODO передалть на ласт файл на filepath открыть последний открытый
         if filepath:
-            self.filePath = filepath
             check = True
         else:
-            self.filePath, check = qtw.QFileDialog.getOpenFileName(None,
+            filepath, check = qtw.QFileDialog.getOpenFileName(None,
                 'Open file', '', f'Open File (*.{filetype})')
         if check:
             try:
                 if filetype == 'pkl':
-                    self.controller.load_pickle(self.filePath)
+                    self.controller.load_pickle(filepath)
                 if filetype == 'pdd':
-                    self.controller.load_pdd(self.filePath)
+                    self.controller.load_pdd(filepath)
                 self.createCheckBox()
-                self.updateOpenedFiles()
                 self.destroyChildWindow()
                 self.settings.setValue('lastFile',
-                                       {'filePath': self.filePath,
+                                       {'filePath': filepath,
                                         'param': filetype})
-                self.setNotify('success', f'{self.filePath} file opened')
+                self.setNotify('success', f'{filepath} file opened')
+            except FileNotFoundError:
+                self.setNotify('error', 'file not found')
             except ValueError as e:
                 self.setNotify('error', str(e))
 
@@ -508,6 +503,8 @@ class MainWindow(qtw.QMainWindow):
             except NoneJsonError:
                 self.setNotify('error', 'not json in folder')
                 return
+            except FileNotFoundError:
+                self.setNotify('error', 'file not found')
             except Exception as e:
                 self.setNotify('error', str(e))
                 return
@@ -636,9 +633,6 @@ class MainWindow(qtw.QMainWindow):
         if self.spinBox.text() != '0':
             decimation = int(self.spinBox.text())
         else: decimation = 1
-        # print(self.controller.get_data())
-        # print(selectedTree)
-        # print(type(self.controller.get_data()['PNK']['ADR8']))
         try:
             graphWindow = GraphWindow(self.controller.get_data(), treeSelected, decimation, self)
             self.mdi.addSubWindow(graphWindow)
@@ -650,8 +644,6 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify('warning', 'Need select data')
         except ValueError:
             self.setNotify('warning', 'Choose element on left bare')
-
-
 
     def createDefaultGraph(self):
         '''
@@ -768,14 +760,6 @@ class MainWindow(qtw.QMainWindow):
             treeSelected.append((category_name, adr_name, item_name))
             iterator += 1
         return treeSelected
-
-    def updateOpenedFiles(self):
-        '''
-        Метод обновления открытых файлов.
-        '''
-        #TODO необходимо продумать как отображать открытые файлы и надо ли это вообще
-        self.openedFilesLabel.setText(
-            f'File TXT: <b>{self.filePath}</b>, File PDD: <b>{self.filePathPdd}</b>')
 
     def setNotify(self, type, txt):
         '''
