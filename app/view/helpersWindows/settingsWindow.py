@@ -53,6 +53,7 @@ class SettingsWindow(qtw.QWidget):
 
         self.themeComboBox = qtw.QComboBox()
         self.themeComboBox.addItems(['black', 'white'])
+        self.themeComboBox.setCurrentText(self.listMainSettings['theme'])
         tabLayout.addRow('theme', self.themeComboBox)
 
         tabWidget.setLayout(tabLayout)

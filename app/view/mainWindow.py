@@ -73,7 +73,6 @@ class MainWindow(qtw.QMainWindow):
         self.mdi.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
         self.splitter = qtw.QSplitter(Qt.Horizontal)
-        self.setStyleSheet("qtw.QSplitter::handle{background: white;}")
 
         self.tree = qtw.QTreeWidget(self.splitter)
         self.tree.setColumnCount(2)
@@ -87,26 +86,100 @@ class MainWindow(qtw.QMainWindow):
         self.center()
         self.showMaximized()
 
+    # def getPalette(self):
+    #     if self.settings.value('mainSettings')['theme'] == 'black':
+    #         palette = QPalette()
+    #         palette.setColor(QPalette.Window, QColor(53, 53, 53))
+    #         palette.setColor(QPalette.WindowText, Qt.white)
+    #         palette.setColor(QPalette.Button, QColor(53, 53, 53))
+    #         palette.setColor(QPalette.ButtonText, Qt.white)
+    #         palette.setColor(QPalette.Base, QColor(25, 25, 25))
+    #         palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+    #         palette.setColor(QPalette.ToolTipBase, Qt.white)
+    #         palette.setColor(QPalette.ToolTipText, Qt.white)
+    #         palette.setColor(QPalette.Text, Qt.white)
+    #         palette.setColor(QPalette.Link, QColor(42, 130, 218))
+    #         palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+    #         palette.setColor(QPalette.HighlightedText, Qt.white)
+    #     else: palette = QPalette()
+    #     return palette
     @staticmethod
-    def getPalette():
-        palette = QPalette()
-        palette.setColor(QPalette.Window, QColor(53, 53, 53))
-        palette.setColor(QPalette.WindowText, Qt.white)
-        palette.setColor(QPalette.Button, QColor(53, 53, 53))
-        palette.setColor(QPalette.ButtonText, Qt.white)
-        palette.setColor(QPalette.Base, QColor(25, 25, 25))
-        palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
-        palette.setColor(QPalette.ToolTipBase, Qt.white)
-        palette.setColor(QPalette.ToolTipText, Qt.white)
-        palette.setColor(QPalette.Text, Qt.white)
-        palette.setColor(QPalette.Link, QColor(42, 130, 218))
-        palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-        palette.setColor(QPalette.HighlightedText, Qt.white)
-        return palette
+    def getCustomStyleSheet(theme):
+        if theme == 'black':
+            styleSheet = """
+                QWidget {
+                    background-color: #353535;
+                    color: #fff;
+                }
+                QPushButton{
+                    background-color: #353535;
+                    color: #fff;
+                    border: 1px solid #aaa;
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                }
+                QPushButton:hover, QToolButton:hover {
+                    background-color: #444;
+                }
+                QTextEdit, QLineEdit, QComboBox {
+                    background-color: #191919;
+                    color: #fff;
+                    border: 1px solid #aaa;
+                    border-radius: 4px;
+                    padding: 4px;
+                }
+                QTextEdit:focus, QLineEdit:focus, QComboBox:focus {
+                    border: 2px solid #42a6ff;
+                }
+                QToolTip {
+                    background-color: #fff;
+                    color: #000;
+                    border: 1px solid #aaa;
+                }
+                QAbstractItemView {
+                    background-color: #353535;
+                    color: #fff;
+                    selection-background-color: #42a6ff;
+                    selection-color: #fff;
+                }
+                QScrollBar:vertical {
+                    border: none;
+                    background: #353535;
+                    width: 10px;
+                    margin: 0px 0px 0px 0px;
+                }
+                QScrollBar::handle:vertical {
+                    background: #42a6ff;
+                    min-height: 20px;
+                    border-radius: 4px;
+                }
+                QScrollBar::add-line:vertical {
+                    border: none;
+                    background: none;
+                }
+                QScrollBar::sub-line:vertical {
+                    border: none;
+                    background: none;
+                }
+                QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                    background: none;
+                }
+                QMdiSubWindow {
+                    color: gray;
+                }
+                QMdiWindow {
+                    background: #42a6ff;
+                }
+                """
+        else:
+            styleSheet = ''
+        return styleSheet
 
     def setTheme(self):
-        if self.settings.value('mainSettings')['theme'] == 'black':
-            self.app.setPalette(self.getPalette())
+        self.app.setStyleSheet(
+            self.getCustomStyleSheet(self.settings.value('mainSettings')['theme'])
+        )
+        #self.setStyleSheet(self.getCustomStyleSheet(self.settings.value('mainSettings')['theme']))
 
     def _createMenuBar(self):
         '''

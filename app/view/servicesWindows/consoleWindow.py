@@ -105,11 +105,11 @@ class ConsoleWindow(qtw.QMainWindow):
 
     def createAction(self):
         self.openScriptAction = qtw.QAction('&Open *.py...')
-        self.openScriptAction.setIcon(QIcon(':file-text.svg'))
+        self.openScriptAction.setIcon(QIcon(self.parent.getIcon(':file-text.svg')))
         self.saveScriptAction = qtw.QAction('&Save *.py...')
-        self.saveScriptAction.setIcon(QIcon(':save.svg'))
+        self.saveScriptAction.setIcon(QIcon(self.parent.getIcon(':save.svg')))
         self.executeAction = qtw.QAction('&Execute script')
-        self.executeAction.setIcon(QIcon(':play.svg'))
+        self.executeAction.setIcon(self.parent.getIcon((':play.svg')))
         self.executeAction.setShortcut("Ctrl+Return")
 
     def connectActions(self):
