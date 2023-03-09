@@ -9,6 +9,7 @@ class OpenFileWindow(qtw.QWidget):
     controller - контроллер для получения данных.
     settings - настройки приложения.
     '''
+
     def __init__(self, controller, filetype, categories, parent=None):
         super().__init__()
         self.parent = parent
@@ -23,7 +24,7 @@ class OpenFileWindow(qtw.QWidget):
         Метод отрисовки основных элементов окна.
         '''
         self.setGeometry(0, 0, 400, 200)
-        self.setWindowTitle(f'Open {self.filetype} file...')
+        self.setWindowTitle(f'Открыть {self.filetype} файл...')
         dlgLayout = qtw.QVBoxLayout()
 
         self.initInputBlock()
@@ -42,11 +43,11 @@ class OpenFileWindow(qtw.QWidget):
 
         self.loadUnknownCheckBox = qtw.QCheckBox()
         self.loadUnknownCheckBox.setChecked(True)
-        self.loadUnknownCheckBox.setText('load unknown elements')
+        self.loadUnknownCheckBox.setText('загружать незвестные элементы')
 
-        self.formLayout.addRow('category', self.categoryComboBox)
-        self.formLayout.addRow('adr', self.adrComboBox)
-        self.formLayout.addRow('file', self.initBrowseBlock())
+        self.formLayout.addRow('Категория', self.categoryComboBox)
+        self.formLayout.addRow('АДР', self.adrComboBox)
+        self.formLayout.addRow('Файл', self.initBrowseBlock())
         self.formLayout.addRow(self.loadUnknownCheckBox)
 
     def initCategoryBlock(self):
@@ -68,7 +69,7 @@ class OpenFileWindow(qtw.QWidget):
         horizontalLayer.addWidget(browseButton)
         horizontalLayer.setSpacing(15)
         return horizontalLayer
-    
+
     def initButtonBlock(self):
         '''Метод инициализации кнопок на форме'''
         self.btnBox = qtw.QDialogButtonBox()
@@ -79,7 +80,6 @@ class OpenFileWindow(qtw.QWidget):
         self.openButton = self.btnBox.button(qtw.QDialogButtonBox.Open)
         self.openButton.clicked.connect(self.openFile)
 
-
     def updateAdrComboBox(self):
         adrs = self.categories[self.categoryComboBox.currentText()]
         self.adrComboBox.clear()
@@ -87,21 +87,20 @@ class OpenFileWindow(qtw.QWidget):
 
     def openFileDialog(self):
         filePath, check = qtw.QFileDialog.getOpenFileName(None,
-            'Open file', '', f'Open File (*.{self.filetype})')
+                                                          'Open file', '', f'Open File (*.{self.filetype})')
         if check:
             self.browseLineEdit.setText(filePath)
-    
+
     def openFile(self):
         try:
             self.controller.load_text(self.browseLineEdit.text(),
-                                    self.categoryComboBox.currentText(),
-                                    self.adrComboBox.currentText(), 
-                                    self.filetype,
-                                    self.loadUnknownCheckBox.isChecked())
+                                      self.categoryComboBox.currentText(),
+                                      self.adrComboBox.currentText(),
+                                      self.filetype,
+                                      self.loadUnknownCheckBox.isChecked())
             self.parent.createCheckBox()
-            self.parent.setNotify('success', f'{self.browseLineEdit.text()} file opened')
+            self.parent.setNotify(
+                'успех', f'Файл {self.browseLineEdit.text()} открыт')
             self.parent.destroyChildWindow()
         except ValueError as e:
-            self.setNotify('error', str(e))
-
-
+            self.setNotify('ошибка', str(e))

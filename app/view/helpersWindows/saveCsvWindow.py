@@ -8,6 +8,7 @@ class SaveCsvWindow(qtw.QWidget):
     parent - родительское окно
     controller - контроллер для получения данных.
     '''
+
     def __init__(self, controller, parent=None):
         super().__init__()
         self.parent = parent
@@ -15,11 +16,9 @@ class SaveCsvWindow(qtw.QWidget):
         self.initUI()
 
     def initUI(self):
-        '''
-        Метод отрисовки основных элементов окна.
-        '''
+        '''Метод отрисовки основных элементов окна.'''
         self.setGeometry(0, 0, 350, 200)
-        self.setWindowTitle("Save CSV as...")
+        self.setWindowTitle("Сохранить в CSV...")
         dlgLayout = qtw.QVBoxLayout()
 
         self.initInputBlock()
@@ -44,10 +43,9 @@ class SaveCsvWindow(qtw.QWidget):
         adrs = self.controller.get_data()[current_category].keys()
         self.adrComboBox.addItems(adrs)
 
-        self.formLayout.addRow('category', self.categoryComboBox)
-        self.formLayout.addRow('adr', self.adrComboBox)
+        self.formLayout.addRow('Категория', self.categoryComboBox)
+        self.formLayout.addRow('АДР', self.adrComboBox)
 
-    
     def initButtonBlock(self):
         '''Метод инициализации кнопок на форме'''
         self.btnBox = qtw.QDialogButtonBox()
@@ -68,26 +66,26 @@ class SaveCsvWindow(qtw.QWidget):
         adrs = self.controller.get_data()[current_category].keys()
         self.adrComboBox.clear()
         self.adrComboBox.addItems(adrs)
-    
+
     def saveCsv(self):
         category = self.categoryComboBox.currentText()
         adr = self.adrComboBox.currentText()
         options = qtw.QFileDialog.Options()
         filePath, _ = qtw.QFileDialog.getSaveFileName(self,
-            "Save File", "", f"CSV Files (*.csv);;All Files(*)",
+                                                      "Save File", "", f"CSV Files (*.csv);;All Files(*)",
                                                       options=options)
         if filePath:
             try:
                 self.controller.save_csv(filePath, category, adr)
                 self.parent.setNotify(
-                    'success', f'CSV file saved to {filePath}')
+                    'успех', f'CSV файл сохранен {filePath}')
                 self.openButton.show()
                 self.filePath = filePath
             except PermissionError:
                 self.parent.setNotify(
-                    'error', 'File opened in another program')
+                    'ошибка', 'Файл отркрыт в другой программе')
             except Exception as e:
-                self.parent.setNotify('error', str(e))
+                self.parent.setNotify('ошибка', str(e))
 
     def openFile(self):
         '''

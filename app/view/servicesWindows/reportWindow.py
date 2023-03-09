@@ -12,6 +12,7 @@ class ReportWindow(qtw.QWidget):
     controller - контроллер.
     intervalsTxt - текст пользовательских интервалов.
     '''
+
     def __init__(self, controller, parent=None) -> None:
         super().__init__()
         self.parent = parent
@@ -24,7 +25,7 @@ class ReportWindow(qtw.QWidget):
         Метод инциализации главных элементов окна.
         '''
         self.setGeometry(0, 0, 500, 500)
-        self.setWindowTitle("Create report")
+        self.setWindowTitle("Создание отчёта")
         self.setLayout(qtw.QVBoxLayout())
 
         formLayout = qtw.QFormLayout()
@@ -59,19 +60,19 @@ class ReportWindow(qtw.QWidget):
         self.intervalsTxt = qtw.QPlainTextEdit()
 
         horizontalLayout = qtw.QHBoxLayout()
-        horizontalLayout.addWidget(qtw.QLabel('<b>Intervals:</b>'), 2)
-        horizontalLayout.addWidget(qtw.QLabel('auto'), 1,
+        horizontalLayout.addWidget(qtw.QLabel('<b>Интервалы:</b>'), 2)
+        horizontalLayout.addWidget(qtw.QLabel('Рассчитать автоматически'), 1,
                                    alignment=Qt.AlignRight)
         horizontalLayout.addWidget(self.intervalsToggle, 1)
-        horizontalLayout.addWidget(qtw.QLabel('manual'), 2)
+        horizontalLayout.addWidget(qtw.QLabel('Ввести вручную'), 2)
         return horizontalLayout
 
     def buttonBox(self):
         btnBox = qtw.QDialogButtonBox()
 
         btnBox.setStandardButtons(qtw.QDialogButtonBox.Open |
-                                       qtw.QDialogButtonBox.Save |
-                                       qtw.QDialogButtonBox.Cancel)
+                                  qtw.QDialogButtonBox.Save |
+                                  qtw.QDialogButtonBox.Cancel)
         btnBox.rejected.connect(self.close)
 
         self.openButton = btnBox.button(qtw.QDialogButtonBox.Open)
@@ -105,7 +106,7 @@ class ReportWindow(qtw.QWidget):
         '''
         text = self.intervalsTxt.toPlainText()
         if self.intervalsToggle.isChecked() and not text:
-            self.parent.setNotify('warning', "Need input intervals")
+            self.parent.setNotify('предупреждение', "Need input intervals")
             return
         if not self.intervalsToggle.isChecked():
             text = ''
@@ -125,16 +126,18 @@ class ReportWindow(qtw.QWidget):
                 self.filePath = filePath
                 self.openButton.show()
                 self.parent.setNotify(
-                    'success', f'xlsx file saved to {filePath}')
+                    'успех', f'xlsx file saved to {filePath}')
             except PermissionError:
                 self.parent.setNotify(
-                    'error', 'File opened in another program')
+                    'ошибка', 'File opened in another program')
             except AttributeError:
-                self.parent.setNotify('warning', 'check settings coefficient')
+                self.parent.setNotify(
+                    'предупреждение', 'check settings coefficient')
             except ValueError:
-                self.parent.setNotify('warning', 'JVD_H not found in data')
+                self.parent.setNotify(
+                    'предупреждение', 'JVD_H not found in data')
             except Exception as e:
-                self.parent.setNotify('error', str(e))
+                self.parent.setNotify('ошибка', str(e))
 
     def openFile(self):
         '''

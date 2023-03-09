@@ -60,13 +60,14 @@ class ConsoleWindow(qtw.QMainWindow):
     filepath - путь к файлу скрипта, если он требуется.
     parent - окно родителя.
     '''
+
     def __init__(self, controller, parent):
         super().__init__()
         self.controller = controller
         self.parent = parent
         self.filepath = None
         self.initUI()
-        #TODO решить проблему с темной темой
+        # TODO решить проблему с темной темой
 
     def initUI(self):
         '''
@@ -85,7 +86,7 @@ class ConsoleWindow(qtw.QMainWindow):
         font.setFixedPitch(True)
         font.setPointSize(11)
 
-        #self.textEdit = SimplePythonEditor(font)
+        # self.textEdit = SimplePythonEditor(font)
         self.textEdit = qtw.QPlainTextEdit()
         self.textEdit.setFont(font)
         self.label = qtw.QPlainTextEdit()
@@ -97,7 +98,7 @@ class ConsoleWindow(qtw.QMainWindow):
         self.textEdit.setPlainText(
             '# Все данные хранятся в переменной "data" print(data).\n' +
             '# Тип данных Dataframe из библиотеки pandas\n' +
-            '# Для постройки графика используется синтаксис graph(data["PNK"]["ADR8"], "time", "JVD_H")\n' +
+            '# Для постройки графика используется синтаксис graph(data["PNK"]["ADR8"], "JVD_VN", "JVD_H")\n' +
             '# Можно использовать numpy, math, pandas\n' +
             '# Для выгрузки данных используем код to_csv(data["PNK"]["ADR8"], "123.csv")\n'
         )
@@ -109,11 +110,12 @@ class ConsoleWindow(qtw.QMainWindow):
         fileToolBar.addAction(self.executeAction)
 
     def createAction(self):
-        self.openScriptAction = qtw.QAction('&Open *.py...')
-        self.openScriptAction.setIcon(QIcon(self.parent.getIcon(':file-text.svg')))
-        self.saveScriptAction = qtw.QAction('&Save *.py...')
+        self.openScriptAction = qtw.QAction('&Открыть *.py...')
+        self.openScriptAction.setIcon(
+            QIcon(self.parent.getIcon(':file-text.svg')))
+        self.saveScriptAction = qtw.QAction('&Сохранить *.py...')
         self.saveScriptAction.setIcon(QIcon(self.parent.getIcon(':save.svg')))
-        self.executeAction = qtw.QAction('&Execute script')
+        self.executeAction = qtw.QAction('&Выполнить скрипт.')
         self.executeAction.setIcon(self.parent.getIcon((':play.svg')))
         self.executeAction.setShortcut("Ctrl+Return")
 
@@ -151,15 +153,15 @@ class ConsoleWindow(qtw.QMainWindow):
         Метод загрузки ранее сохраненного скрипта.
         '''
         self.filepath, check = qtw.QFileDialog.getOpenFileName(None,
-                                                                 'Open python file', '', 'Open File (*.py)')
+                                                               'Open python file', '', 'Open File (*.py)')
         if check:
             try:
                 scriptData = self.controller.load_pytnon_script(
                     self.filepath)
                 self.textEdit.setText(scriptData)
-                self.parent.setNotify('success', 'script file loaded')
+                self.parent.setNotify('успех', 'Скрипт загружен')
             except Exception as e:
-                self.parent.setNotify('error', str(e))
+                self.parent.setNotify('ошибка', str(e))
 
     def saveScript(self):
         '''
@@ -167,19 +169,19 @@ class ConsoleWindow(qtw.QMainWindow):
         '''
         options = qtw.QFileDialog.Options()
         self.filepath, _ = qtw.QFileDialog.getSaveFileName(self,
-                                                      "Save File", "", f"python Files (*.py);;All Files(*)",
-                                                      options=options)
+                                                           "Save File", "", f"python Files (*.py);;All Files(*)",
+                                                           options=options)
         data = self.textEdit.toPlainText()
         if self.filepath:
             try:
                 self.controller.save_python_sript(self.filepath, data)
                 self.parent.setNotify(
-                    'success', f'python file saved to {self.filepath}')
+                    'успех', f'Python файл сохранен в {self.filepath}')
             except PermissionError:
                 self.parent.setNotify(
-                    'error', 'File opened in another program')
+                    'ошибка', 'Файл открыт в другой программе')
             except Exception as e:
-                self.parent.setNotify('error', str(e))
+                self.parent.setNotify('ошибка', str(e))
 
     def autoSave(self):
         '''
@@ -192,9 +194,9 @@ class ConsoleWindow(qtw.QMainWindow):
                     self.filepath + '.bck', data)
             except PermissionError:
                 self.parent.setNotify(
-                    'error', 'File opened in another program')
+                    'ошибка', 'Автосейв не выполнен')
             except Exception as e:
-                self.parent.setNotify('error', str(e))
+                self.parent.setNotify('ошибка', str(e))
 
     def graph(self, data, *args):
         '''
@@ -204,14 +206,16 @@ class ConsoleWindow(qtw.QMainWindow):
         treeSelected = [('console', 'ADR0', arg) for arg in args]
 
         try:
-            graphWindow = GraphWindow(dataForGraph, treeSelected, 1, self.parent)
+            graphWindow = GraphWindow(
+                dataForGraph, treeSelected, 1, self.parent)
             self.parent.mdi.addSubWindow(graphWindow)
             graphWindow.show()
             self.parent.trackGraph()
         except AttributeError:
-            self.parent.setNotify('warning', 'Data not is dataframe')
+            self.parent.setNotify('предупреждение', 'Данные не являются dataframe')
         except KeyError:
-            self.parent.setNotify('warning', 'Need select data or error with elements name')
+            self.parent.setNotify(
+                'предупреждение', 'Необходимо правильно выбрать данные или ошибка имен элементов')
         except ValueError:
-            self.parent.setNotify('warning', 'Choose element on left bare')
-
+            self.parent.setNotify(
+                'предупреждение', 'Упси,что-то пошло не так')

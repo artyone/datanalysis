@@ -118,16 +118,16 @@ class GraphWindow(qtw.QMdiSubWindow):
         self.setTimeShiftMenu(menu)
         menu.addSeparator()
 
-        closeAction = qtw.QAction('Clos&e')
+        closeAction = qtw.QAction('&Закрыть')
         menu.addAction(closeAction)
         closeAction.triggered.connect(self.close)
 
         menu.exec(event.screenPos().toPoint())
 
     def setBackgrounMenu(self, parent):
-        changeBackground = parent.addMenu('&Background')
+        changeBackground = parent.addMenu('&Фон')
 
-        whiteBackgroundAction = qtw.QAction('&White ', self)
+        whiteBackgroundAction = qtw.QAction('&Белый ', self)
         whiteBackgroundAction.setCheckable(True)
         if getattr(self.plt, '_background') == 'white':
             whiteBackgroundAction.setChecked(True)
@@ -136,7 +136,7 @@ class GraphWindow(qtw.QMdiSubWindow):
         changeBackground.addAction(whiteBackgroundAction)
         whiteBackgroundAction.triggered.connect(self.whiteBackground)
 
-        blackBackgroundAction = qtw.QAction('&Black ', self)
+        blackBackgroundAction = qtw.QAction('&Черный ', self)
         blackBackgroundAction.setCheckable(True)
         if getattr(self.plt, '_background') == 'black':
             blackBackgroundAction.setChecked(True)
@@ -146,11 +146,11 @@ class GraphWindow(qtw.QMdiSubWindow):
         blackBackgroundAction.triggered.connect(self.blackBackground)
 
     def setLineTypeMenu(self, parent):
-        lineType = parent.addMenu('&Line Type')
+        lineType = parent.addMenu('&Тип линии')
         for name, data in self.curves.items():
             nameLine = lineType.addMenu(name)
 
-            lineGraphAction = qtw.QAction('&Line', self)
+            lineGraphAction = qtw.QAction('&Линия', self)
             lineGraphAction.setCheckable(True)
             if data['curve'].opts['pen'] == data['pen']:
                 lineGraphAction.setChecked(True)
@@ -159,7 +159,7 @@ class GraphWindow(qtw.QMdiSubWindow):
             nameLine.addAction(lineGraphAction)
             lineGraphAction.triggered.connect(partial(self.lineGraph, data))
 
-            crossGraphAction = qtw.QAction('&Cross', self)
+            crossGraphAction = qtw.QAction('&Точки', self)
             crossGraphAction.setCheckable(True)
             if data['curve'].opts['symbol'] is None:
                 crossGraphAction.setChecked(False)
@@ -169,7 +169,7 @@ class GraphWindow(qtw.QMdiSubWindow):
             crossGraphAction.triggered.connect(partial(self.crossGraph, data))
 
     def setTimeShiftMenu(self, parent):
-        timeShiftMenu = parent.addMenu('&Time Shift')
+        timeShiftMenu = parent.addMenu('&Сдвиг графика')
         for name, data in self.curves.items():
             timeShiftAction = qtw.QAction(name, self)
             timeShiftMenu.addAction(timeShiftAction)

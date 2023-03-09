@@ -26,6 +26,7 @@ class MainWindow(qtw.QMainWindow):
     При инициализаци создается контроллер и переменны для окон.
     Если настройки пустые или устарели - создаются настройки по-умолчанию.
     '''
+
     def __init__(self, app):
         super().__init__()
         self.app = app
@@ -42,8 +43,8 @@ class MainWindow(qtw.QMainWindow):
         self.app_name = QCoreApplication.applicationName()
 
         self.settings = QSettings()
-        if (self.settings.allKeys() == [] or 
-            self.settings.value('version') != self.app_version):
+        if (self.settings.allKeys() == [] or
+                self.settings.value('version') != self.app_version):
             self.setDefaultSettings()
         self.setTheme()
         self.initUI()
@@ -78,7 +79,7 @@ class MainWindow(qtw.QMainWindow):
 
         self.tree = qtw.QTreeWidget(self.splitter)
         self.tree.setColumnCount(2)
-        self.tree.setHeaderLabels(['name', 'count'])
+        self.tree.setHeaderLabels(['Название', 'Количество'])
         self.tree.hide()
 
         self.splitter.addWidget(self.tree)
@@ -104,7 +105,8 @@ class MainWindow(qtw.QMainWindow):
             palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
             palette.setColor(QPalette.HighlightedText, Qt.white)
             palette.setColor(QPalette.BrightText, Qt.red)
-        else: palette = QPalette()
+        else:
+            palette = QPalette()
         return palette
 
     def setTheme(self):
@@ -112,7 +114,7 @@ class MainWindow(qtw.QMainWindow):
         # self.app.setStyleSheet(
         #     self.getCustomStyleSheet(self.settings.value('mainSettings')['theme'])
         # )
-        #self.setStyleSheet(self.getCustomStyleSheet(self.settings.value('mainSettings')['theme']))
+        # self.setStyleSheet(self.getCustomStyleSheet(self.settings.value('mainSettings')['theme']))
 
     def _createMenuBar(self):
         '''
@@ -125,20 +127,20 @@ class MainWindow(qtw.QMainWindow):
         self._createSettingsMenu()
 
     def _createFileMenu(self):
-        fileMenu = self.menuBar.addMenu('&File')
+        fileMenu = self.menuBar.addMenu('&Файл')
         fileMenu.addAction(self.clearAction)
 
-        openSourceMenu = fileMenu.addMenu('Open &source')
+        openSourceMenu = fileMenu.addMenu('Открыть txt или pdd')
         openSourceMenu.setIcon(self.getIcon(':file-plus.svg'))
         openSourceMenu.addAction(self.openTxtAction)
         openSourceMenu.addAction(self.openPddAction)
 
-        openDataMenu = fileMenu.addMenu('&Open data')
+        openDataMenu = fileMenu.addMenu('&Открыть pickle или csv')
         openDataMenu.setIcon(self.getIcon(':database.svg'))
         openDataMenu.addAction(self.openPickleAction)
         openDataMenu.addAction(self.openCsvAction)
 
-        saveMenu = fileMenu.addMenu('&Save as')
+        saveMenu = fileMenu.addMenu('&Сохранить как')
         saveMenu.setIcon(self.getIcon(':save'))
         saveMenu.addAction(self.savePickleAction)
         saveMenu.addAction(self.saveCsvAction)
@@ -147,7 +149,7 @@ class MainWindow(qtw.QMainWindow):
         fileMenu.addAction(self.exitAction)
 
     def _createViewMenu(self):
-        viewMenu = self.menuBar.addMenu('&View')
+        viewMenu = self.menuBar.addMenu('&Просмотр')
         viewMenu.addAction(self.hideLeftMenuAction)
         viewMenu.addAction(self.createGraphAction)
         viewMenu.addAction(self.createDefaultGraphAction)
@@ -159,14 +161,14 @@ class MainWindow(qtw.QMainWindow):
         viewMenu.addAction(self.closeAllAction)
 
     def _createServiceMenu(self):
-        serviceMenu = self.menuBar.addMenu('&Service')
+        serviceMenu = self.menuBar.addMenu('&Сервисы')
         serviceMenu.addAction(self.calculateDataAction)
         serviceMenu.addAction(self.createMapAction)
         serviceMenu.addAction(self.createReportAction)
         serviceMenu.addAction(self.pythonConsoleAction)
 
     def _createSettingsMenu(self):
-        settingsMenu = self.menuBar.addMenu('&Settings')
+        settingsMenu = self.menuBar.addMenu('&Настройки')
         settingsMenu.addAction(self.openSettingsActions)
         settingsMenu.addAction(self.loadSettingsFromFileActions)
         settingsMenu.addAction(self.saveSettingsToFileActions)
@@ -216,7 +218,7 @@ class MainWindow(qtw.QMainWindow):
         Создание статус бара.
         '''
         self.statusbar = self.statusBar()
-        self.statusbar.showMessage('Hello world!', 3000)
+        self.statusbar.showMessage('Привет пользователь! Я за тобой слежу!', 30000)
 
     def _createActions(self):
         '''
@@ -228,118 +230,126 @@ class MainWindow(qtw.QMainWindow):
         self._createSettingsActions()
 
     def _creteFileActions(self):
-        self.clearAction = qtw.QAction('Clea&r', self)
+        self.clearAction = qtw.QAction('&Очистить окно', self)
         self.clearAction.setIcon(self.getIcon(':x.svg'))
-        self.clearAction.setStatusTip('Clear')
+        self.clearAction.setStatusTip('Очистить все данные в программе.')
 
-        self.openTxtAction = qtw.QAction('Open *.&txt...', self)
+        self.openTxtAction = qtw.QAction('Открыть *.&txt...', self)
         self.openTxtAction.setIcon(self.getIcon(':file-plus.svg'))
-        self.openTxtAction.setStatusTip('Open TXT file')
+        self.openTxtAction.setStatusTip('Открыть txt файл с данными.')
 
-        self.openPddAction = qtw.QAction('Open *.&pdd...', self)
+        self.openPddAction = qtw.QAction('Открыть *.&pdd...', self)
         self.openPddAction.setIcon(self.getIcon(':file.svg'))
-        self.openPddAction.setStatusTip('Open file')
+        self.openPddAction.setStatusTip('Открыть pdd файл с данными.')
 
-        self.openCsvAction = qtw.QAction('Open *.&csv...', self)
+        self.openCsvAction = qtw.QAction('Открыть *.&csv...', self)
         self.openCsvAction.setIcon(self.getIcon(':file-text.svg'))
-        self.openCsvAction.setStatusTip('Open CSV file')
+        self.openCsvAction.setStatusTip('Открыть csv файл с данными.')
 
-        self.openPickleAction = qtw.QAction('Open *.&pickle...', self)
+        self.openPickleAction = qtw.QAction('Открыть *.&pickle...', self)
         self.openPickleAction.setIcon(self.getIcon(':file.svg'))
-        self.openPickleAction.setStatusTip(
-            'Open pickle file')
+        self.openPickleAction.setStatusTip('Открыть pickle файл с данными.')
+        self.openPickleAction.setShortcut('Ctrl+O')
 
-        self.savePickleAction = qtw.QAction('Save as *.pickle...', self)
+        self.savePickleAction = qtw.QAction('Сохранить как *.pickle...', self)
         self.savePickleAction.setIcon(self.getIcon(':save.svg'))
-        self.savePickleAction.setStatusTip(
-            'Save data to pickle file')
+        self.savePickleAction.setStatusTip('Сохранить данные в формате pickle')
         self.savePickleAction.setShortcut('Ctrl+S')
 
-        self.saveCsvAction = qtw.QAction('Save as *.csv...', self)
+        self.saveCsvAction = qtw.QAction('Сохранить как *.csv...', self)
         self.saveCsvAction.setIcon(self.getIcon(':file-text.svg'))
-        self.saveCsvAction.setStatusTip('Save data to csv file')
+        self.saveCsvAction.setStatusTip('Сохранить данные в формате csv')
 
-        self.exitAction = qtw.QAction('&Exit', self)
+        self.exitAction = qtw.QAction('&Закрыть приложение', self)
         self.exitAction.setIcon(self.getIcon(':log-out.svg'))
-        self.exitAction.setStatusTip('Exit application')
+        self.exitAction.setStatusTip('Закрыть приложение навсегда')
         self.exitAction.setShortcut('Ctrl+Q')
 
     def _creteServiceActions(self):
-        self.calculateDataAction = qtw.QAction('&Calculate data')
+        self.calculateDataAction = qtw.QAction('&Рассчитать данные')
         self.calculateDataAction.setIcon(self.getIcon(':percent.svg'))
-        self.calculateDataAction.setStatusTip('Calculate data from source')
+        self.calculateDataAction.setStatusTip(
+            'Рассчитать данные для дальнейшего анализа')
 
-        self.createMapAction = qtw.QAction('Create &map', self)
+        self.createMapAction = qtw.QAction('Создать &карту', self)
         self.createMapAction.setIcon(self.getIcon(':map.svg'))
-        self.createMapAction.setStatusTip('Create interactive map')
+        self.createMapAction.setStatusTip('Создать интерактивную карту полёта')
 
-        self.createReportAction = qtw.QAction('Create &report', self)
+        self.createReportAction = qtw.QAction('Создать &отчёт', self)
         self.createReportAction.setIcon(self.getIcon(':mail.svg'))
-        self.createReportAction.setStatusTip('Create xlsx report')
+        self.createReportAction.setStatusTip(
+            'Создать отчет по полету и сохранить его в xlsx')
 
-        self.pythonConsoleAction = qtw.QAction('&Python Console', self)
+        self.pythonConsoleAction = qtw.QAction('&Python консоль', self)
         self.pythonConsoleAction.setIcon(self.getIcon(':terminal'))
-        self.createReportAction.setStatusTip('Open python console window')
+        self.pythonConsoleAction.setStatusTip('Открыть окно консоли')
 
     def _createViewActions(self):
-        self.hideLeftMenuAction = qtw.QAction('&Hide left menu')
+        self.hideLeftMenuAction = qtw.QAction('&Скрыть левое меню')
         self.hideLeftMenuAction.setIcon(self.getIcon(':eye-off'))
-        self.hideLeftMenuAction.setStatusTip('Hide/Unhide left menu')
+        self.hideLeftMenuAction.setStatusTip('Скрыть/показать левое меню')
         self.hideLeftMenuAction.setCheckable(True)
 
-        self.createGraphAction = qtw.QAction('&Create graph')
+        self.createGraphAction = qtw.QAction('&Создать график')
         self.createGraphAction.setIcon(self.getIcon(':trending-up.svg'))
-        self.createGraphAction.setStatusTip('Create graph in new window')
+        self.createGraphAction.setStatusTip('Создать график в новом окне')
 
-        self.createDefaultGraphAction = qtw.QAction('&Create default graphs')
+        self.createDefaultGraphAction = qtw.QAction(
+            '&Создать графики по умолчанию')
         self.createDefaultGraphAction.setIcon(self.getIcon(':shuffle.svg'))
         self.createDefaultGraphAction.setStatusTip(
-            'Create default graph in new window')
+            'Создать графики по умолчанию в новых окнах')
 
-        self.cascadeAction = qtw.QAction('Casca&de Windows')
+        self.cascadeAction = qtw.QAction('&Каскадное расположение')
         self.cascadeAction.setIcon(self.getIcon(':bar-chart.svg'))
-        self.cascadeAction.setStatusTip('Cascade View Graph Windows')
+        self.cascadeAction.setStatusTip('Каскадное расположение окон графиков')
 
-        self.horizontalAction = qtw.QAction('&Horizontal Windows')
+        self.horizontalAction = qtw.QAction('&Горизонтальное расположение')
         self.horizontalAction.setIcon(self.getIcon(':more-vertical.svg'))
-        self.horizontalAction.setStatusTip('Horizontal View Graph Windows')
+        self.horizontalAction.setStatusTip(
+            'Горизонтальное расположение окон графиков')
 
-        self.verticalAction = qtw.QAction('&Vertical Windows')
+        self.verticalAction = qtw.QAction('&Вертикальное расположение')
         self.verticalAction.setIcon(self.getIcon(':more-horizontal.svg'))
-        self.verticalAction.setStatusTip('Vertical View Graph Windows')
+        self.verticalAction.setStatusTip(
+            'Вертикальное расположение окон графиков')
 
-        self.trackGraphAction = qtw.QAction('&Track graph')
+        self.trackGraphAction = qtw.QAction('&Сихронизация графиков')
         self.trackGraphAction.setIcon(self.getIcon(':move.svg'))
-        self.trackGraphAction.setStatusTip('Track Grapth in all Windows')
+        self.trackGraphAction.setStatusTip(
+            'Синхронизация всех графиков по оси Ох')
         self.trackGraphAction.setCheckable(True)
 
-        self.closeAllAction = qtw.QAction('Close &all Windows')
+        self.closeAllAction = qtw.QAction('Закрыть &все окна')
         self.closeAllAction.setIcon(self.getIcon(':x-circle.svg'))
-        self.closeAllAction.setStatusTip('Close all opened Windows')
+        self.closeAllAction.setStatusTip('Закрыть все открытые окна')
 
     def _createSettingsActions(self):
-        self.openSettingsActions = qtw.QAction('&Settings')
+        self.openSettingsActions = qtw.QAction('&Настройки')
         self.openSettingsActions.setIcon(self.getIcon(':settings.svg'))
-        self.openSettingsActions.setStatusTip('Settings menu')
+        self.openSettingsActions.setStatusTip('Меню настроек')
 
-        self.setDefaultSettingsActions = qtw.QAction('Set &default settings')
+        self.setDefaultSettingsActions = qtw.QAction(
+            '&Установить стандартные настройки')
         self.setDefaultSettingsActions.setIcon(self.getIcon(':sliders.svg'))
-        self.setDefaultSettingsActions.setStatusTip('Set default settings')
+        self.setDefaultSettingsActions.setStatusTip(
+            'Установить стандартные настройки')
 
         self.loadSettingsFromFileActions = qtw.QAction(
-            'Load settings from file')
+            'Загрузить настройки из файла')
         self.loadSettingsFromFileActions.setIcon(self.getIcon(':download.svg'))
         self.loadSettingsFromFileActions.setStatusTip(
-            'Save settings to file json')
+            'Загрузить настройки из файла json')
 
-        self.saveSettingsToFileActions = qtw.QAction('Sa&ve settings to file')
+        self.saveSettingsToFileActions = qtw.QAction(
+            '&Сохранить настройки в файл')
         self.saveSettingsToFileActions.setIcon(self.getIcon(':save.svg'))
         self.saveSettingsToFileActions.setStatusTip(
-            'Save settings to file json')
+            'Сохранить настройки в файл json')
 
-        self.aboutAction = qtw.QAction('&About')
+        self.aboutAction = qtw.QAction('&О программе')
         self.aboutAction.setIcon(self.getIcon(':help-circle.svg'))
-        self.aboutAction.setStatusTip('About programm')
+        self.aboutAction.setStatusTip('О программе')
 
     def _connectActions(self):
         '''
@@ -353,7 +363,8 @@ class MainWindow(qtw.QMainWindow):
     def _connectFileActions(self):
         self.clearAction.triggered.connect(self.clearMainWindow)
         self.openTxtAction.triggered.connect(partial(self.openTextFile, 'txt'))
-        self.openPddAction.triggered.connect(partial(self.openBinaryFile, 'pdd'))
+        self.openPddAction.triggered.connect(
+            partial(self.openBinaryFile, 'pdd'))
         self.openPickleAction.triggered.connect(
             partial(self.openBinaryFile, 'pkl'))
         self.openCsvAction.triggered.connect(partial(self.openTextFile, 'csv'))
@@ -393,8 +404,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Создание бокового чек-бокс дерева для построения графиков
         '''
-        if self.controller.get_data() == {}:
-            self.setNotify('warning', 'Need to select the data')
+        if not self.checkData():
             return
 
         self.tree.clear()
@@ -420,7 +430,8 @@ class MainWindow(qtw.QMainWindow):
                         else:
                             treeItem.setForeground(1, QColor('red'))
                         treeItem.setTextAlignment(1, 2)
-                        treeItem.setFlags(treeItem.flags() | Qt.ItemIsUserCheckable)
+                        treeItem.setFlags(treeItem.flags() |
+                                          Qt.ItemIsUserCheckable)
                         treeItem.setCheckState(0, Qt.Unchecked)
         self.tree.show()
         self.tree.resizeColumnToContents(0)
@@ -452,7 +463,7 @@ class MainWindow(qtw.QMainWindow):
         if self.hideLeftMenuAction.isChecked():
             self.hideLeftMenuAction.setIcon(self.getIcon(':eye'))
             self.tree.hide()
-        else: 
+        else:
             self.hideLeftMenuAction.setIcon(self.getIcon(':eye-off'))
             self.tree.show()
 
@@ -460,7 +471,7 @@ class MainWindow(qtw.QMainWindow):
         icon = QIcon(name)
         if self.settings.value('mainSettings')['theme'] == 'white':
             return icon
-        pixmap = icon.pixmap(50,50)
+        pixmap = icon.pixmap(50, 50)
         color = QColor(255, 255, 255)
         painter = QPainter(pixmap)
         painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
@@ -479,7 +490,7 @@ class MainWindow(qtw.QMainWindow):
             check = True
         else:
             filepath, check = qtw.QFileDialog.getOpenFileName(None,
-                'Open file', '', f'Open File (*.{filetype})')
+                                                              'Open file', '', f'Open File (*.{filetype})')
         if check:
             try:
                 if filetype == 'pkl':
@@ -491,45 +502,46 @@ class MainWindow(qtw.QMainWindow):
                 self.settings.setValue('lastFile',
                                        {'filePath': filepath,
                                         'param': filetype})
-                self.setNotify('success', f'{filepath} file opened')
+                self.setNotify('успех', f'Файл {filepath} открыт')
             except FileNotFoundError:
-                self.setNotify('error', 'file not found')
+                self.setNotify('ошибка', 'Файл не найден')
             except ValueError as e:
-                self.setNotify('error', str(e))
+                self.setNotify('ошибка', str(e))
 
     def openTextFile(self, filetype):
         if self.openFileWindow is None:
             try:
                 categories = self.controller.get_json_categories(
                     self.settings.value('mainSettings')['jsonDir'])
-                self.openFileWindow = OpenFileWindow(self.controller, filetype, categories, self)
+                self.openFileWindow = OpenFileWindow(
+                    self.controller, filetype, categories, self)
             except KeyError:
-                self.setNotify('error', 'bad json data in json folder')
+                self.setNotify('ошибка', 'Неверные данные в json файлах')
                 return
             except NoneJsonError:
-                self.setNotify('error', 'not json in folder')
+                self.setNotify('ошибка', 'Нет json файлов в папке')
                 return
             except FileNotFoundError:
-                self.setNotify('error', 'file not found')
+                self.setNotify('ошибка', 'Не найден путь к папке')
             except Exception as e:
-                self.setNotify('error', str(e))
+                self.setNotify('ошибка', str(e))
                 return
         else:
             self.openFileWindow.hide()
         self.center(self.openFileWindow)
         self.openFileWindow.show()
-    
+
     def destroyChildWindow(self):
         '''
         Метод удаления дочерних окон.
         Необходим для обновления информации в них. Временное решение.
         '''
-        #TODO на подумать, можно в этих окнах реализовать апдейт
-        #при открытии нового файла
-        if self.reportWindow: 
+        # TODO на подумать, можно в этих окнах реализовать апдейт
+        # при открытии нового файла
+        if self.reportWindow:
             delete(self.reportWindow)
             self.reportWindow = None
-        if self.mapWindow: 
+        if self.mapWindow:
             delete(self.mapWindow)
             self.mapWindow = None
         if self.calcWindow:
@@ -546,8 +558,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Сохранение данных в формате CSV
         '''
-        if self.controller.get_data() == {}:
-            self.setNotify('warning', 'Need to select the data')
+        if not self.checkData():
             return
 
         if self.saveCsvWindow is None:
@@ -561,28 +572,28 @@ class MainWindow(qtw.QMainWindow):
         '''
         Сохранение данных в формате pickle
         '''
-        if self.controller.get_data() == {}:
-            self.setNotify('warning', 'Need to select the data')
+        if not self.checkData():
             return
+
         options = qtw.QFileDialog.Options()
         filePath, _ = qtw.QFileDialog.getSaveFileName(self,
-            "Save File", "", "Pickle Files (*.pkl);;All Files(*)",
+                                                      "Save File", "", "Pickle Files (*.pkl);;All Files(*)",
                                                       options=options)
         if filePath:
             try:
                 self.controller.save_pickle(filePath)
-                self.setNotify('success', f'Pickle file saved to {filePath}')
+                self.setNotify('успех', f'Pickle файл сохранен в {filePath}')
             except PermissionError:
-                self.setNotify('error', 'File opened in another program')
+                self.setNotify(
+                    'ошибка', 'Файл открыт в другой программе или занят.')
             except Exception as e:
-                self.setNotify('error', str(e))
+                self.setNotify('ошибка', str(e))
 
     def calculateData(self):
         '''
         Метод для расчета данных
         '''
-        if self.controller.get_data() == {}:
-            self.setNotify('warning', 'Need to select the data')
+        if not self.checkData():
             return
 
         if self.calcWindow is None:
@@ -596,9 +607,9 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для открытия окна генерации карты
         '''
-        if self.controller.get_data() == {}:
-            self.setNotify('warning', 'Need to select the data')
+        if not self.checkData():
             return
+
         if self.mapWindow is None:
             self.mapWindow = MapWindow(self.controller, self)
         else:
@@ -610,12 +621,13 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для открытия окна создания отчёта
         '''
-        #TODO обновить проверку на необходимые данные
-        if self.controller.get_data() == {}:
-            self.setNotify('warning', 'Need to select the data')
+        # TODO обновить проверку на необходимые данные
+        if not self.checkData():
             return
+
         if not self.controller.is_calculated():
-            self.setNotify('warning', 'Need to calcuclate the data')
+            self.setNotify('предупреждение',
+                           'Нужно получить расчетные данные.')
             return
         if self.reportWindow is None:
             self.reportWindow = ReportWindow(self.controller, self)
@@ -635,41 +647,50 @@ class MainWindow(qtw.QMainWindow):
         Метод для создания окон графиков по чек-боксу бокового меню
         '''
         treeSelected = self._getTreeSelected()
-        
+
         if self.spinBox.text() != '0':
             decimation = int(self.spinBox.text())
-        else: decimation = 1
+        else:
+            decimation = 1
         try:
-            graphWindow = GraphWindow(self.controller.get_data(), treeSelected, decimation, self)
+            graphWindow = GraphWindow(
+                self.controller.get_data(), treeSelected, decimation, self)
             self.mdi.addSubWindow(graphWindow)
             graphWindow.show()
             self.trackGraph()
         except AttributeError:
-            self.setNotify('warning', 'Data not is dataframe')
+            self.setNotify('предупреждение', 'Данные не в нужном формате.')
         except KeyError:
-            self.setNotify('warning', 'Need select data')
+            self.setNotify('предупреждение', 'Необходимо выбрать данные.')
         except ValueError:
-            self.setNotify('warning', 'Choose element on left bare')
+            self.setNotify('предупреждение',
+                           'Выберите элементы для графика в левом меню.')
 
     def createDefaultGraph(self):
         '''
         Метод создания типовых графиков, которые задаются в настройках
         '''
-        #TODO исправить отрисовку стандратных графиков с новым форматом данных
-        if self.controller.get_data() == {} or self.settings.value('graphs')['default'] == []:
+        # TODO исправить отрисовку стандратных графиков с новым форматом данных
+        if not self.checkData():
+            return
+
+        if self.settings.value('graphs')['default'] == []:
             self.setNotify(
-                'warning', 'Need to select the data or check settings graphs')
+                'предупреждение', 'Проверьте настройки графиков в настройках программы.')
             return
 
         if self.spinBox.text() != '0':
             decimation = int(self.spinBox.text())
-        else: decimation = 1
+        else:
+            decimation = 1
 
         for graph in self.settings.value('graphs')['default']:
             if not set(graph).issubset(self.controller.get_data().columns):
-                self.setNotify('warning', f'{graph} not find in data')
+                self.setNotify('предупреждение',
+                               f'{graph} не найден в данных.')
                 continue
-            graphWindow = GraphWindow(self.controller.get_data(), graph, decimation, self)
+            graphWindow = GraphWindow(
+                self.controller.get_data(), graph, decimation, self)
             self.mdi.addSubWindow(graphWindow)
             graphWindow.show()
         self.horizontalWindows()
@@ -679,9 +700,9 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для открытия окна консоли
         '''
-        if self.controller.get_data() == {}:
-            self.setNotify('warning', 'Need to select the data')
+        if not self.checkData():
             return
+
         if self.consoleWindow is None:
             self.consoleWindow = ConsoleWindow(self.controller, self)
         else:
@@ -762,7 +783,7 @@ class MainWindow(qtw.QMainWindow):
             item = iterator.value()
             item_name = item.text(0)
             adr_name = item.parent().text(0)
-            category_name = item.parent().parent().text(0) 
+            category_name = item.parent().parent().text(0)
             treeSelected.append((category_name, adr_name, item_name))
             iterator += 1
         return treeSelected
@@ -772,11 +793,11 @@ class MainWindow(qtw.QMainWindow):
         Метод отправки библиотеки
         '''
         notify = self.notify.info
-        if type == 'warning':
+        if type == 'предупреждение':
             notify = self.notify.warning
-        if type == 'success':
+        if type == 'успех':
             notify = self.notify.sucess
-        if type == 'error':
+        if type == 'ошибка':
             notify = self.notify.critical
         notify(type.title(), txt, self, Align=BottomRight, duracion=6)
 
@@ -818,8 +839,8 @@ class MainWindow(qtw.QMainWindow):
         corrections = {'koef_Wx_PNK': 1, 'koef_Wy_PNK': 1, 'koef_Wz_PNK': 1,
                        'kurs_correct': 1, 'kren_correct': 1, 'tang_correct': 1}
         self.settings.setValue('corrections', corrections)
-        #TODO изменить формат хранения стандартных графиков под новый вид даты
-        #добавить возможность настройки цветов графиков
+        # TODO изменить формат хранения стандартных графиков под новый вид даты
+        # добавить возможность настройки цветов графиков
         graphs = {
             'background': 'black',
             'default': [['I1_Kren', 'I1_Tang'], ['JVD_H'], ['Wp_KBTIi', 'Wp_diss_pnki']]}
@@ -836,7 +857,7 @@ class MainWindow(qtw.QMainWindow):
         ]
         leftMenuFilters = {head: True for head in headers}
         self.settings.setValue('leftMenuFilters', leftMenuFilters)
-        mainSettings = {'theme':'black', 'jsonDir':'templates'}
+        mainSettings = {'theme': 'black', 'jsonDir': 'templates'}
         self.settings.setValue('mainSettings', mainSettings)
 
     def openSettings(self):
@@ -862,9 +883,10 @@ class MainWindow(qtw.QMainWindow):
                 self.settings.clear()
                 for key, value in data.items():
                     self.settings.setValue(key, value)
-                self.setNotify('success', f'Settings updated. Restart program.')
+                self.setNotify(
+                    'успех', f'Settings updated. Restart program.')
             except Exception as e:
-                self.setNotify('error', str(e))
+                self.setNotify('ошибка', str(e))
 
     def saveSettingsToFile(self):
         '''
@@ -879,24 +901,33 @@ class MainWindow(qtw.QMainWindow):
         if filepath:
             try:
                 self.controller.save_settings_json(filepath, data)
-                self.setNotify('success', f'Settings file saved to {filepath}')
+                self.setNotify('успех', f'Settings file saved to {filepath}')
             except PermissionError:
-                self.setNotify('error', 'File opened in another program')
+                self.setNotify('ошибка', 'File opened in another program')
             except Exception as e:
-                self.setNotify('error', str(e))
+                self.setNotify('ошибка', str(e))
 
     def setDefaultSettings(self):
         '''
         Метод очистки и установки стандартных настроек.
         '''
+        if self.settings:
+            restart = True
         self.settings.clear()
         self.defaultSettings()
-        if self.notify:
-            self.setNotify(
-                'success', 'Default settings are set. Restart program.')
-    
-    def restartApp(self):   
+        # if self.notify:
+        #     self.setNotify(
+        #         'успех', 'Default settings are set. Restart program.')
+        if restart:
+            self.restartApp()
+
+    def restartApp(self):
         program = sys.executable
         QProcess.startDetached(program, sys.argv)
         QCoreApplication.quit()
 
+    def checkData(self):
+        if self.controller.data_not_none():
+            return True
+        self.setNotify('предупреждение', 'Нужно выбрать данные')
+        return False

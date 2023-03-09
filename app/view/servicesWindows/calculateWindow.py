@@ -7,6 +7,7 @@ class CalcWindow(qtw.QWidget):
     parent - родительское окно
     controller - контроллер для получения данных.
     '''
+
     def __init__(self, controller, parent=None):
         super().__init__()
         self.parent = parent
@@ -18,7 +19,7 @@ class CalcWindow(qtw.QWidget):
         Метод отрисовки основных элементов окна.
         '''
         self.setGeometry(0, 0, 400, 300)
-        self.setWindowTitle("Calculate data")
+        self.setWindowTitle("Рассчитать данные")
         dlgLayout = qtw.QVBoxLayout()
 
         self.initInputBlock()
@@ -35,17 +36,18 @@ class CalcWindow(qtw.QWidget):
 
         self.planeComboBox = qtw.QComboBox()
         self.planeComboBox.addItems(self.parent.settings.value('planes'))
-        self.planeComboBox.setCurrentText(self.parent.settings.value('planeComboBox'))
+        self.planeComboBox.setCurrentText(
+            self.parent.settings.value('planeComboBox'))
         self.planeComboBox.activated.connect(self.saveComboBoxValue)
 
         self.initPnkBlock()
         self.initDissBlock()
 
-        self.formLayout.addRow('plane:', self.planeComboBox)
-        self.formLayout.addRow('calc pnk:', self.calcPnkCheckBox)
+        self.formLayout.addRow('Самолёт:', self.planeComboBox)
+        self.formLayout.addRow('Рассчитать ПНК:', self.calcPnkCheckBox)
         self.formLayout.addRow(self.categoryPnkComboBox)
         self.formLayout.addRow(self.adrPnkComboBox)
-        self.formLayout.addRow('calc diss:', self.calcDissCheckBox)
+        self.formLayout.addRow('Рассчитать ДИСС:', self.calcDissCheckBox)
         self.formLayout.addRow(self.categoryDissComboBox)
         self.formLayout.addRow(self.adrDissComboBox)
 
@@ -84,7 +86,7 @@ class CalcWindow(qtw.QWidget):
 
         self.categoryDissComboBox.hide()
         self.adrDissComboBox.hide()
-    
+
     def initButtonBlock(self):
         '''Метод инициализации кнопок на форме'''
         self.btnBox = qtw.QDialogButtonBox()
@@ -141,10 +143,10 @@ class CalcWindow(qtw.QWidget):
         Метод по нажатию кнопки ОК, который непосредственно запускает
         рассчет значений с их последующей передачей в главное окно
         '''
-        #TODO в дальнейшейм необходимо будет добавить рассчеты
+        # TODO в дальнейшейм необходимо будет добавить рассчеты
         # дисс, пока только пнк
         if not self.calcPnkCheckBox.isChecked():
-            self.parent.setNotify('warning', 'pnk checkbox required')
+            self.parent.setNotify('предупреждение', 'pnk checkbox required')
 
         plane_corr = self.parent.settings.value(
             'planes')[self.planeComboBox.currentText()]
@@ -157,8 +159,7 @@ class CalcWindow(qtw.QWidget):
                                                    plane_corr,
                                                    corrections)
             self.parent.createCheckBox()
-            self.parent.setNotify('success', 'data calculated')
+            self.parent.setNotify('успех', 'data calculated')
             self.close()
         except ValueError:
-            self.parent.setNotify('warning', 'Wrong data file')
-    
+            self.parent.setNotify('предупреждение', 'Wrong data file')

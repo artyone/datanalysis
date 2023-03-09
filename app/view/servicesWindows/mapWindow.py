@@ -9,6 +9,7 @@ class MapWindow(qtw.QWidget):
     controller - контроллер для получения данных.
     settings - настройки приложения.
     '''
+
     def __init__(self, controller, parent=None):
         super().__init__()
         self.parent = parent
@@ -49,14 +50,13 @@ class MapWindow(qtw.QWidget):
         self.formLayout.addRow('category', self.categoryComboBox)
         self.formLayout.addRow('adr', self.adrComboBox)
 
-
         self.jvdHMinLineEdit = qtw.QLineEdit(
             self.settings.value('map')['jvdHMin'])
         self.decimationLineEdit = qtw.QLineEdit(
             self.settings.value('map')['decimation'])
         self.formLayout.addRow('JVD_H min:', self.jvdHMinLineEdit)
         self.formLayout.addRow('decimation:', self.decimationLineEdit)
-    
+
     def initButtonBlock(self):
         '''Метод инициализации кнопок на форме'''
         self.btnBox = qtw.QDialogButtonBox()
@@ -84,7 +84,7 @@ class MapWindow(qtw.QWidget):
         '''
         options = qtw.QFileDialog.Options()
         filePath, _ = qtw.QFileDialog.getSaveFileName(self,
-            "Save File", "", "html Files (*.html);;All Files(*)", options=options)
+                                                      "Save File", "", "html Files (*.html);;All Files(*)", options=options)
         if filePath:
             try:
                 self.controller.save_map(filePath,
@@ -97,17 +97,17 @@ class MapWindow(qtw.QWidget):
                     'decimation': self.decimationLineEdit.text()
                 })
                 self.parent.setNotify(
-                    'success', f'html file saved to {filePath}')
+                    'успех', f'html file saved to {filePath}')
                 self.filePath = filePath
                 self.openButton.show()
 
             except PermissionError:
                 self.parent.setNotify(
-                    'error', 'File opened in another program')
+                    'ошибка', 'File opened in another program')
             except ValueError as e:
-                self.parent.setNotify('error', str(e))
+                self.parent.setNotify('ошибка', str(e))
             except Exception as e:
-                self.parent.setNotify('error', str(e))
+                self.parent.setNotify('ошибка', str(e))
 
     def openFile(self):
         '''

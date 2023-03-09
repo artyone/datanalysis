@@ -28,6 +28,9 @@ class Control(object):
             data_from_file = file_methods.load_txt(filepath)
         else:
             data_from_file = file_methods.load_csv(filepath)
+        if 'name' in data_from_file.columns:
+            data_from_file = data_from_file.rename(columns={'name': 'time'})
+
         self.data[category] = {adr:data_from_file}
         self.data_calculated = self._check_calculated()
 
@@ -216,6 +219,11 @@ class Control(object):
     def get_json_categories(cls, dirpath):
         json_categories = {json['name']:json['adr'] for json in cls.get_jsons_data(dirpath)}
         return json_categories
+
+    def data_not_none(self):
+        if self.data:
+            return True
+        return False
 
 
 

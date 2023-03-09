@@ -10,6 +10,7 @@ class SettingsWindow(qtw.QWidget):
     list* - словари для сохранения объектов настроек.
     controller - контроллер.
     '''
+
     def __init__(self, controller, parent=None):
         super().__init__()
         self.parent = parent
@@ -30,11 +31,11 @@ class SettingsWindow(qtw.QWidget):
         self.setWindowTitle("Settings menu")
         layout = qtw.QVBoxLayout()
         tabWidget = qtw.QTabWidget()
-        tabWidget.addTab(self.mainTab(), 'Main settings')
-        tabWidget.addTab(self.filterMenuTab(), 'Filter left menu')
-        tabWidget.addTab(self.planeTab(), 'Planes')
-        tabWidget.addTab(self.correctionTab(), 'Corrections')
-        tabWidget.addTab(self.graphTab(), 'Graph')
+        tabWidget.addTab(self.mainTab(), 'Общие настройки')
+        tabWidget.addTab(self.filterMenuTab(), 'Фильтр бокового меню')
+        tabWidget.addTab(self.planeTab(), 'Самолёты')
+        tabWidget.addTab(self.correctionTab(), 'Коррекция')
+        tabWidget.addTab(self.graphTab(), 'Графики')
         self.saveButton = qtw.QPushButton('Save')
         self.saveButton.clicked.connect(self.saveSettings)
         layout.addWidget(tabWidget)
@@ -49,12 +50,12 @@ class SettingsWindow(qtw.QWidget):
         tabLayout = qtw.QFormLayout()
 
         lineEdit = self.initBrowseBlock()
-        tabLayout.addRow('json dir', lineEdit)
+        tabLayout.addRow('Путь к json папке:', lineEdit)
 
         self.themeComboBox = qtw.QComboBox()
         self.themeComboBox.addItems(['black', 'white'])
         self.themeComboBox.setCurrentText(self.listMainSettings['theme'])
-        tabLayout.addRow('theme', self.themeComboBox)
+        tabLayout.addRow('Тема:', self.themeComboBox)
 
         tabWidget.setLayout(tabLayout)
         return tabWidget
@@ -74,7 +75,7 @@ class SettingsWindow(qtw.QWidget):
 
     def openDirectoryDialog(self):
         directoryPath = qtw.QFileDialog.getExistingDirectory(None,
-            "Select Directory")
+                                                             "Выберите папку")
         if directoryPath:
             self.browseLineEdit.setText(directoryPath)
 
@@ -85,7 +86,7 @@ class SettingsWindow(qtw.QWidget):
         tabScrollArea = qtw.QScrollArea()
         tabWidget = qtw.QWidget()
         tabLayout = qtw.QVBoxLayout()
-        self.uncheckButton = qtw.QPushButton('Uncheck all')
+        self.uncheckButton = qtw.QPushButton('Снять все отметки')
         self.uncheckButton.setMaximumWidth(100)
         self.uncheckButton.clicked.connect(self.uncheckAllCheckBox)
         tabLayout.addWidget(self.uncheckButton)
@@ -154,14 +155,15 @@ class SettingsWindow(qtw.QWidget):
         tabWidget = qtw.QWidget()
         tabLayout = qtw.QFormLayout()
         bground = qtw.QComboBox()
-        bground.addItems(['black', 'white', 'red', 'green', 'pink', 'blue', 'gray'])
+        bground.addItems(
+            ['black', 'white', 'red', 'green', 'pink', 'blue', 'gray'])
         bground.setCurrentText(self.listGraphs['background'])
-        tabLayout.addRow('background', bground)
+        tabLayout.addRow('Фон графиков:', bground)
         self.listGraphs['background'] = bground
 
         string = ','.join(['+'.join(i) for i in self.listGraphs['default']])
         defaultLineEdit = qtw.QLineEdit(string)
-        tabLayout.addRow('default', defaultLineEdit)
+        tabLayout.addRow('Графики по умолчанию:', defaultLineEdit)
         self.listGraphs['default'] = defaultLineEdit
         tabWidget.setLayout(tabLayout)
         return tabWidget
@@ -181,11 +183,12 @@ class SettingsWindow(qtw.QWidget):
         self.saveCorrectionsSettings()
         self.saveGraphSettings()
         self.saveLeftMenuFilterSettings()
-        self.parent.setNotify('success', 'Settings saved. Restart program.')
+        self.parent.setNotify(
+            'успех', 'Настройки сохранены, перезапустите приложение!')
         self.parent.restartApp()
 
     def saveMainSettings(self):
-        newValueMainSettings = {'theme': self.themeComboBox.currentText(), 
+        newValueMainSettings = {'theme': self.themeComboBox.currentText(),
                                 'jsonDir': self.browseLineEdit.text()}
         self.settings.setValue('mainSettings', newValueMainSettings)
 
@@ -207,12 +210,12 @@ class SettingsWindow(qtw.QWidget):
         self.settings.setValue('corrections', newValueCorrections)
 
     def saveGraphSettings(self):
-        #TODO изменить сохранения настроек для стандартных графиков
+        # TODO изменить сохранения настроек для стандартных графиков
         graphBackground = self.listGraphs['background'].currentText()
         graphDefault = [i.split('+')
                         for i in self.listGraphs['default'].text().replace(' ', '').split(',')]
-        graphSettings = {'background':graphBackground, 
-                         'default':graphDefault}
+        graphSettings = {'background': graphBackground,
+                         'default': graphDefault}
         self.settings.setValue('graphs', graphSettings)
 
     def saveLeftMenuFilterSettings(self):
@@ -235,11 +238,11 @@ class SettingsWindow(qtw.QWidget):
         '''
         Метод снятия всех чек-боксов.
         '''
-        if self.uncheckButton.text() == 'Uncheck all':
+        if self.uncheckButton.text() == 'Снять все отметки':
             for widget in self.listMenuFilters.values():
                 widget.setChecked(False)
-            self.uncheckButton.setText('Check all')
+            self.uncheckButton.setText('Отметить всё')
         else:
             for widget in self.listMenuFilters.values():
                 widget.setChecked(True)
-            self.uncheckButton.setText('Uncheck all')
+            self.uncheckButton.setText('Снять все отметки')
