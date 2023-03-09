@@ -160,11 +160,10 @@ class SettingsWindow(qtw.QWidget):
         bground.setCurrentText(self.listGraphs['background'])
         tabLayout.addRow('Фон графиков:', bground)
         self.listGraphs['background'] = bground
-
-        string = ','.join(['+'.join(i) for i in self.listGraphs['default']])
-        defaultLineEdit = qtw.QLineEdit(string)
-        tabLayout.addRow('Графики по умолчанию:', defaultLineEdit)
-        self.listGraphs['default'] = defaultLineEdit
+        string = '\n'.join([','.join([' '.join(x) for x in item]) for item in self.listGraphs['default']])
+        defaultTextEdit = qtw.QPlainTextEdit(string)
+        tabLayout.addRow('Графики по умолчанию:', defaultTextEdit)
+        self.listGraphs['default'] = defaultTextEdit
         tabWidget.setLayout(tabLayout)
         return tabWidget
 
@@ -210,10 +209,10 @@ class SettingsWindow(qtw.QWidget):
         self.settings.setValue('corrections', newValueCorrections)
 
     def saveGraphSettings(self):
-        # TODO изменить сохранения настроек для стандартных графиков
         graphBackground = self.listGraphs['background'].currentText()
-        graphDefault = [i.split('+')
-                        for i in self.listGraphs['default'].text().replace(' ', '').split(',')]
+        graphDefault = [[tuple(x.split()) for x in row.split(',')] 
+                         for row in self.listGraphs['default'].toPlainText().split('\n')]
+
         graphSettings = {'background': graphBackground,
                          'default': graphDefault}
         self.settings.setValue('graphs', graphSettings)

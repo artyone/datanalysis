@@ -397,7 +397,7 @@ class MainWindow(qtw.QMainWindow):
         self.saveSettingsToFileActions.triggered.connect(
             self.saveSettingsToFile)
         self.setDefaultSettingsActions.triggered.connect(
-            self.setDefaultSettings)
+            partial(self.setDefaultSettings, True))
         self.aboutAction.triggered.connect(self.about)
 
     def createCheckBox(self):
@@ -642,11 +642,14 @@ class MainWindow(qtw.QMainWindow):
         '''
         pass
 
-    def createGraph(self):
+    def createGraph(self, customSelected=None):
         '''
         Метод для создания окон графиков по чек-боксу бокового меню
         '''
-        treeSelected = self._getTreeSelected()
+        if customSelected:
+            treeSelected = customSelected
+        else: 
+            treeSelected = self._getTreeSelected()
 
         if self.spinBox.text() != '0':
             decimation = int(self.spinBox.text())
@@ -661,16 +664,22 @@ class MainWindow(qtw.QMainWindow):
         except AttributeError:
             self.setNotify('предупреждение', 'Данные не в нужном формате.')
         except KeyError:
-            self.setNotify('предупреждение', 'Необходимо выбрать данные.')
+            if customSelected:
+                self.setNotify('предупреждение', 'Проверьте настройки графиков по умолчанию')
+            else:  
+                self.setNotify('предупреждение', 'Указанный столбец не найден в данных')
         except ValueError:
-            self.setNotify('предупреждение',
+            if customSelected:
+                self.setNotify('предупреждение', 'Проверьте настройки графиков по умолчанию')
+            else:
+                self.setNotify('предупреждение',
                            'Выберите элементы для графика в левом меню.')
 
     def createDefaultGraph(self):
         '''
         Метод создания типовых графиков, которые задаются в настройках
         '''
-        # TODO исправить отрисовку стандратных графиков с новым форматом данных
+
         if not self.checkData():
             return
 
@@ -679,22 +688,8 @@ class MainWindow(qtw.QMainWindow):
                 'предупреждение', 'Проверьте настройки графиков в настройках программы.')
             return
 
-        if self.spinBox.text() != '0':
-            decimation = int(self.spinBox.text())
-        else:
-            decimation = 1
-
         for graph in self.settings.value('graphs')['default']:
-            if not set(graph).issubset(self.controller.get_data().columns):
-                self.setNotify('предупреждение',
-                               f'{graph} не найден в данных.')
-                continue
-            graphWindow = GraphWindow(
-                self.controller.get_data(), graph, decimation, self)
-            self.mdi.addSubWindow(graphWindow)
-            graphWindow.show()
-        self.horizontalWindows()
-        self.trackGraph()
+            self.createGraph(graph)
 
     def pythonConsole(self):
         '''
@@ -843,7 +838,11 @@ class MainWindow(qtw.QMainWindow):
         # добавить возможность настройки цветов графиков
         graphs = {
             'background': 'black',
-            'default': [['I1_Kren', 'I1_Tang'], ['JVD_H'], ['Wp_KBTIi', 'Wp_diss_pnki']]}
+            'default': [
+                [('PNK', 'ADR8', 'latitude'), ('Calc', 'PNK', 'Wp_diss_pnki')],
+                [('PNK', 'ADR8', 'longitude'), ('Calc', 'PNK', 'Wp_KBTIi')]
+            ]
+        }
         self.settings.setValue('graphs', graphs)
         headers = [
             'time', 'latitude', 'longitude', 'JVD_H', 'JVD_VN', 'JVD_VE',
@@ -884,7 +883,8 @@ class MainWindow(qtw.QMainWindow):
                 for key, value in data.items():
                     self.settings.setValue(key, value)
                 self.setNotify(
-                    'успех', f'Settings updated. Restart program.')
+                    'успех', f'Настройки применены.')
+                self.restartApp()
             except Exception as e:
                 self.setNotify('ошибка', str(e))
 
@@ -907,18 +907,13 @@ class MainWindow(qtw.QMainWindow):
             except Exception as e:
                 self.setNotify('ошибка', str(e))
 
-    def setDefaultSettings(self):
+    def setDefaultSettings(self, needRestart=False):
         '''
         Метод очистки и установки стандартных настроек.
         '''
-        if self.settings:
-            restart = True
         self.settings.clear()
         self.defaultSettings()
-        # if self.notify:
-        #     self.setNotify(
-        #         'успех', 'Default settings are set. Restart program.')
-        if restart:
+        if needRestart:
             self.restartApp()
 
     def restartApp(self):
