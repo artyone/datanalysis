@@ -67,7 +67,6 @@ class ConsoleWindow(qtw.QMainWindow):
         self.parent = parent
         self.filepath = None
         self.initUI()
-        # TODO решить проблему с темной темой
 
     def initUI(self):
         '''
@@ -211,6 +210,7 @@ class ConsoleWindow(qtw.QMainWindow):
             self.parent.mdi.addSubWindow(graphWindow)
             graphWindow.show()
             self.parent.trackGraph()
+            self.parent.checkPositioningWindows()
         except AttributeError:
             self.parent.setNotify('предупреждение', 'Данные не являются dataframe')
         except KeyError:

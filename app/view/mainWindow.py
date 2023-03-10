@@ -308,11 +308,13 @@ class MainWindow(qtw.QMainWindow):
         self.horizontalAction.setIcon(self.getIcon(':more-vertical.svg'))
         self.horizontalAction.setStatusTip(
             'Горизонтальное расположение окон графиков')
+        self.horizontalAction.setCheckable(True)
 
         self.verticalAction = qtw.QAction('&Вертикальное расположение')
         self.verticalAction.setIcon(self.getIcon(':more-horizontal.svg'))
         self.verticalAction.setStatusTip(
             'Вертикальное расположение окон графиков')
+        self.verticalAction.setCheckable(True)
 
         self.trackGraphAction = qtw.QAction('&Сихронизация графиков')
         self.trackGraphAction.setIcon(self.getIcon(':move.svg'))
@@ -387,7 +389,6 @@ class MainWindow(qtw.QMainWindow):
         self.horizontalAction.triggered.connect(self.horizontalWindows)
         self.verticalAction.triggered.connect(self.verticalWindows)
         self.trackGraphAction.triggered.connect(self.trackGraph)
-        self.trackGraphAction.toggled.connect(self.trackGraph)
         self.closeAllAction.triggered.connect(self._closeAllWindows)
 
     def _connectSettingsActions(self):
@@ -456,16 +457,12 @@ class MainWindow(qtw.QMainWindow):
         self.tree.hide()
         self.mdi.closeAllSubWindows()
         self.destroyChildWindow()
+        self.checkPositioningWindows()
         self.trackGraph()
         self.settings.setValue('lastFile', None)
 
-    def hideLeftMenu(self):
-        if self.hideLeftMenuAction.isChecked():
-            self.hideLeftMenuAction.setIcon(self.getIcon(':eye'))
-            self.tree.hide()
-        else:
-            self.hideLeftMenuAction.setIcon(self.getIcon(':eye-off'))
-            self.tree.show()
+
+        
 
     def getIcon(self, name):
         icon = QIcon(name)
@@ -661,6 +658,7 @@ class MainWindow(qtw.QMainWindow):
             self.mdi.addSubWindow(graphWindow)
             graphWindow.show()
             self.trackGraph()
+            self.checkPositioningWindows()
         except AttributeError:
             self.setNotify('предупреждение', 'Данные не в нужном формате.')
         except KeyError:
@@ -709,14 +707,22 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для построения окон в виде каскада.
         '''
+        if not self.mdi.subWindowList():
+            return
+        self.verticalAction.setChecked(False)
+        self.horizontalAction.setChecked(False)
         self.mdi.cascadeSubWindows()
 
     def horizontalWindows(self):
         '''
         Метод для построения окон в горизональном виде.
         '''
-        if not self.mdi.subWindowList():
+        if not self.mdi.subWindowList() or not self.horizontalAction.isChecked():
+            self.horizontalAction.setChecked(False)
             return
+        
+
+        self.verticalAction.setChecked(False)
         width = self.mdi.width()
         heigth = self.mdi.height() // len(self.mdi.subWindowList())
         pnt = [0, 0]
@@ -730,16 +736,47 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для построения окон в вертикальном виде.
         '''
-        if not self.mdi.subWindowList():
+        if not self.mdi.subWindowList() or not self.verticalAction.isChecked():
+            self.verticalAction.setChecked(False)
             return
+        
+        self.horizontalAction.setChecked(False)
         width = self.mdi.width() // len(self.mdi.subWindowList())
         heigth = self.mdi.height()
+
         pnt = [0, 0]
         for window in self.mdi.subWindowList():
             window.showNormal()
             window.setGeometry(0, 0, width, heigth)
             window.move(pnt[0], pnt[1])
             pnt[0] += width
+
+    def checkPositioningWindows(self):
+        if not self.mdi.subWindowList():
+            self.verticalAction.setChecked(False)
+            self.horizontalAction.setChecked(False)
+            return
+        if self.verticalAction.isChecked():
+            self.verticalWindows()
+            return
+        if self.horizontalAction.isChecked():
+            self.horizontalWindows()
+            return
+
+    def hideLeftMenu(self):
+        '''Метод скрытия левого меню'''
+        if self.hideLeftMenuAction.isChecked():
+            self.hideLeftMenuAction.setIcon(self.getIcon(':eye'))
+            self.tree.hide()
+            QCoreApplication.processEvents()
+            self.mdi.resize(self.splitter.width(), self.splitter.height())
+        else:
+            self.hideLeftMenuAction.setIcon(self.getIcon(':eye-off'))
+            self.tree.show()
+            QCoreApplication.processEvents()
+            self.mdi.resize(
+                self.splitter.width() - self.tree.width() - 5 , self.splitter.height())
+        self.checkPositioningWindows()
 
     def trackGraph(self):
         '''
@@ -759,6 +796,7 @@ class MainWindow(qtw.QMainWindow):
     def _closeAllWindows(self):
         self.mdi.closeAllSubWindows()
         self.trackGraph()
+        self.checkPositioningWindows()
 
     def closeEvent(self, event):
         '''
@@ -834,8 +872,6 @@ class MainWindow(qtw.QMainWindow):
         corrections = {'koef_Wx_PNK': 1, 'koef_Wy_PNK': 1, 'koef_Wz_PNK': 1,
                        'kurs_correct': 1, 'kren_correct': 1, 'tang_correct': 1}
         self.settings.setValue('corrections', corrections)
-        # TODO изменить формат хранения стандартных графиков под новый вид даты
-        # добавить возможность настройки цветов графиков
         graphs = {
             'background': 'black',
             'default': [
