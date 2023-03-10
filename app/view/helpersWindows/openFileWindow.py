@@ -1,4 +1,3 @@
-from os import startfile
 from PyQt5 import QtWidgets as qtw
 
 

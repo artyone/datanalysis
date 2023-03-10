@@ -159,7 +159,7 @@ class CalcWindow(qtw.QWidget):
                                                    plane_corr,
                                                    corrections)
             self.parent.createCheckBox()
-            self.parent.setNotify('успех', 'data calculated')
+            self.parent.setNotify('успех', 'Данные подсчитаны.')
             self.close()
         except ValueError:
-            self.parent.setNotify('предупреждение', 'Wrong data file')
+            self.parent.setNotify('предупреждение', 'Ошибка в данных.')

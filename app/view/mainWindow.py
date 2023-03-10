@@ -179,26 +179,32 @@ class MainWindow(qtw.QMainWindow):
         '''
         Создание тулбара.
         '''
-        self._createFileToolBar()
-        self._createServiceToolBar()
-        self._createViewToolBar()
+        if self.settings.value('mainSettings')['toolBar'] == 'left':
+            position = Qt.LeftToolBarArea
+        else: position = Qt.TopToolBarArea
+        self.addToolBar(position, self.fileToolBar())
+        self.addToolBar(position, self.serviceToolBar())
+        self.addToolBar(position, self.viewToolBar())
 
-    def _createFileToolBar(self):
-        fileToolBar = self.addToolBar('File')
+    def fileToolBar(self):
+        fileToolBar = qtw.QToolBar('File')
         fileToolBar.addAction(self.openTxtAction)
         fileToolBar.addAction(self.openPickleAction)
         fileToolBar.addAction(self.savePickleAction)
         fileToolBar.addSeparator()
         fileToolBar.addAction(self.exitAction)
         fileToolBar.setMovable(False)
+        return fileToolBar
 
-    def _createServiceToolBar(self):
-        serviceToolBar = self.addToolBar('Service')
+    def serviceToolBar(self):
+        serviceToolBar = qtw.QToolBar('Service')
         serviceToolBar.addAction(self.calculateDataAction)
         serviceToolBar.addAction(self.pythonConsoleAction)
-
-    def _createViewToolBar(self):
-        viewToolBar = self.addToolBar('View')
+        serviceToolBar.setMovable(False)
+        return serviceToolBar
+        
+    def viewToolBar(self):
+        viewToolBar = qtw.QToolBar('Service')
         viewToolBar.addAction(self.hideLeftMenuAction)
         viewToolBar.addAction(self.createGraphAction)
         viewToolBar.addAction(self.createDefaultGraphAction)
@@ -212,6 +218,8 @@ class MainWindow(qtw.QMainWindow):
         viewToolBar.addAction(self.trackGraphAction)
         viewToolBar.addSeparator()
         viewToolBar.addAction(self.closeAllAction)
+        viewToolBar.setMovable(False)
+        return viewToolBar
 
     def _createStatusBar(self):
         '''
@@ -637,7 +645,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         Метод для открытия окна about
         '''
-        pass
+        return
 
     def createGraph(self, customSelected=None):
         '''
@@ -892,7 +900,7 @@ class MainWindow(qtw.QMainWindow):
         ]
         leftMenuFilters = {head: True for head in headers}
         self.settings.setValue('leftMenuFilters', leftMenuFilters)
-        mainSettings = {'theme': 'black', 'jsonDir': 'templates'}
+        mainSettings = {'theme': 'black', 'jsonDir': 'templates', 'toolBar': 'left'}
         self.settings.setValue('mainSettings', mainSettings)
 
     def openSettings(self):

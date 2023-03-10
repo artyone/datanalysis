@@ -57,6 +57,11 @@ class SettingsWindow(qtw.QWidget):
         self.themeComboBox.setCurrentText(self.listMainSettings['theme'])
         tabLayout.addRow('Тема:', self.themeComboBox)
 
+        self.toolbarComboBox = qtw.QComboBox()
+        self.toolbarComboBox.addItems(['left', 'top'])
+        self.toolbarComboBox.setCurrentText(self.listMainSettings['toolBar'])
+        tabLayout.addRow('Позиция кнопок:', self.toolbarComboBox)
+
         tabWidget.setLayout(tabLayout)
         return tabWidget
 
@@ -188,7 +193,8 @@ class SettingsWindow(qtw.QWidget):
 
     def saveMainSettings(self):
         newValueMainSettings = {'theme': self.themeComboBox.currentText(),
-                                'jsonDir': self.browseLineEdit.text()}
+                                'jsonDir': self.browseLineEdit.text(),
+                                'toolBar': self.toolbarComboBox.currentText()}
         self.settings.setValue('mainSettings', newValueMainSettings)
 
     def savePlanesSettings(self):
