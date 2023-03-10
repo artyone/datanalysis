@@ -97,7 +97,7 @@ class OpenFileWindow(qtw.QWidget):
                                       self.adrComboBox.currentText(),
                                       self.filetype,
                                       self.loadUnknownCheckBox.isChecked())
-            self.parent.createCheckBox()
+            self.parent.tree.updateCheckBox()
             self.parent.setNotify(
                 'успех', f'Файл {self.browseLineEdit.text()} открыт')
             self.parent.destroyChildWindow()

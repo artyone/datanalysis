@@ -88,22 +88,41 @@ class SettingsWindow(qtw.QWidget):
         '''
         Вкладка настройки фильтра бокового чек-бокс меню.
         '''
-        tabScrollArea = qtw.QScrollArea()
         tabWidget = qtw.QWidget()
         tabLayout = qtw.QVBoxLayout()
-        self.uncheckButton = qtw.QPushButton('Снять все отметки')
-        self.uncheckButton.setMaximumWidth(100)
-        self.uncheckButton.clicked.connect(self.uncheckAllCheckBox)
-        tabLayout.addWidget(self.uncheckButton)
-        for key, value in self.settings.value('leftMenuFilters').items():
-            checkBox = qtw.QCheckBox(key)
-            checkBox.setChecked(value)
-            tabLayout.addWidget(checkBox)
-            self.listMenuFilters[key] = checkBox
-        tabScrollArea.setWidgetResizable(True)
+        self.filtersComboBox = qtw.QComboBox()
+        self.filtersComboBox.addItems(self.listMenuFilters['adrs'])
+
+        tabLayout.addWidget(self.filtersComboBox, alignment=Qt.AlignTop)
         tabWidget.setLayout(tabLayout)
-        tabScrollArea.setWidget(tabWidget)
-        return tabScrollArea
+        self.filtersStackedLayout = qtw.QStackedLayout()
+        for adr in self.listMenuFilters['adrs']:
+            self.filtersStackedLayout.addWidget(self.pageFilterStacked(adr))
+        self.filtersComboBox.activated.connect(
+            partial(self.switchPage, self.filtersStackedLayout, self.filtersComboBox))
+        
+        self.unknownCheckBox = qtw.QCheckBox('Отображать неизвестные заголовки?')
+        self.unknownCheckBox.setChecked(self.listMenuFilters['unknown'])
+        tabLayout.addWidget(self.unknownCheckBox)
+        
+        tabLayout.addLayout(self.filtersStackedLayout)
+        return tabWidget
+
+    def pageFilterStacked(self, adr):
+        pageWidget = qtw.QWidget()
+        pageLayout = qtw.QFormLayout()
+        for elements in self.settings.value('leftMenuFilters')['adrs'][adr]:
+            checkBox = qtw.QCheckBox(str(elements))
+            checkBox.setChecked(self.settings.value('leftMenuFilters')['adrs'][adr][elements])
+            pageLayout.addWidget(checkBox)
+            self.listMenuFilters['adrs'][adr][elements] = checkBox
+        pageWidget.setLayout(pageLayout)
+
+        scrollArea = qtw.QScrollArea()
+        scrollArea.setWidgetResizable(True)
+        scrollArea.setWidget(pageWidget)
+
+        return scrollArea
 
     def planeTab(self):
         '''
@@ -113,14 +132,15 @@ class SettingsWindow(qtw.QWidget):
         tabLayout = qtw.QVBoxLayout()
         self.planesComboBox = qtw.QComboBox()
         self.planesComboBox.addItems(self.listPlanes)
-        self.planesComboBox.activated.connect(self.switchPage)
+
         tabLayout.addWidget(self.planesComboBox, alignment=Qt.AlignTop)
         tabWidget.setLayout(tabLayout)
-        self.stackedLayout = qtw.QStackedLayout()
+        self.planesStackedLayout = qtw.QStackedLayout()
         for plane in self.listPlanes:
-            self.stackedLayout.addWidget(self.pagePlaneStacked(plane))
-
-        tabLayout.addLayout(self.stackedLayout)
+            self.planesStackedLayout.addWidget(self.pagePlaneStacked(plane))
+        self.planesComboBox.activated.connect(
+            partial(self.switchPage, self.planesStackedLayout, self.planesComboBox))
+        tabLayout.addLayout(self.planesStackedLayout)
         return tabWidget
 
     def pagePlaneStacked(self, plane):
@@ -172,11 +192,12 @@ class SettingsWindow(qtw.QWidget):
         tabWidget.setLayout(tabLayout)
         return tabWidget
 
-    def switchPage(self):
+
+    def switchPage(self, layout, widget):
         '''
-        Метод переключения для изменения отображения во вкладке самолётов.
+        Метод переключения для изменения отображения в зависимости от индекса комбобокса.
         '''
-        self.stackedLayout.setCurrentIndex(self.planesComboBox.currentIndex())
+        layout.setCurrentIndex(widget.currentIndex())
 
     def saveSettings(self):
         '''
@@ -224,9 +245,14 @@ class SettingsWindow(qtw.QWidget):
         self.settings.setValue('graphs', graphSettings)
 
     def saveLeftMenuFilterSettings(self):
-        newValueFilters = {
+        #TODO доработать сохранение
+        newValueAdr = {
             key: widget.isChecked()
-            for key, widget in self.listMenuFilters.items()
+            for key, windget in self.listMenuFilters['adrs'].items()
+        }
+        newValueFilters = {
+            'unknown': self.unknownCheckBox.isChecked(),
+            'adrs': newValueAdr
         }
         self.settings.setValue('leftMenuFilters', newValueFilters)
 

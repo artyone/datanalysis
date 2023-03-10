@@ -158,7 +158,7 @@ class CalcWindow(qtw.QWidget):
                                                    adrPnk,
                                                    plane_corr,
                                                    corrections)
-            self.parent.createCheckBox()
+            self.parent.tree.updateCheckBox()
             self.parent.setNotify('успех', 'Данные подсчитаны.')
             self.close()
         except ValueError:

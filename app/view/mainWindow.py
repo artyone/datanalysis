@@ -7,6 +7,7 @@ from app.view.helpersWindows.settingsWindow import SettingsWindow
 from app.view.servicesWindows.calculateWindow import CalcWindow
 from app.view.helpersWindows.saveCsvWindow import SaveCsvWindow
 from app.view.helpersWindows.openFileWindow import OpenFileWindow
+from app.view.helpersWindows.leftMenuTree import LeftMenuTree
 import app.resource.qrc_resources
 import pyqtgraph as pg
 import os
@@ -77,9 +78,8 @@ class MainWindow(qtw.QMainWindow):
 
         self.splitter = qtw.QSplitter(Qt.Horizontal)
 
-        self.tree = qtw.QTreeWidget(self.splitter)
-        self.tree.setColumnCount(2)
-        self.tree.setHeaderLabels(['Название', 'Количество'])
+        self.tree = LeftMenuTree(self, self.splitter)
+
         self.tree.hide()
 
         self.splitter.addWidget(self.tree)
@@ -181,7 +181,8 @@ class MainWindow(qtw.QMainWindow):
         '''
         if self.settings.value('mainSettings')['toolBar'] == 'left':
             position = Qt.LeftToolBarArea
-        else: position = Qt.TopToolBarArea
+        else:
+            position = Qt.TopToolBarArea
         self.addToolBar(position, self.fileToolBar())
         self.addToolBar(position, self.serviceToolBar())
         self.addToolBar(position, self.viewToolBar())
@@ -202,7 +203,7 @@ class MainWindow(qtw.QMainWindow):
         serviceToolBar.addAction(self.pythonConsoleAction)
         serviceToolBar.setMovable(False)
         return serviceToolBar
-        
+
     def viewToolBar(self):
         viewToolBar = qtw.QToolBar('Service')
         viewToolBar.addAction(self.hideLeftMenuAction)
@@ -226,7 +227,8 @@ class MainWindow(qtw.QMainWindow):
         Создание статус бара.
         '''
         self.statusbar = self.statusBar()
-        self.statusbar.showMessage('Привет пользователь! Я за тобой слежу!', 30000)
+        self.statusbar.showMessage(
+            'Привет пользователь! Я за тобой слежу!', 30000)
 
     def _createActions(self):
         '''
@@ -389,7 +391,7 @@ class MainWindow(qtw.QMainWindow):
         self.pythonConsoleAction.triggered.connect(self.pythonConsole)
 
     def _connectViewActions(self):
-        self.hideLeftMenuAction.triggered.connect(self.hideLeftMenu)
+        self.hideLeftMenuAction.triggered.connect(self.hideLeftMenuOnClick)
         self.createGraphAction.triggered.connect(self.createGraph)
         self.createDefaultGraphAction.triggered.connect(
             self.createDefaultGraph)
@@ -408,44 +410,6 @@ class MainWindow(qtw.QMainWindow):
         self.setDefaultSettingsActions.triggered.connect(
             partial(self.setDefaultSettings, True))
         self.aboutAction.triggered.connect(self.about)
-
-    def createCheckBox(self):
-        '''
-        Создание бокового чек-бокс дерева для построения графиков
-        '''
-        if not self.checkData():
-            return
-
-        self.tree.clear()
-        data = self.controller.get_data()
-        for nameCategory, adrs in sorted(data.items(), key=lambda x: x[0]):
-            treeCategory = qtw.QTreeWidgetItem(self.tree)
-            treeCategory.setText(0, nameCategory)
-            treeCategory.setExpanded(True)
-            for nameAdr, adrValues in adrs.items():
-                treeAdr = qtw.QTreeWidgetItem(treeCategory)
-                treeAdr.setText(0, nameAdr)
-                treeAdr.setExpanded(True)
-                filters = self.settings.value('leftMenuFilters')
-                for nameItem in list(adrValues.columns.values):
-                    if filters.get(nameItem, filters['unknown']):
-                        treeItem = qtw.QTreeWidgetItem(treeAdr)
-                        treeItem.setText(0, nameItem)
-                        count = len(adrValues[nameItem])
-                        treeItem.setText(1, str(count))
-                        treeItem.setFont(1, QFont('Arial', 8, 1, True))
-                        if count:
-                            treeItem.setForeground(1, QColor('gray'))
-                        else:
-                            treeItem.setForeground(1, QColor('red'))
-                        treeItem.setTextAlignment(1, 2)
-                        treeItem.setFlags(treeItem.flags() |
-                                          Qt.ItemIsUserCheckable)
-                        treeItem.setCheckState(0, Qt.Unchecked)
-        self.tree.show()
-        self.tree.resizeColumnToContents(0)
-        self.tree.resizeColumnToContents(1)
-        self.splitter.setSizes([120, 500])
 
     def center(self, obj=None):
         '''
@@ -468,9 +432,6 @@ class MainWindow(qtw.QMainWindow):
         self.checkPositioningWindows()
         self.trackGraph()
         self.settings.setValue('lastFile', None)
-
-
-        
 
     def getIcon(self, name):
         icon = QIcon(name)
@@ -502,7 +463,7 @@ class MainWindow(qtw.QMainWindow):
                     self.controller.load_pickle(filepath)
                 if filetype == 'pdd':
                     self.controller.load_pdd(filepath)
-                self.createCheckBox()
+                self.tree.updateCheckBox()
                 self.destroyChildWindow()
                 self.settings.setValue('lastFile',
                                        {'filePath': filepath,
@@ -653,7 +614,7 @@ class MainWindow(qtw.QMainWindow):
         '''
         if customSelected:
             treeSelected = customSelected
-        else: 
+        else:
             treeSelected = self._getTreeSelected()
 
         if self.spinBox.text() != '0':
@@ -671,15 +632,20 @@ class MainWindow(qtw.QMainWindow):
             self.setNotify('предупреждение', 'Данные не в нужном формате.')
         except KeyError:
             if customSelected:
-                self.setNotify('предупреждение', 'Проверьте настройки графиков по умолчанию')
-            else:  
-                self.setNotify('предупреждение', 'Указанный столбец не найден в данных')
-        except ValueError:
-            if customSelected:
-                self.setNotify('предупреждение', 'Проверьте настройки графиков по умолчанию')
+                self.setNotify('предупреждение',
+                               'Проверьте настройки графиков по умолчанию')
             else:
                 self.setNotify('предупреждение',
-                           'Выберите элементы для графика в левом меню.')
+                               'Указанный столбец не найден в данных')
+        except ValueError:
+            if customSelected:
+                self.setNotify('предупреждение',
+                               'Проверьте настройки графиков по умолчанию')
+            else:
+                self.setNotify('предупреждение',
+                               'Выберите элементы для графика в левом меню.')
+        except Exception as e:
+            self.setNotify('предупреждение', e)
 
     def createDefaultGraph(self):
         '''
@@ -728,7 +694,6 @@ class MainWindow(qtw.QMainWindow):
         if not self.mdi.subWindowList() or not self.horizontalAction.isChecked():
             self.horizontalAction.setChecked(False)
             return
-        
 
         self.verticalAction.setChecked(False)
         width = self.mdi.width()
@@ -747,7 +712,7 @@ class MainWindow(qtw.QMainWindow):
         if not self.mdi.subWindowList() or not self.verticalAction.isChecked():
             self.verticalAction.setChecked(False)
             return
-        
+
         self.horizontalAction.setChecked(False)
         width = self.mdi.width() // len(self.mdi.subWindowList())
         heigth = self.mdi.height()
@@ -771,7 +736,7 @@ class MainWindow(qtw.QMainWindow):
             self.horizontalWindows()
             return
 
-    def hideLeftMenu(self):
+    def hideLeftMenuOnClick(self):
         '''Метод скрытия левого меню'''
         if self.hideLeftMenuAction.isChecked():
             self.hideLeftMenuAction.setIcon(self.getIcon(':eye'))
@@ -783,7 +748,7 @@ class MainWindow(qtw.QMainWindow):
             self.tree.show()
             QCoreApplication.processEvents()
             self.mdi.resize(
-                self.splitter.width() - self.tree.width() - 5 , self.splitter.height())
+                self.splitter.width() - self.tree.width() - 5, self.splitter.height())
         self.checkPositioningWindows()
 
     def trackGraph(self):
@@ -822,10 +787,10 @@ class MainWindow(qtw.QMainWindow):
             self.tree, qtw.QTreeWidgetItemIterator.Checked)
         while iterator.value():
             item = iterator.value()
-            item_name = item.text(0)
-            adr_name = item.parent().text(0)
-            category_name = item.parent().parent().text(0)
-            treeSelected.append((category_name, adr_name, item_name))
+            itemName = item.text(0)
+            adrName = item.parent().text(0)
+            categoryName = item.parent().parent().text(0)
+            treeSelected.append((categoryName, adrName, itemName))
             iterator += 1
         return treeSelected
 
@@ -888,19 +853,26 @@ class MainWindow(qtw.QMainWindow):
             ]
         }
         self.settings.setValue('graphs', graphs)
-        headers = [
-            'time', 'latitude', 'longitude', 'JVD_H', 'JVD_VN', 'JVD_VE',
-            'JVD_Vh', 'DIS_S266', 'DIS_Wx30', 'DIS_Wx31', 'DIS_S264', 'DIS_Wy30',
-            'DIS_Wy31', 'DIS_S267', 'DIS_Wz30', 'DIS_Wz31', 'DIS_S206', 'DIS_US30',
-            'DIS_US31', 'DIS_TIME', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'DIS_W', 'DIS_US',
-            'I1_KursI', 'I1_Tang', 'I1_Kren', 'Wx_DISS_PNK', 'Wz_DISS_PNK',
-            'Wy_DISS_PNK', 'Kren_sin', 'Kren_cos', 'Tang_sin', 'Tang_cos',
-            'Kurs_sin', 'Kurs_cos', 'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
-            'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi', 'Wp_KBTIi', 'Wp_diss_pnki', 'unknown'
-        ]
-        leftMenuFilters = {head: True for head in headers}
-        self.settings.setValue('leftMenuFilters', leftMenuFilters)
-        mainSettings = {'theme': 'black', 'jsonDir': 'templates', 'toolBar': 'left'}
+        filters = {
+            'unknown': True,
+            'adrs': {
+                'ADR8': {head: True
+                         for head in [
+                             'time', 'latitude', 'longitude', 'JVD_H', 'JVD_VN', 'JVD_VE',
+                             'JVD_Vh', 'DIS_S266', 'DIS_Wx30', 'DIS_Wx31', 'DIS_S264', 'DIS_Wy30',
+                             'DIS_Wy31', 'DIS_S267', 'DIS_Wz30', 'DIS_Wz31', 'DIS_S206', 'DIS_US30',
+                             'DIS_US31', 'DIS_TIME', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'DIS_W', 'DIS_US',
+                             'I1_KursI', 'I1_Tang', 'I1_Kren', 'Wx_DISS_PNK', 'Wz_DISS_PNK',
+                             'Wy_DISS_PNK', 'Kren_sin', 'Kren_cos', 'Tang_sin', 'Tang_cos',
+                             'Kurs_sin', 'Kurs_cos', 'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
+                             'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi', 'Wp_KBTIi', 'Wp_diss_pnki'
+                         ]
+                    }
+            }
+        }
+        self.settings.setValue('leftMenuFilters', filters)
+        mainSettings = {'theme': 'black',
+                        'jsonDir': 'templates', 'toolBar': 'left'}
         self.settings.setValue('mainSettings', mainSettings)
 
     def openSettings(self):
@@ -966,7 +938,7 @@ class MainWindow(qtw.QMainWindow):
         QCoreApplication.quit()
 
     def checkData(self):
-        if self.controller.data_not_none():
-            return True
-        self.setNotify('предупреждение', 'Нужно выбрать данные')
-        return False
+        if self.controller.data_is_none():
+            self.setNotify('предупреждение', 'Нужно выбрать данные')
+            return False
+        return True

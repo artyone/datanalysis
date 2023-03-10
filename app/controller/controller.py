@@ -3,7 +3,10 @@ from app.model.map import Map
 from app.model.file import Datas as file_methods
 import re
 
-class NoneJsonError(Exception): pass
+
+class NoneJsonError(Exception):
+    pass
+
 
 class Control(object):
     '''
@@ -23,7 +26,7 @@ class Control(object):
         '''
         Загрузка данных из txt формата.
         '''
-        #TODO добавить проверку load_unknown
+        # TODO добавить проверку load_unknown
         if type == 'txt':
             data_from_file = file_methods.load_txt(filepath)
         else:
@@ -31,7 +34,7 @@ class Control(object):
         if 'name' in data_from_file.columns:
             data_from_file = data_from_file.rename(columns={'name': 'time'})
 
-        self.data[category] = {adr:data_from_file}
+        self.data[category] = {adr: data_from_file}
         self.data_calculated = self._check_calculated()
 
     def load_csv(self, filepath):
@@ -39,9 +42,9 @@ class Control(object):
         Загрузка данных из csv формата.
         '''
         data_from_file = file_methods.load_csv(filepath)
-        self.data['PNK'] = {'ADR8':data_from_file}
+        self.data['PNK'] = {'ADR8': data_from_file}
         self.data_calculated = self._check_calculated()
-    
+
     def load_pickle(self, filepath):
         '''
         Загрузка данных из pickle формата.
@@ -70,9 +73,9 @@ class Control(object):
         '''
         Загрузка данных из pdd формата.
         '''
-        #TODO необходимо внедрить json файлы в настройки программы
-        #временно пока json файл стандартный
-        #добавить проверку jsona
+        # TODO необходимо внедрить json файлы в настройки программы
+        # временно пока json файл стандартный
+        # добавить проверку jsona
 
         json_file = 'templates/default_pnk.json'
         data_from_file = file_methods.load_pdd(filepath, json_file)
@@ -104,7 +107,7 @@ class Control(object):
         need_headers = {'time', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren',
                         'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
         headers = self.data[category][adr].columns
-        if self.data == {} or not need_headers.issubset(headers):
+        if self.data_is_none() or not need_headers.issubset(headers):
             raise ValueError('Wrong data')
         self.worker = Mathematical(self.data[category][adr].copy())
         self.worker.apply_coefficient_w_diss(
@@ -118,7 +121,7 @@ class Control(object):
         self.worker.calc_wg_kbti(plane_corr['k'], plane_corr['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
-        self.data['Calc'] = {'PNK':self.worker.get_only_calculated_data_pnk()}
+        self.data['Calc'] = {'PNK': self.worker.get_only_calculated_data_pnk()}
         self.data_calculated = True
 
     def save_report(self, filepath, category, adr, koef_for_intervals, string):
@@ -158,7 +161,7 @@ class Control(object):
         для построения карты.
         '''
         need_headers = {'time', 'latitude', 'longitude'}
-        if self.data == {}:
+        if self.data_is_none():
             raise ValueError('Wrong data')
         if not need_headers.issubset(self.data[category][adr].columns):
             raise ValueError('Wrong data, check time, latitude, longitude')
@@ -176,7 +179,7 @@ class Control(object):
         '''
         Сохранение данных в формате csv.
         '''
-        if self.data is None:
+        if self.data_is_none():
             raise Exception('Data must be not none')
         data_for_csv = self.data[category][adr]
         file_methods.write_csv(data_for_csv, filepath)
@@ -185,7 +188,7 @@ class Control(object):
         '''
         Сохранение данных в формате pickle.
         '''
-        if self.data == {}:
+        if self.data_is_none():
             raise Exception('Data must be not none')
         file_methods.write_pickle(self.data, filepath)
 
@@ -217,13 +220,20 @@ class Control(object):
 
     @classmethod
     def get_json_categories(cls, dirpath):
-        json_categories = {json['name']:json['adr'] for json in cls.get_jsons_data(dirpath)}
+        json_categories = {json['name']: json['adr']
+                           for json in cls.get_jsons_data(dirpath)}
         return json_categories
 
-    def data_not_none(self):
+    def data_is_none(self):
         if self.data:
-            return True
-        return False
+            return False
+        return True
 
-
-
+    def change_column_name(self, category, adr, element, new_name):
+        if self.data_is_none():
+            print(self.data)
+            raise ValueError('Wrong data')
+        if element not in self.data[category][adr].columns:
+            raise AttributeError('Такой заголовок не найден в данных')
+        self.data[category][adr] = self.data[category][adr].rename(columns={element: new_name})
+        
