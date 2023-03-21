@@ -108,7 +108,7 @@ class Control(object):
                         'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
         headers = self.data[category][adr].columns
         if self.data_is_none() or not need_headers.issubset(headers):
-            raise ValueError('Wrong data')
+            raise ValueError(f'В данных не хватает: {", ".join(set(need_headers) - set(headers))}')
         self.worker = Mathematical(self.data[category][adr].copy())
         self.worker.apply_coefficient_w_diss(
             wx=corrections['koef_Wx_PNK'],

@@ -1,4 +1,3 @@
-from select import select
 from PyQt5 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
 
 class LeftMenuTree(qtw.QTreeWidget):

@@ -843,7 +843,7 @@ class MainWindow(qtw.QMainWindow):
         self.settings.setValue('map', {'jvdHMin': '100', 'decimation': '20'})
         self.settings.setValue('lastFile', None)
         corrections = {'koef_Wx_PNK': 1, 'koef_Wy_PNK': 1, 'koef_Wz_PNK': 1,
-                       'kurs_correct': 1, 'kren_correct': 1, 'tang_correct': 1}
+                       'kurs_correct': 0, 'kren_correct': 0, 'tang_correct': 0}
         self.settings.setValue('corrections', corrections)
         graphs = {
             'background': 'black',
