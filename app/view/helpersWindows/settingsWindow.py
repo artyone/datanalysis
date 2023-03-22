@@ -207,8 +207,7 @@ class SettingsWindow(qtw.QWidget):
         self.savePlanesSettings()
         self.saveCorrectionsSettings()
         self.saveGraphSettings()
-        #TODO не забывать вернуть сохранение скрытия
-        #self.saveLeftMenuFilterSettings()
+        self.saveLeftMenuFilterSettings()
         self.parent.setNotify(
             'успех', 'Настройки сохранены, перезапустите приложение!')
         self.parent.restartApp()
@@ -245,17 +244,19 @@ class SettingsWindow(qtw.QWidget):
                          'default': graphDefault}
         self.settings.setValue('graphs', graphSettings)
 
-    # def saveLeftMenuFilterSettings(self):
-    #     #TODO доработать сохранение
-    #     newValueAdr = {
-    #         key: widget.isChecked()
-    #         for key, windget in self.listMenuFilters['adrs'].items()
-    #     }
-    #     newValueFilters = {
-    #         'unknown': self.unknownCheckBox.isChecked(),
-    #         'adrs': newValueAdr
-    #     }
-    #     self.settings.setValue('leftMenuFilters', newValueFilters)
+    def saveLeftMenuFilterSettings(self):
+        newValueAdr = {
+            adr: {
+                name: widget.isChecked()             
+                for name, widget in data.items()
+            }
+            for adr, data in self.listMenuFilters['adrs'].items()
+        }
+        newValueFilters = {
+            'unknown': self.unknownCheckBox.isChecked(),
+            'adrs': newValueAdr
+        }
+        self.settings.setValue('leftMenuFilters', newValueFilters)
 
     def checkDigit(self, widget: qtw.QLineEdit):
         try:

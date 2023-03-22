@@ -106,7 +106,6 @@ class LeftMenuTree(qtw.QTreeWidget):
         if item is not None:
             try:
                 category, adr, name = self.getInfoItem(item)
-                print(category, adr, name)
                 newFilterValue = self.settings.value('leftMenuFilters')
                 if adr not in newFilterValue['adrs']:
                     newFilterValue['adrs'][adr] = {}
