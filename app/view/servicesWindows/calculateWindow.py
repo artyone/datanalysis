@@ -161,5 +161,5 @@ class CalcWindow(qtw.QWidget):
             self.parent.tree.updateCheckBox()
             self.parent.setNotify('успех', 'Данные подсчитаны.')
             self.close()
-        except ValueError:
-            self.parent.setNotify('предупреждение', 'Ошибка в данных.')
+        except Exception as e:
+            self.parent.setNotify('предупреждение', str(e))
