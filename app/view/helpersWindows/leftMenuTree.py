@@ -95,7 +95,12 @@ class LeftMenuTree(QTreeWidget):
     def renameItem(self):
         item = self.currentItem()
         if item is not None:
-            newName, ok = QInputDialog.getText(self, "Переименовать элемент", "Введите новое имя:", text=item.text(0))
+            newName, ok = QInputDialog.getText(
+                self, 
+                "Переименовать элемент", 
+                "Введите новое имя:", 
+                text=item.text(0)
+            )
             if ok:
                 try:
                     selectedItemTree = self.getInfoItem(item)
@@ -115,8 +120,8 @@ class LeftMenuTree(QTreeWidget):
                     newFilterValue['adrs'][adr] = {}
                 newFilterValue['adrs'][adr][name] = False
                 self.settings.setValue('leftMenuFilters', newFilterValue)
-                print(self.settings.value('leftMenuFilters')['adrs']['PNK'])
                 self.updateCheckBox()
+                self.mainWindow.setNotify('успех', f'{name} скрыт из {adr}')
      
             except Exception as e:
                 self.mainWindow.setNotify('предупреждение', str(e))

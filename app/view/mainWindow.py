@@ -38,16 +38,16 @@ class MainWindow(QMainWindow):
 
     def __init__(self, app: QApplication):
         super().__init__()
-        self.app : QApplication = app
-        self.mapWindow : MapWindow = None
-        self.reportWindow : ReportWindow = None
-        self.consoleWindow : ConsoleWindow = None
-        self.settingsWindow : SettingsWindow = None
-        self.calcWindow : CalcWindow = None
-        self.saveCsvWindow : SaveCsvWindow = None
-        self.openFileWindow : OpenFileWindow = None
-        self.controller : Control = Control()
-        self.notify : notificator = None
+        self.app = app
+        self.mapWindow: MapWindow = None
+        self.reportWindow: ReportWindow = None
+        self.consoleWindow: ConsoleWindow = None
+        self.settingsWindow: SettingsWindow = None
+        self.calcWindow: CalcWindow = None
+        self.saveCsvWindow: SaveCsvWindow = None
+        self.openFileWindow: OpenFileWindow = None
+        self.controller: Control = Control()
+        self.notify: notificator = None
         self.app_version = QCoreApplication.applicationVersion()
         self.app_name = QCoreApplication.applicationName()
         self.notify = notificator()
@@ -238,7 +238,7 @@ class MainWindow(QMainWindow):
         '''
         self.statusbar = self.statusBar()
         self.statusbar.showMessage(
-            'Привет пользователь! Я за тобой слежу!', 30000)
+            'Привет, пользователь! Я за тобой слежу!', 30000)
 
     def _createActions(self):
         '''
@@ -499,6 +499,7 @@ class MainWindow(QMainWindow):
                 return
             except FileNotFoundError:
                 self.setNotify('ошибка', 'Не найден путь к папке json')
+                return
             except Exception as e:
                 self.setNotify('ошибка', str(e))
                 return
