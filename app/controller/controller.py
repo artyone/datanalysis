@@ -1,6 +1,6 @@
-from app.model.calculate import Mathematical
-from app.model.map import Map
-from app.model.file import Datas as file_methods
+from app.model import Mathematical, Flight_map
+from app.model import file_methods
+from pandas import DataFrame
 import re
 
 
@@ -16,13 +16,21 @@ class Control(object):
     '''
 
     needed_usred_diss, needed_usred_kbti, needed_usred_pnk = (
-        False, False, False)
+        False, False, False
+    )
 
     def __init__(self) -> None:
-        self.data = {}
-        self.data_calculated = False
+        self.data: dict = {}
+        self.data_calculated: bool = False
 
-    def load_text(self, filepath: str, category: str, adr: str, type: str, load_unknown: bool):
+    def load_text(
+        self,
+        filepath: str,
+        category: str,
+        adr: str,
+        type: str,
+        load_unknown: bool = True
+    ) -> None:
         '''
         Загрузка данных из txt формата.
         '''
@@ -37,7 +45,7 @@ class Control(object):
         self.data[category] = {adr: data_from_file}
         self.data_calculated = self._check_calculated()
 
-    def load_csv(self, filepath):
+    def load_csv(self, filepath: str) -> None:
         '''
         Загрузка данных из csv формата.
         '''
@@ -45,7 +53,7 @@ class Control(object):
         self.data['PNK'] = {'ADR8': data_from_file}
         self.data_calculated = self._check_calculated()
 
-    def load_pickle(self, filepath):
+    def load_pickle(self, filepath: str) -> None:
         '''
         Загрузка данных из pickle формата.
         '''
@@ -54,22 +62,22 @@ class Control(object):
         self.data_calculated = self._check_calculated()
 
     @staticmethod
-    def load_pytnon_script(filepath):
+    def load_pytnon_script(filepath: str) -> str:
         '''
         Загрузка скрипта python.
         '''
-        data_for_script = file_methods.load_python(filepath)
+        data_for_script = file_methods.load_python_script(filepath)
         return data_for_script
 
     @staticmethod
-    def load_settings_json(filepath):
+    def load_settings_json(filepath: str) -> dict:
         '''
         Загрузка данных настроек из json формата.
         '''
         data_for_settings = file_methods.load_json(filepath)
         return data_for_settings
 
-    def load_pdd(self, filepath):
+    def load_pdd(self, filepath: str) -> None:
         '''
         Загрузка данных из pdd формата.
         '''
@@ -82,20 +90,26 @@ class Control(object):
         self.data[data_from_file['name']] = data_from_file['adr']
 
     @staticmethod
-    def save_python_sript(filepath, data):
+    def save_python_sript(filepath: str, data: DataFrame) -> None:
         '''
         Сохранение скрипта питона.
         '''
         file_methods.save_python(filepath, data)
 
     @staticmethod
-    def save_settings_json(filepath, data):
+    def save_settings_json(filepath: str, data: DataFrame) -> None:
         '''
         Сохранения данных настроек в json.
         '''
         file_methods.save_json(filepath, data)
 
-    def set_calculate_data_pnk(self, category, adr, plane_corr, corrections):
+    def set_calculate_data_pnk(
+        self,
+        category: str,
+        adr: str,
+        plane_corr: dict,
+        corrections: dict
+    ) -> None:
         '''
         Метод расчета данных полёта.
         Содержит базовую проверку, содержат ли данные все 
@@ -104,11 +118,14 @@ class Control(object):
         После всех расчетов обновляет данные в DataFrame.
         Если все прошло успешно, data_calculated - успешно.
         '''
-        need_headers = {'time', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren',
-                        'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'}
+        need_headers = {
+            'time', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'I1_Kren',
+            'I1_Tang', 'I1_KursI', 'JVD_VN', 'JVD_VE', 'JVD_Vh'
+        }
         headers = self.data[category][adr].columns
         if self.data_is_none() or not need_headers.issubset(headers):
-            raise ValueError(f'В данных не хватает: {", ".join(set(need_headers) - set(headers))}')
+            raise ValueError(
+                f'В данных не хватает: {", ".join(set(need_headers) - set(headers))}')
         self.worker = Mathematical(self.data[category][adr].copy())
         self.worker.apply_coefficient_w_diss(
             wx=corrections['koef_Wx_PNK'],
@@ -121,10 +138,19 @@ class Control(object):
         self.worker.calc_wg_kbti(plane_corr['k'], plane_corr['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
-        self.data['Calc'] = {'PNK': self.worker.get_only_calculated_data_pnk()}
+        self.data['Calc'] = {
+            'PNK': self.worker.get_only_calculated_data_pnk()
+        }
         self.data_calculated = True
 
-    def save_report(self, filepath, category, adr, koef_for_intervals, string):
+    def save_report(
+        self,
+        filepath: str,
+        category: str,
+        adr: str,
+        koef_for_intervals: dict,
+        string: str
+    ) -> None:
         '''
         Метод расчета отчёта и его сохранения на диске.
         Создается объект класса рассчёта.
@@ -153,7 +179,14 @@ class Control(object):
 
         file_methods.write_xlsx(data_result, filepath)
 
-    def save_map(self, filepath, category, adr, jvd_h_min='', decimation=''):
+    def save_map(
+        self,
+        filepath: str,
+        category: str,
+        adr: str,
+        jvd_h_min: str = '',
+        decimation: str = ''
+    ) -> None:
         '''
         Метод построения карты и записи её на диск. 
         Три обязательных параметра указаны в need_headers.
@@ -164,18 +197,21 @@ class Control(object):
         if self.data_is_none():
             raise ValueError('Wrong data')
         if not need_headers.issubset(self.data[category][adr].columns):
-            raise ValueError('Wrong data, check time, latitude, longitude')
+            raise ValueError(
+                'Wrong data, check time, latitude, longitude')
         data_for_map = self.data[category][adr].copy()
         if decimation != '':
             data_for_map = data_for_map.iloc[::int(decimation)]
         if jvd_h_min != '' and 'JVD_H' in data_for_map.columns:
-            data_for_map = data_for_map.loc[data_for_map.JVD_H >= float(jvd_h_min),
-                                            ['time', 'latitude', 'longitude', 'JVD_H']]
-        map = Map(data_for_map)
+            data_for_map = data_for_map.loc[
+                data_for_map.JVD_H >= float(jvd_h_min),
+                ['time', 'latitude', 'longitude', 'JVD_H']
+            ]
+        map = Flight_map(data_for_map)
         map.get_map()
         map.save_map(filepath)
 
-    def save_csv(self, filepath, category, adr):
+    def save_csv(self, filepath: str, category: str, adr: str) -> None:
         '''
         Сохранение данных в формате csv.
         '''
@@ -184,7 +220,7 @@ class Control(object):
         data_for_csv = self.data[category][adr]
         file_methods.write_csv(data_for_csv, filepath)
 
-    def save_pickle(self, filepath):
+    def save_pickle(self, filepath: str) -> None:
         '''
         Сохранение данных в формате pickle.
         '''
@@ -192,18 +228,19 @@ class Control(object):
             raise Exception('Data must be not none')
         file_methods.write_pickle(self.data, filepath)
 
-    def get_data(self):
+    def get_data(self) -> dict:
         '''
         Метод получения данных контроллера.
         '''
         return self.data
 
-    def _check_calculated(self):
+    def _check_calculated(self) -> bool:
         '''
         Метод проверки были ли данные рассчитаны или нет.
         '''
         if 'Calc' in self.data:
             return True
+        return False
 
     def is_calculated(self):
         '''
@@ -212,28 +249,35 @@ class Control(object):
         return self.data_calculated
 
     @staticmethod
-    def get_jsons_data(dirpath):
+    def get_jsons_data(dirpath: str) -> list:
         json_list = file_methods.get_list_json_in_folder(dirpath)
         if json_list == []:
             raise NoneJsonError
         return file_methods.get_jsons_data(json_list)
 
     @classmethod
-    def get_json_categories(cls, dirpath):
-        json_categories = {json['name']: json['adr']
-                           for json in cls.get_jsons_data(dirpath)}
+    def get_json_categories(cls, dirpath: str) -> dict:
+        json_categories = {
+            json['name']: json['adr']
+            for json in cls.get_jsons_data(dirpath)
+        }
         return json_categories
 
-    def data_is_none(self):
+    def data_is_none(self) -> bool:
         if self.data:
             return False
         return True
 
-    def change_column_name(self, category, adr, element, new_name):
+    def change_column_name(
+        self,
+        category: str,
+        adr: str,
+        element: str,
+        new_name: str
+    ) -> None:
         if self.data_is_none():
-            print(self.data)
             raise ValueError('Wrong data')
         if element not in self.data[category][adr].columns:
             raise AttributeError('Такой заголовок не найден в данных')
-        self.data[category][adr] = self.data[category][adr].rename(columns={element: new_name})
-        
+        self.data[category][adr] = self.data[category][adr].rename(
+            columns={element: new_name})

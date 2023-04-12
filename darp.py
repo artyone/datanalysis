@@ -1,5 +1,5 @@
-import sys
-from app.view.mainWindow import MainWindow
+from sys import argv
+from app.view import MainWindow
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QApplication
 from app.resource.constants import (
@@ -17,7 +17,7 @@ def main():
     QCoreApplication.setApplicationName(APPLICATION_NAME)
     QCoreApplication.setApplicationVersion(VERSION)
 
-    app = QApplication(sys.argv)
+    app = QApplication(argv)
     app.setStyle('Fusion')
     iface = MainWindow(app)
     iface.show()

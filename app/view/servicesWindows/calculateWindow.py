@@ -1,7 +1,11 @@
-from PyQt5 import QtWidgets as qtw
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QFormLayout,
+    QCheckBox, QComboBox,
+    QDialogButtonBox
+)
 
 
-class CalcWindow(qtw.QWidget):
+class CalcWindow(QWidget):
     '''
     Класс окна рассчета данных.
     parent - родительское окно
@@ -20,7 +24,7 @@ class CalcWindow(qtw.QWidget):
         '''
         self.setGeometry(0, 0, 400, 300)
         self.setWindowTitle("Рассчитать данные")
-        dlgLayout = qtw.QVBoxLayout()
+        dlgLayout = QVBoxLayout()
 
         self.initInputBlock()
         self.initButtonBlock()
@@ -31,13 +35,14 @@ class CalcWindow(qtw.QWidget):
 
     def initInputBlock(self):
         '''Метод инициализации элементов выбора пользователя'''
-        self.formLayout = qtw.QFormLayout()
+        self.formLayout = QFormLayout()
         self.formLayout.setVerticalSpacing(20)
 
-        self.planeComboBox = qtw.QComboBox()
+        self.planeComboBox = QComboBox()
         self.planeComboBox.addItems(self.parent.settings.value('planes'))
         self.planeComboBox.setCurrentText(
-            self.parent.settings.value('planeComboBox'))
+            self.parent.settings.value('planeComboBox')
+        )
         self.planeComboBox.activated.connect(self.saveComboBoxValue)
 
         self.initPnkBlock()
@@ -53,15 +58,15 @@ class CalcWindow(qtw.QWidget):
 
     def initPnkBlock(self):
         '''Метод инициализации блока пнк'''
-        self.calcPnkCheckBox = qtw.QCheckBox()
+        self.calcPnkCheckBox = QCheckBox()
         self.calcPnkCheckBox.stateChanged.connect(self.hideUnhidePnk)
 
-        self.categoryPnkComboBox = qtw.QComboBox()
+        self.categoryPnkComboBox = QComboBox()
         categories = self.controller.get_data().keys()
         self.categoryPnkComboBox.addItems(categories)
         self.categoryPnkComboBox.activated.connect(self.updateAdrPnkComboBox)
 
-        self.adrPnkComboBox = qtw.QComboBox()
+        self.adrPnkComboBox = QComboBox()
         current_category = self.categoryPnkComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrPnkComboBox.addItems(adrs)
@@ -71,15 +76,15 @@ class CalcWindow(qtw.QWidget):
 
     def initDissBlock(self):
         '''Метод инициализации блока дисс'''
-        self.calcDissCheckBox = qtw.QCheckBox()
+        self.calcDissCheckBox = QCheckBox()
         self.calcDissCheckBox.stateChanged.connect(self.hideUnhideDiss)
 
-        self.categoryDissComboBox = qtw.QComboBox()
+        self.categoryDissComboBox = QComboBox()
         categories = self.controller.get_data().keys()
         self.categoryDissComboBox.addItems(categories)
         self.categoryDissComboBox.activated.connect(self.updateAdrDissComboBox)
 
-        self.adrDissComboBox = qtw.QComboBox()
+        self.adrDissComboBox = QComboBox()
         current_category = self.categoryDissComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrDissComboBox.addItems(adrs)
@@ -89,9 +94,10 @@ class CalcWindow(qtw.QWidget):
 
     def initButtonBlock(self):
         '''Метод инициализации кнопок на форме'''
-        self.btnBox = qtw.QDialogButtonBox()
-        self.btnBox.setStandardButtons(qtw.QDialogButtonBox.Ok |
-                                       qtw.QDialogButtonBox.Cancel)
+        self.btnBox = QDialogButtonBox()
+        self.btnBox.setStandardButtons(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
         self.btnBox.rejected.connect(self.close)
         self.btnBox.accepted.connect(self.calculate)
 
@@ -136,7 +142,8 @@ class CalcWindow(qtw.QWidget):
         Метод для сохранения в настройках самолета по умолчанию.
         '''
         self.parent.settings.setValue(
-            'planeComboBox', self.planeComboBox.currentText())
+            'planeComboBox', self.planeComboBox.currentText()
+        )
 
     def calculate(self):
         '''
@@ -154,10 +161,12 @@ class CalcWindow(qtw.QWidget):
         categoryPnk = self.categoryPnkComboBox.currentText()
         adrPnk = self.adrPnkComboBox.currentText()
         try:
-            self.controller.set_calculate_data_pnk(categoryPnk,
-                                                   adrPnk,
-                                                   plane_corr,
-                                                   corrections)
+            self.controller.set_calculate_data_pnk(
+                categoryPnk,
+                adrPnk,
+                plane_corr,
+                corrections
+            )
             self.parent.tree.updateCheckBox()
             self.parent.setNotify('успех', 'Данные подсчитаны.')
             self.close()

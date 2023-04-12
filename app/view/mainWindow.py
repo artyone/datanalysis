@@ -1,27 +1,31 @@
-from app.controller.controller import Control, NoneJsonError
-from app.view.servicesWindows.graphWindow import GraphWindow
-from app.view.servicesWindows.mapWindow import MapWindow
-from app.view.servicesWindows.reportWindow import ReportWindow
-from app.view.servicesWindows.consoleWindow import ConsoleWindow
-from app.view.helpersWindows.settingsWindow import SettingsWindow
-from app.view.servicesWindows.calculateWindow import CalcWindow
-from app.view.helpersWindows.saveCsvWindow import SaveCsvWindow
-from app.view.helpersWindows.openFileWindow import OpenFileWindow
-from app.view.helpersWindows.leftMenuTree import LeftMenuTree
-from PyQt5.sip import delete
-from PyQt5.QtGui import QIcon, QFont, QColor, QPalette, QPainter
-from PyQt5.QtCore import Qt, QSettings, QCoreApplication, QProcess
+from app.controller import (
+    Control, NoneJsonError
+)
+from app.view.servicesWindows import (
+    GraphWindow, MapWindow, ReportWindow,
+    ConsoleWindow, CalcWindow
+)
+from app.view.helpersWindows import (
+    SettingsWindow, SaveCsvWindow, 
+    OpenFileWindow, LeftMenuTree
+)
+from PyQt5.QtGui import (
+    QIcon, QColor, QPalette, QPainter
+)
+from PyQt5.QtCore import (
+    Qt, QSettings, QCoreApplication, QProcess
+)
 from PyQt5.QtWidgets import (
-    QWidget, QApplication, QMdiArea, QSplitter, 
+    QApplication, QMdiArea, QSplitter, 
     QToolBar, QSpinBox, QAction, QFileDialog, 
     QTreeWidgetItemIterator, QMainWindow
 )
+from PyQt5.sip import delete
 from functools import partial
 from notificator import notificator
 from notificator.alingments import BottomRight
 import app.resource.qrc_resources
 import pyqtgraph as pg
-import os
 import sys
 
 

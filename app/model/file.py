@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Any
 import chardet as cd
 import pandas as pd
 import json as js
@@ -10,20 +11,25 @@ class Datas(object):
     '''
     Класс модели для работы с файлами.
     '''
+
     def __init__(self) -> None:
         pass
-    
+
     @classmethod
-    def load_txt(cls, filepath) -> pd.DataFrame:
-        return pd.read_csv(filepath, sep=cls._get_sep(filepath),
-                           encoding=cls._get_enc(filepath), skiprows=[1])
+    def load_txt(cls, filepath: str) -> pd.DataFrame:
+        return pd.read_csv(
+            filepath,
+            sep=cls._get_sep(filepath),
+            encoding=cls._get_enc(filepath),
+            skiprows=[1]
+        )
 
     @staticmethod
-    def _get_sep(filepath) -> str:
+    def _get_sep(filepath: str) -> str:
         return '\t' if '.txt' in filepath else ','
 
     @staticmethod
-    def _get_enc(filepath) -> str:
+    def _get_enc(filepath: str) -> str:
         with open(filepath, 'br') as input:
             return cd.detect(input.read(1000))['encoding']
 
@@ -32,40 +38,40 @@ class Datas(object):
         data.to_excel(filepath, index=False)
 
     @staticmethod
-    def write_pickle(data: dict, filepath: str):
+    def write_pickle(data: dict, filepath: str) -> None:
         with open(filepath, 'wb') as f:
             pickle.dump(data, f, protocol=4)
 
     @staticmethod
-    def write_csv(data: pd.DataFrame, filepath: str):
+    def write_csv(data: pd.DataFrame, filepath: str) -> None:
         data.to_csv(filepath, index=False, sep=',')
 
     @staticmethod
-    def load_pickle(filepath: str):
+    def load_pickle(filepath: str) -> Any:
         with open(filepath, 'rb') as f:
             return pickle.load(f)
 
     @staticmethod
-    def load_csv(filepath):
+    def load_csv(filepath: str) -> pd.DataFrame:
         return pd.read_csv(filepath)
 
     @staticmethod
-    def load_python(filepath):
+    def load_python_script(filepath: str) -> str:
         with open(filepath, 'r', encoding='utf8') as file:
             return file.read()
 
     @staticmethod
-    def load_json(filepath):
+    def load_json(filepath: str) -> Any:
         with open(filepath, 'r', encoding='utf8') as file:
             return js.load(file)
 
     @staticmethod
-    def save_python(filepath, data):
+    def save_python(filepath: str, data) -> None:
         with open(filepath, 'w', encoding='utf8') as file:
             file.write(data)
 
     @staticmethod
-    def save_json(filepath, data):
+    def save_json(filepath: str, data) -> None:
         with open(filepath, 'w', encoding='utf-8') as file:
             js.dump(data, file)
 
@@ -85,11 +91,13 @@ class Datas(object):
     @staticmethod
     def _convert_to_int(byte_num: bytes, koef: float = 1) -> int:
         '''Метод конвертации байткода (hex) в десятичную систему'''
-        result = int.from_bytes(byte_num[::-1],
-                                byteorder='big',
-                                signed=True) * koef
+        result = int.from_bytes(
+            byte_num[::-1],
+            byteorder='big',
+            signed=True
+        ) * koef
         return result
-    
+
     @classmethod
     def _convert_to_bin(cls, byte_num: int, koef: float, length: int) -> str:
         '''Метод конвертации байткода (hex) в двоичную систему'''
@@ -98,7 +106,7 @@ class Datas(object):
         return result
 
     @classmethod
-    def _unpack_elem(cls, byte_num: bytes, j_elem: dict):
+    def _unpack_elem(cls, byte_num: bytes, j_elem: dict) -> int | str:
         '''Метод распаковки элемента'''
         name = j_elem['name']
         koef = j_elem['koef']
@@ -108,11 +116,12 @@ class Datas(object):
         if type == 'pr':
             return cls._convert_to_bin(byte_num, koef, j_elem['length'])
 
-        raise ValueError(f'Unknown type in json: {name}, {type}, {j_elem["position"]}')
-
+        raise ValueError(
+            f'Unknown type in json: {name}, {type}, {j_elem["position"]}'
+        )
 
     @staticmethod
-    def _unpack_group(value, members: list, data: dict):
+    def _unpack_group(value, members: list, data: dict) -> None:
         '''Метод распаковки группы'''
         for member in sorted(members, key=lambda x: x['position']):
             if member['length'] is None:
@@ -135,12 +144,12 @@ class Datas(object):
             return
         data['time'].append(
             cls._convert_to_int(byte_str[:4], j_elems['time_koef']) * 0.001
-        ) # 0.001 коэффициент подобранный именно для времени
+        )  # 0.001 коэффициент подобранный именно для времени
         byte_str = byte_str[10:]
         for elem in sorted(j_elems['data_info'], key=lambda x: x['position']):
             if elem['length'] is None:
                 continue
-            
+
             length = elem['length'] // 8
             byte_num = byte_str[:length]
             value = cls._unpack_elem(byte_num, elem)
@@ -149,7 +158,7 @@ class Datas(object):
                 data[elem['name']].append(value)
             else:
                 cls._unpack_group(value, elem['members'], data)
-                
+
     @classmethod
     def load_pdd(cls, pddfilepath: str, json_filepath: str) -> dict:
         '''
@@ -158,18 +167,24 @@ class Datas(object):
         j_data = cls.load_json(json_filepath)
         result = {}
         result['name'] = j_data['name']
-        result['adr'] = {adr['adr_name']:defaultdict(list) for adr in j_data['adr']}
+        result['adr'] = {
+            adr['adr_name']: defaultdict(list) for adr in j_data['adr']
+        }
         with open(pddfilepath, 'rb') as file:
             string = file.read(42)
             while string:
                 for elem in j_data['adr']:
-                    cls._unpack_string(string, elem, result['adr'][elem['adr_name']])
+                    cls._unpack_string(
+                        string, elem, result['adr'][elem['adr_name']]
+                    )
                 string = file.read(42)
-        result['adr'] = {key: pd.DataFrame(value) for key, value in result['adr'].items()}
+        result['adr'] = {
+            key: pd.DataFrame(value) for key, value in result['adr'].items()
+        }
         return result
 
     @staticmethod
-    def get_list_json_in_folder(dirpath):
+    def get_list_json_in_folder(dirpath: str) -> list:
         '''Метод получения списка всех json файлов в папке'''
         result = []
         for item in os.scandir(dirpath):
@@ -178,6 +193,6 @@ class Datas(object):
         return result
 
     @classmethod
-    def get_jsons_data(cls, list_json):
+    def get_jsons_data(cls, list_json: list) -> list:
         '''Метод получения данных все json файлов'''
         return [cls.load_json(filepath) for filepath in list_json]

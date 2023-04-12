@@ -1,7 +1,9 @@
-from PyQt5.QtGui import QFont, QIcon, QColor, QFontMetrics
-from PyQt5.Qsci import QsciScintilla, QsciLexerPython
-from PyQt5 import QtWidgets as qtw
-from app.model.file import Datas
+from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtWidgets import (
+    QMainWindow, QSplitter, QPlainTextEdit,
+    QAction, QFileDialog
+)
+from app.model import file_methods
 from PyQt5.QtCore import Qt
 from app.view.servicesWindows.graphWindow import GraphWindow
 import app.resource.qrc_resources
@@ -14,46 +16,7 @@ import sys
 import io
 
 
-# class SimplePythonEditor(QsciScintilla):
-#     '''
-#     Класс для украшения окна консоли.
-#     '''
-#     def __init__(self, font, parent=None):
-#         super(SimplePythonEditor, self).__init__(parent)
-#         self.setFont(font)
-#         self.setMarginsFont(font)
-#         # Margin 0 is used for line numbers
-#         fontmetrics = QFontMetrics(font)
-#         self.setMarginsFont(font)
-#         self.setMarginWidth(0, fontmetrics.width("00000") + 3)
-
-
-#         self.setMarginLineNumbers(0, True)
-#         self.setMarginsBackgroundColor(QColor("#cccccc"))
-#         # Brace matching: enable for a brace immediately before or after
-#         # the current position
-#         #
-#         self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
-#         # Current line visible with special background color
-#         self.setCaretLineVisible(True)
-#         self.setCaretLineBackgroundColor(QColor('gray'))
-#         # Set Python lexer
-#         # Set style for Python comments (style number 1) to a fixed-width
-#         # courier.
-#         lexer = QsciLexerPython()
-#         lexer.setDefaultFont(font)
-#         self.setLexer(lexer)
-#         text = bytearray(str.encode("Arial"))
-#         self.SendScintilla(QsciScintilla.SCI_STYLESETFONT, 1, text)
-#         # Don't want to see the horizontal scrollbar at all
-#         # Use raw message to Scintilla here (all messages are documented
-#         # here: http://www.scintilla.org/ScintillaDoc.html)
-#         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
-#         # not too small
-#         # self.setMinimumSize(200, 200)
-
-
-class ConsoleWindow(qtw.QMainWindow):
+class ConsoleWindow(QMainWindow):
     '''
     Класс для окна консоли.
     controller - контроллер.
@@ -78,7 +41,7 @@ class ConsoleWindow(qtw.QMainWindow):
         self.createMenu()
         self.connectActions()
 
-        splitter = qtw.QSplitter(Qt.Vertical)
+        splitter = QSplitter(Qt.Vertical)
 
         font = QFont()
         font.setFamily('Courier')
@@ -86,9 +49,9 @@ class ConsoleWindow(qtw.QMainWindow):
         font.setPointSize(11)
 
         # self.textEdit = SimplePythonEditor(font)
-        self.textEdit = qtw.QPlainTextEdit()
+        self.textEdit = QPlainTextEdit()
         self.textEdit.setFont(font)
-        self.label = qtw.QPlainTextEdit()
+        self.label = QPlainTextEdit()
         self.label.setFont(font)
 
         self.setCentralWidget(splitter)
@@ -109,12 +72,12 @@ class ConsoleWindow(qtw.QMainWindow):
         fileToolBar.addAction(self.executeAction)
 
     def createAction(self):
-        self.openScriptAction = qtw.QAction('&Открыть *.py...')
+        self.openScriptAction = QAction('&Открыть *.py...')
         self.openScriptAction.setIcon(
             QIcon(self.parent.getIcon(':file-text.svg')))
-        self.saveScriptAction = qtw.QAction('&Сохранить *.py...')
+        self.saveScriptAction = QAction('&Сохранить *.py...')
         self.saveScriptAction.setIcon(QIcon(self.parent.getIcon(':save.svg')))
-        self.executeAction = qtw.QAction('&Выполнить скрипт.')
+        self.executeAction = QAction('&Выполнить скрипт.')
         self.executeAction.setIcon(self.parent.getIcon((':play.svg')))
         self.executeAction.setShortcut("Ctrl+Return")
 
@@ -137,7 +100,7 @@ class ConsoleWindow(qtw.QMainWindow):
         with contextlib.redirect_stdout(f), contextlib.redirect_stderr(f):
             try:
                 command = self.textEdit.toPlainText()
-                model = Datas()
+                model = file_methods()
                 to_csv = model.write_csv
                 data = self.controller.get_data().copy()
                 graph = self.graph
@@ -151,13 +114,17 @@ class ConsoleWindow(qtw.QMainWindow):
         '''
         Метод загрузки ранее сохраненного скрипта.
         '''
-        self.filepath, check = qtw.QFileDialog.getOpenFileName(None,
-                                                               'Open python file', '', 'Open File (*.py)')
+        self.filepath, check = QFileDialog.getOpenFileName(
+            None,
+            'Open python file',
+            '',
+            'Open File (*.py)'
+        )
         if check:
             try:
                 scriptData = self.controller.load_pytnon_script(
                     self.filepath)
-                self.textEdit.setText(scriptData)
+                self.textEdit.setPlainText(scriptData)
                 self.parent.setNotify('успех', 'Скрипт загружен')
             except Exception as e:
                 self.parent.setNotify('ошибка', str(e))
@@ -166,10 +133,14 @@ class ConsoleWindow(qtw.QMainWindow):
         '''
         Метод сохранения скрипта.
         '''
-        options = qtw.QFileDialog.Options()
-        self.filepath, _ = qtw.QFileDialog.getSaveFileName(self,
-                                                           "Save File", "", f"python Files (*.py);;All Files(*)",
-                                                           options=options)
+        options = QFileDialog.Options()
+        self.filepath, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save File",
+            "",
+            f"python Files (*.py);;All Files(*)",
+            options=options
+        )
         data = self.textEdit.toPlainText()
         if self.filepath:
             try:
@@ -212,10 +183,17 @@ class ConsoleWindow(qtw.QMainWindow):
             self.parent.trackGraph()
             self.parent.checkPositioningWindows()
         except AttributeError:
-            self.parent.setNotify('предупреждение', 'Данные не являются dataframe')
+            self.parent.setNotify(
+                'предупреждение',
+                'Данные не являются dataframe'
+            )
         except KeyError:
             self.parent.setNotify(
-                'предупреждение', 'Необходимо правильно выбрать данные или ошибка имен элементов')
+                'предупреждение',
+                'Необходимо правильно выбрать данные или ошибка имен элементов'
+            )
         except ValueError:
             self.parent.setNotify(
-                'предупреждение', 'Упси,что-то пошло не так')
+                'предупреждение',
+                'Упси,что-то пошло не так'
+            )

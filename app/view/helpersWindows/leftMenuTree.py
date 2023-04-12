@@ -1,13 +1,17 @@
-from PyQt5 import QtWidgets as qtw, QtGui as qtg, QtCore as qtc
+from PyQt5.QtWidgets import (
+    QTreeWidget, QTreeWidgetItem, QApplication, QMenu, QInputDialog
+)
+from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtCore import Qt
 
-class LeftMenuTree(qtw.QTreeWidget):
+class LeftMenuTree(QTreeWidget):
     def __init__(self, mainWindow, parent=None):
         super().__init__()
         self.mainWindow = mainWindow
         self.settings = mainWindow.settings
         self.setColumnCount(2)
         self.setHeaderLabels(['Название', 'Количество'])
-        self.setContextMenuPolicy(qtc.Qt.CustomContextMenu)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)
         self.itemDoubleClicked.connect(self.handleTreeItemDoubleClicked)
 
@@ -24,29 +28,29 @@ class LeftMenuTree(qtw.QTreeWidget):
         self.clear()
         data = self.mainWindow.controller.get_data()
         for nameCategory, adrs in sorted(data.items(), key=lambda x: x[0]):
-            treeCategory = qtw.QTreeWidgetItem(self)
+            treeCategory = QTreeWidgetItem(self)
             treeCategory.setText(0, nameCategory)
             treeCategory.setExpanded(True)
             for nameAdr, adrValues in adrs.items():
-                treeAdr = qtw.QTreeWidgetItem(treeCategory)
+                treeAdr = QTreeWidgetItem(treeCategory)
                 treeAdr.setText(0, nameAdr)
                 treeAdr.setExpanded(True)
                 filters = self.settings.value('leftMenuFilters')
                 adrFilters = filters['adrs'].get(nameAdr, {})
                 for nameItem in adrValues.columns:
                     if adrFilters.get(nameItem, filters['unknown']):
-                        treeItem = qtw.QTreeWidgetItem(treeAdr)
+                        treeItem = QTreeWidgetItem(treeAdr)
                         treeItem.setText(0, nameItem)
                         count = len(adrValues[nameItem])
                         treeItem.setText(1, str(count))
-                        treeItem.setFont(1, qtg.QFont('Arial', 8, 1, True))
+                        treeItem.setFont(1, QFont('Arial', 8, 1, True))
                         if count:
-                            treeItem.setForeground(1, qtg.QColor('gray'))
+                            treeItem.setForeground(1, QColor('gray'))
                         else:
-                            treeItem.setForeground(1, qtg.QColor('red'))
-                        treeItem.setTextAlignment(1, qtc.Qt.AlignRight)
-                        treeItem.setFlags(treeItem.flags() | qtc.Qt.ItemIsUserCheckable)
-                        treeItem.setCheckState(0, qtc.Qt.Unchecked)
+                            treeItem.setForeground(1, QColor('red'))
+                        treeItem.setTextAlignment(1, Qt.AlignRight)
+                        treeItem.setFlags(treeItem.flags() | Qt.ItemIsUserCheckable)
+                        treeItem.setCheckState(0, Qt.Unchecked)
         self.show()
         self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)
@@ -68,8 +72,8 @@ class LeftMenuTree(qtw.QTreeWidget):
         '''
         Обработка двойного клика на элементе дерева
         '''
-        mouseEvent = qtw.QApplication.mouseButtons()
-        if mouseEvent == qtc.Qt.LeftButton: 
+        mouseEvent = QApplication.mouseButtons()
+        if mouseEvent == Qt.LeftButton: 
             selectedItemTree = None
             try:
                 selectedItemTree = self.getInfoItem(item)
@@ -80,7 +84,7 @@ class LeftMenuTree(qtw.QTreeWidget):
                 self.mainWindow.createGraph([(category, adr, element)])
 
     def showContextMenu(self, position):
-        menu = qtw.QMenu(self)
+        menu = QMenu(self)
         rename_action = menu.addAction("Переименовать")
         hide_action = menu.addAction("Скрыть")
         rename_action.triggered.connect(self.renameItem)
@@ -91,7 +95,7 @@ class LeftMenuTree(qtw.QTreeWidget):
     def renameItem(self):
         item = self.currentItem()
         if item is not None:
-            newName, ok = qtw.QInputDialog.getText(self, "Переименовать элемент", "Введите новое имя:", text=item.text(0))
+            newName, ok = QInputDialog.getText(self, "Переименовать элемент", "Введите новое имя:", text=item.text(0))
             if ok:
                 try:
                     selectedItemTree = self.getInfoItem(item)

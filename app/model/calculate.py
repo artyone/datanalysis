@@ -11,6 +11,7 @@ class Mathematical(object):
     *_acc - средние величины.
     intervals_* - интервалы, получаемые рассчетным образом.
     '''
+
     def __init__(self, object: DataFrame) -> None:
         self.d = object
         self.Wxc_kbti_acc = 0
@@ -41,40 +42,56 @@ class Mathematical(object):
         Метод расчета углов для рассчетов.
         '''
         self.d['Kren_sin'] = self.d.I1_Kren.apply(
-            lambda x: sin(radians(x + kren)))
+            lambda x: sin(radians(x + kren))
+        )
         self.d['Kren_cos'] = self.d.I1_Kren.apply(
-            lambda x: cos(radians(x + kren)))
+            lambda x: cos(radians(x + kren))
+        )
         self.d['Tang_sin'] = self.d.I1_Tang.apply(
-            lambda x: sin(radians(x + tang)))
+            lambda x: sin(radians(x + tang))
+        )
         self.d['Tang_cos'] = self.d.I1_Tang.apply(
-            lambda x: cos(radians(x + tang)))
+            lambda x: cos(radians(x + tang))
+        )
         self.d['Kurs_sin'] = self.d.I1_KursI.apply(
-            lambda x: sin(radians(x + kurs)))
+            lambda x: sin(radians(x + kurs))
+        )
         self.d['Kurs_cos'] = self.d.I1_KursI.apply(
-            lambda x: cos(radians(x + kurs)))
+            lambda x: cos(radians(x + kurs))
+        )
 
     def calc_wg_kbti(self, k: int, k1: int) -> None:
         '''
         Метод рассчёта с учётом коэффициента k.
         '''
-        self.d['Wxg_KBTIi'] = (self.d.JVD_VN * k * 3.6 * self.d.Kurs_cos
-                               + self.d.JVD_VE * k * 3.6 * self.d.Kurs_sin)
-        self.d['Wzg_KBTIi'] = (- self.d.JVD_VN * k * 3.6 * self.d.Kurs_sin
-                               + self.d.JVD_VE * k * 3.6 * self.d.Kurs_cos)
+        self.d['Wxg_KBTIi'] = (
+            self.d.JVD_VN * k * 3.6 * self.d.Kurs_cos
+            + self.d.JVD_VE * k * 3.6 * self.d.Kurs_sin
+        )
+        self.d['Wzg_KBTIi'] = (
+            - self.d.JVD_VN * k * 3.6 * self.d.Kurs_sin
+            + self.d.JVD_VE * k * 3.6 * self.d.Kurs_cos
+        )
         self.d['Wyg_KBTIi'] = self.d.JVD_Vh * k1 * 3.6 * self.d.Kurs_sin
 
     def calc_wc_kbti(self) -> None:
         '''
         Метод рассчёта данных КБТИ.
         '''
-        self.d['Wxc_KBTIi'] = (self.d.Wxg_KBTIi * self.d.Tang_cos
-                               + self.d.Wyg_KBTIi * self.d.Tang_sin)
-        self.d['Wyc_KBTIi'] = (- self.d.Wxg_KBTIi * self.d.Tang_sin * self.d.Kren_cos
-                               + self.d.Wyg_KBTIi * self.d.Tang_cos * self.d.Kren_cos
-                               + self.d.Wzg_KBTIi * self.d.Kren_sin)
-        self.d['Wzc_KBTIi'] = (self.d.Wxg_KBTIi * self.d.Kren_sin * self.d.Tang_sin
-                               - self.d.Wyg_KBTIi * self.d.Tang_cos * self.d.Kren_sin
-                               + self.d.Wzg_KBTIi * self.d.Kren_cos)
+        self.d['Wxc_KBTIi'] = (
+            self.d.Wxg_KBTIi * self.d.Tang_cos
+            + self.d.Wyg_KBTIi * self.d.Tang_sin
+        )
+        self.d['Wyc_KBTIi'] = (
+            - self.d.Wxg_KBTIi * self.d.Tang_sin * self.d.Kren_cos
+            + self.d.Wyg_KBTIi * self.d.Tang_cos * self.d.Kren_cos
+            + self.d.Wzg_KBTIi * self.d.Kren_sin
+        )
+        self.d['Wzc_KBTIi'] = (
+            self.d.Wxg_KBTIi * self.d.Kren_sin * self.d.Tang_sin
+            - self.d.Wyg_KBTIi * self.d.Tang_cos * self.d.Kren_sin
+            + self.d.Wzg_KBTIi * self.d.Kren_cos
+        )
 
     def calc_wp(self) -> None:
         '''
@@ -128,9 +145,12 @@ class Mathematical(object):
         '''
         Метод рассчёта US.
         '''
-        self.USkbti = (atan(self.Wzc_kbti_acc / self.Wxc_kbti_acc) / pi) * 180
-        self.USpnk = (atan(self.Wzc_DISS_PNK_acc
-                           / self.Wxc_DISS_PNK_acc) / pi) * 180
+        self.USkbti = (
+            atan(self.Wzc_kbti_acc / self.Wxc_kbti_acc) / pi
+        ) * 180
+        self.USpnk = (
+            atan(self.Wzc_DISS_PNK_acc / self.Wxc_DISS_PNK_acc) / pi
+        ) * 180
         # USdiss=(math.atan(Wzc_DISS_r_acc/Wxc_DISS_r_acc)/math.pi)*180
 
     def get_calculated_data(self, start_stop: Iterable) -> dict:
@@ -138,8 +158,10 @@ class Mathematical(object):
         Метод возврата данных после рассчёта.
         '''
         res_dict = {}
-        res_dict['name'] = ['length', 'JVD_H', 'start', 'stop',
-                            'time', 'US', 'Wp', 'Wx', 'Wz', 'Wy']
+        res_dict['name'] = [
+            'length', 'JVD_H', 'start', 'stop',
+            'time', 'US', 'Wp', 'Wx', 'Wz', 'Wy'
+        ]
         for start, stop in start_stop:
             self._get_mean(start, stop)
             self._get_us()
@@ -173,28 +195,38 @@ class Mathematical(object):
         '''
         data = self._get_dataframe_for_intervals(koef)
         for row in data.itertuples():
-            self._get_intervals_tang(time=row.time,
-                                    raz=row.Tang_raz,
-                                    tang=row.I1_Tang,
-                                    h=row.JVD_H,
-                                    k=koef)
-            self._get_intervals_kren(time=row.time,
-                                    raz=row.Kren_raz,
-                                    kren=row.I1_Kren,
-                                    h=row.JVD_H,
-                                    k=koef)
-            self._get_intervals_h(time=row.time,
-                                 raz=row.h_raz,
-                                 h=row.JVD_H,
-                                 k=koef)
-            self._get_intervals_wx(time=row.time,
-                                  wx=row.DIS_Wx,
-                                  raz_b=row.Wx_raz_b,
-                                  h=row.JVD_H,
-                                  k=koef)
-        return self._calc_intervals(self.intervals_kren,
-                                   self.intervals_h,
-                                   self.intervals_wx)
+            self._get_intervals_tang(
+                time=row.time,
+                raz=row.Tang_raz,
+                tang=row.I1_Tang,
+                h=row.JVD_H,
+                k=koef
+            )
+            self._get_intervals_kren(
+                time=row.time,
+                raz=row.Kren_raz,
+                kren=row.I1_Kren,
+                h=row.JVD_H,
+                k=koef
+            )
+            self._get_intervals_h(
+                time=row.time,
+                raz=row.h_raz,
+                h=row.JVD_H,
+                k=koef
+            )
+            self._get_intervals_wx(
+                time=row.time,
+                wx=row.DIS_Wx,
+                raz_b=row.Wx_raz_b,
+                h=row.JVD_H,
+                k=koef
+            )
+        return self._calc_intervals(
+            self.intervals_kren,
+            self.intervals_h,
+            self.intervals_wx
+        )
 
     def _get_dataframe_for_intervals(self, k):
         '''
@@ -257,9 +289,12 @@ class Mathematical(object):
         '''
         arr = [i for i in args[0] if len(i) >= 310]
         for i in args[1:]:
-            arr = [k for set1 in arr
-                   for set2 in i
-                   if len(k := set1 & set2) >= 310]
+            arr = [
+                k
+                for set1 in arr
+                for set2 in i
+                if len(k := set1 & set2) >= 310
+            ]
 
         result = [(min(i) + 15, max(i) - 5) for i in arr]
         return result
@@ -268,9 +303,11 @@ class Mathematical(object):
         '''
         Метод получения даты.
         '''
-        headers = ['time', 
-                   'Wx_DISS_PNK', 'Wz_DISS_PNK', 'Wy_DISS_PNK',
-                   'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
-                   'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi',
-                   'Wp_KBTIi', 'Wp_diss_pnki']
+        headers = [
+            'time',
+            'Wx_DISS_PNK', 'Wz_DISS_PNK', 'Wy_DISS_PNK',
+            'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
+            'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi',
+            'Wp_KBTIi', 'Wp_diss_pnki'
+        ]
         return self.d.loc[:, headers]

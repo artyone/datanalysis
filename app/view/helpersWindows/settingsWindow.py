@@ -1,9 +1,16 @@
-from PyQt5 import QtWidgets as qtw
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QFormLayout,
+    QCheckBox, QComboBox, QHBoxLayout,
+    QTabWidget, QFileDialog,
+    QLineEdit, QPushButton,
+    QStackedLayout, QScrollArea,
+    QPlainTextEdit
+)
 from PyQt5.QtCore import Qt
 from functools import partial
 
 
-class SettingsWindow(qtw.QWidget):
+class SettingsWindow(QWidget):
     '''
     Класс окна настроек.
     settings - настройки приложения.
@@ -29,14 +36,14 @@ class SettingsWindow(qtw.QWidget):
         '''
         self.setGeometry(0, 0, 700, 500)
         self.setWindowTitle("Settings menu")
-        layout = qtw.QVBoxLayout()
-        tabWidget = qtw.QTabWidget()
+        layout = QVBoxLayout()
+        tabWidget = QTabWidget()
         tabWidget.addTab(self.mainTab(), 'Общие настройки')
         tabWidget.addTab(self.filterMenuTab(), 'Фильтр бокового меню')
         tabWidget.addTab(self.planeTab(), 'Самолёты')
         tabWidget.addTab(self.correctionTab(), 'Коррекция')
         tabWidget.addTab(self.graphTab(), 'Графики')
-        self.saveButton = qtw.QPushButton('Save')
+        self.saveButton = QPushButton('Save')
         self.saveButton.clicked.connect(self.saveSettings)
         layout.addWidget(tabWidget)
         layout.addWidget(self.saveButton)
@@ -46,18 +53,18 @@ class SettingsWindow(qtw.QWidget):
         '''
         Вкладка основных настроек.
         '''
-        tabWidget = qtw.QWidget()
-        tabLayout = qtw.QFormLayout()
+        tabWidget = QWidget()
+        tabLayout = QFormLayout()
 
         lineEdit = self.initBrowseBlock()
         tabLayout.addRow('Путь к json папке:', lineEdit)
 
-        self.themeComboBox = qtw.QComboBox()
+        self.themeComboBox = QComboBox()
         self.themeComboBox.addItems(['black', 'white'])
         self.themeComboBox.setCurrentText(self.listMainSettings['theme'])
         tabLayout.addRow('Тема:', self.themeComboBox)
 
-        self.toolbarComboBox = qtw.QComboBox()
+        self.toolbarComboBox = QComboBox()
         self.toolbarComboBox.addItems(['left', 'top'])
         self.toolbarComboBox.setCurrentText(self.listMainSettings['toolBar'])
         tabLayout.addRow('Позиция кнопок:', self.toolbarComboBox)
@@ -66,10 +73,10 @@ class SettingsWindow(qtw.QWidget):
         return tabWidget
 
     def initBrowseBlock(self):
-        horizontalLayer = qtw.QHBoxLayout()
-        self.browseLineEdit = qtw.QLineEdit()
+        horizontalLayer = QHBoxLayout()
+        self.browseLineEdit = QLineEdit()
         self.browseLineEdit.setText(self.listMainSettings['jsonDir'])
-        browseButton = qtw.QPushButton()
+        browseButton = QPushButton()
         browseButton.setText('...')
         browseButton.setFixedSize(40, 22)
         browseButton.clicked.connect(self.openDirectoryDialog)
@@ -79,8 +86,8 @@ class SettingsWindow(qtw.QWidget):
         return horizontalLayer
 
     def openDirectoryDialog(self):
-        directoryPath = qtw.QFileDialog.getExistingDirectory(None,
-                                                             "Выберите папку")
+        directoryPath = QFileDialog.getExistingDirectory(None,
+                                                         "Выберите папку")
         if directoryPath:
             self.browseLineEdit.setText(directoryPath)
 
@@ -88,37 +95,38 @@ class SettingsWindow(qtw.QWidget):
         '''
         Вкладка настройки фильтра бокового чек-бокс меню.
         '''
-        tabWidget = qtw.QWidget()
-        tabLayout = qtw.QVBoxLayout()
-        self.filtersComboBox = qtw.QComboBox()
+        tabWidget = QWidget()
+        tabLayout = QVBoxLayout()
+        self.filtersComboBox = QComboBox()
         self.filtersComboBox.addItems(self.listMenuFilters['adrs'])
 
         tabLayout.addWidget(self.filtersComboBox, alignment=Qt.AlignTop)
         tabWidget.setLayout(tabLayout)
-        self.filtersStackedLayout = qtw.QStackedLayout()
+        self.filtersStackedLayout = QStackedLayout()
         for adr in self.listMenuFilters['adrs']:
             self.filtersStackedLayout.addWidget(self.pageFilterStacked(adr))
         self.filtersComboBox.activated.connect(
             partial(self.switchPage, self.filtersStackedLayout, self.filtersComboBox))
-        
-        self.unknownCheckBox = qtw.QCheckBox('Отображать неизвестные заголовки?')
+
+        self.unknownCheckBox = QCheckBox('Отображать неизвестные заголовки?')
         self.unknownCheckBox.setChecked(self.listMenuFilters['unknown'])
         tabLayout.addWidget(self.unknownCheckBox)
-        
+
         tabLayout.addLayout(self.filtersStackedLayout)
         return tabWidget
 
     def pageFilterStacked(self, adr):
-        pageWidget = qtw.QWidget()
-        pageLayout = qtw.QFormLayout()
+        pageWidget = QWidget()
+        pageLayout = QFormLayout()
         for elements in self.settings.value('leftMenuFilters')['adrs'][adr]:
-            checkBox = qtw.QCheckBox(str(elements))
-            checkBox.setChecked(self.settings.value('leftMenuFilters')['adrs'][adr][elements])
+            checkBox = QCheckBox(str(elements))
+            checkBox.setChecked(self.settings.value(
+                'leftMenuFilters')['adrs'][adr][elements])
             pageLayout.addWidget(checkBox)
             self.listMenuFilters['adrs'][adr][elements] = checkBox
         pageWidget.setLayout(pageLayout)
 
-        scrollArea = qtw.QScrollArea()
+        scrollArea = QScrollArea()
         scrollArea.setWidgetResizable(True)
         scrollArea.setWidget(pageWidget)
 
@@ -128,18 +136,20 @@ class SettingsWindow(qtw.QWidget):
         '''
         Вкладка настройки коэффициентов самолётов
         '''
-        tabWidget = qtw.QWidget()
-        tabLayout = qtw.QVBoxLayout()
-        self.planesComboBox = qtw.QComboBox()
+        tabWidget = QWidget()
+        tabLayout = QVBoxLayout()
+        self.planesComboBox = QComboBox()
         self.planesComboBox.addItems(self.listPlanes)
 
         tabLayout.addWidget(self.planesComboBox, alignment=Qt.AlignTop)
         tabWidget.setLayout(tabLayout)
-        self.planesStackedLayout = qtw.QStackedLayout()
+        self.planesStackedLayout = QStackedLayout()
         for plane in self.listPlanes:
             self.planesStackedLayout.addWidget(self.pagePlaneStacked(plane))
         self.planesComboBox.activated.connect(
-            partial(self.switchPage, self.planesStackedLayout, self.planesComboBox))
+            partial(self.switchPage, self.planesStackedLayout,
+                    self.planesComboBox)
+        )
         tabLayout.addLayout(self.planesStackedLayout)
         return tabWidget
 
@@ -149,10 +159,10 @@ class SettingsWindow(qtw.QWidget):
         Значения берет из настроек и записывает объект в словарь listPlanes 
         для последующего быстрого получения данных объекта.
         '''
-        pageWidget = qtw.QWidget()
-        pageLayout = qtw.QFormLayout()
+        pageWidget = QWidget()
+        pageLayout = QFormLayout()
         for param, value in self.settings.value('planes')[plane].items():
-            lineEdit = qtw.QLineEdit(str(value))
+            lineEdit = QLineEdit(str(value))
             lineEdit.textChanged.connect(partial(self.checkDigit, lineEdit))
             pageLayout.addRow(param, lineEdit)
             self.listPlanes[plane][param] = lineEdit
@@ -163,10 +173,10 @@ class SettingsWindow(qtw.QWidget):
         '''
         Вкладка настройки корректировки коэффициентов
         '''
-        tabWidget = qtw.QWidget()
-        tabLayout = qtw.QFormLayout()
+        tabWidget = QWidget()
+        tabLayout = QFormLayout()
         for correction, value in self.listCorrections.items():
-            lineEdit = qtw.QLineEdit(str(value))
+            lineEdit = QLineEdit(str(value))
             lineEdit.textChanged.connect(partial(self.checkDigit, lineEdit))
             tabLayout.addRow(correction, lineEdit)
             self.listCorrections[correction] = lineEdit
@@ -177,21 +187,26 @@ class SettingsWindow(qtw.QWidget):
         '''
         Вкладка настроек графиков.
         '''
-        tabWidget = qtw.QWidget()
-        tabLayout = qtw.QFormLayout()
-        bground = qtw.QComboBox()
+        tabWidget = QWidget()
+        tabLayout = QFormLayout()
+        bground = QComboBox()
         bground.addItems(
-            ['black', 'white', 'red', 'green', 'pink', 'blue', 'gray'])
+            ['black', 'white', 'red', 'green', 'pink', 'blue', 'gray']
+        )
         bground.setCurrentText(self.listGraphs['background'])
         tabLayout.addRow('Фон графиков:', bground)
         self.listGraphs['background'] = bground
-        string = '\n'.join([','.join([' '.join(x) for x in item]) for item in self.listGraphs['default']])
-        defaultTextEdit = qtw.QPlainTextEdit(string)
+        string = '\n'.join(
+            [
+                ','.join([' '.join(x) for x in item])
+                for item in self.listGraphs['default']
+            ]
+        )
+        defaultTextEdit = QPlainTextEdit(string)
         tabLayout.addRow('Графики по умолчанию:', defaultTextEdit)
         self.listGraphs['default'] = defaultTextEdit
         tabWidget.setLayout(tabLayout)
         return tabWidget
-
 
     def switchPage(self, layout, widget):
         '''
@@ -209,13 +224,16 @@ class SettingsWindow(qtw.QWidget):
         self.saveGraphSettings()
         self.saveLeftMenuFilterSettings()
         self.parent.setNotify(
-            'успех', 'Настройки сохранены, перезапустите приложение!')
+            'успех', 'Настройки сохранены, перезапустите приложение!'
+        )
         self.parent.restartApp()
 
     def saveMainSettings(self):
-        newValueMainSettings = {'theme': self.themeComboBox.currentText(),
-                                'jsonDir': self.browseLineEdit.text(),
-                                'toolBar': self.toolbarComboBox.currentText()}
+        newValueMainSettings = {
+            'theme': self.themeComboBox.currentText(),
+            'jsonDir': self.browseLineEdit.text(),
+            'toolBar': self.toolbarComboBox.currentText()
+        }
         self.settings.setValue('mainSettings', newValueMainSettings)
 
     def savePlanesSettings(self):
@@ -237,17 +255,21 @@ class SettingsWindow(qtw.QWidget):
 
     def saveGraphSettings(self):
         graphBackground = self.listGraphs['background'].currentText()
-        graphDefault = [[tuple(x.split()) for x in row.split(',')] 
-                         for row in self.listGraphs['default'].toPlainText().split('\n')]
+        graphDefault = [
+            [tuple(x.split()) for x in row.split(',')]
+            for row in self.listGraphs['default'].toPlainText().split('\n')
+        ]
 
-        graphSettings = {'background': graphBackground,
-                         'default': graphDefault}
+        graphSettings = {
+            'background': graphBackground,
+            'default': graphDefault
+        }
         self.settings.setValue('graphs', graphSettings)
 
     def saveLeftMenuFilterSettings(self):
         newValueAdr = {
             adr: {
-                name: widget.isChecked()             
+                name: widget.isChecked()
                 for name, widget in data.items()
             }
             for adr, data in self.listMenuFilters['adrs'].items()
@@ -258,7 +280,7 @@ class SettingsWindow(qtw.QWidget):
         }
         self.settings.setValue('leftMenuFilters', newValueFilters)
 
-    def checkDigit(self, widget: qtw.QLineEdit):
+    def checkDigit(self, widget: QLineEdit):
         try:
             float(widget.text())
             widget.setStyleSheet("background:#1E1E1E;")

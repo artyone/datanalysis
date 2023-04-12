@@ -1,11 +1,15 @@
-from os import startfile
-from unicodedata import category
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QFormLayout,
+    QLabel, QComboBox, QHBoxLayout,
+    QDialogButtonBox, QFileDialog,
+    QPlainTextEdit
+)
 from PyQt5.QtCore import Qt
-from PyQt5 import QtWidgets as qtw
 from qtwidgets import AnimatedToggle
+from os import startfile
 
 
-class ReportWindow(qtw.QWidget):
+class ReportWindow(QWidget):
     '''
     Класс окна получения отчета по полету.
     parent - родительское окно.
@@ -26,9 +30,9 @@ class ReportWindow(qtw.QWidget):
         '''
         self.setGeometry(0, 0, 500, 500)
         self.setWindowTitle("Создание отчёта")
-        self.setLayout(qtw.QVBoxLayout())
+        self.setLayout(QVBoxLayout())
 
-        formLayout = qtw.QFormLayout()
+        formLayout = QFormLayout()
 
         self.initCategoryBlock()
         inputBox = self.inputBox()
@@ -43,12 +47,12 @@ class ReportWindow(qtw.QWidget):
         self.layout().addWidget(btnBox, 1)
 
     def initCategoryBlock(self):
-        self.categoryComboBox = qtw.QComboBox()
+        self.categoryComboBox = QComboBox()
         categories = self.controller.get_data().keys()
         self.categoryComboBox.addItems(categories)
         self.categoryComboBox.activated.connect(self.updateAdrComboBox)
 
-        self.adrComboBox = qtw.QComboBox()
+        self.adrComboBox = QComboBox()
         current_category = self.categoryComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrComboBox.addItems(adrs)
@@ -57,29 +61,34 @@ class ReportWindow(qtw.QWidget):
         self.intervalsToggle = AnimatedToggle()
         self.intervalsToggle.setChecked(True)
         self.intervalsToggle.stateChanged.connect(self.addFormTxt)
-        self.intervalsTxt = qtw.QPlainTextEdit()
+        self.intervalsTxt = QPlainTextEdit()
 
-        horizontalLayout = qtw.QHBoxLayout()
-        horizontalLayout.addWidget(qtw.QLabel('<b>Интервалы:</b>'), 2)
-        horizontalLayout.addWidget(qtw.QLabel('Рассчитать автоматически'), 1,
-                                   alignment=Qt.AlignRight)
+        horizontalLayout = QHBoxLayout()
+        horizontalLayout.addWidget(QLabel('<b>Интервалы:</b>'), 2)
+        horizontalLayout.addWidget(
+            QLabel('Рассчитать автоматически'),
+            1,
+            alignment=Qt.AlignRight
+        )
         horizontalLayout.addWidget(self.intervalsToggle, 1)
-        horizontalLayout.addWidget(qtw.QLabel('Ввести вручную'), 2)
+        horizontalLayout.addWidget(QLabel('Ввести вручную'), 2)
         return horizontalLayout
 
     def buttonBox(self):
-        btnBox = qtw.QDialogButtonBox()
+        btnBox = QDialogButtonBox()
 
-        btnBox.setStandardButtons(qtw.QDialogButtonBox.Open |
-                                  qtw.QDialogButtonBox.Save |
-                                  qtw.QDialogButtonBox.Cancel)
+        btnBox.setStandardButtons(
+            QDialogButtonBox.Open |
+            QDialogButtonBox.Save |
+            QDialogButtonBox.Cancel
+        )
         btnBox.rejected.connect(self.close)
 
-        self.openButton = btnBox.button(qtw.QDialogButtonBox.Open)
+        self.openButton = btnBox.button(QDialogButtonBox.Open)
         self.openButton.clicked.connect(self.openFile)
         self.openButton.hide()
 
-        saveButton = btnBox.button(qtw.QDialogButtonBox.Save)
+        saveButton = btnBox.button(QDialogButtonBox.Save)
         saveButton.clicked.connect(self.getReportEvent)
         return btnBox
 
@@ -110,19 +119,21 @@ class ReportWindow(qtw.QWidget):
             return
         if not self.intervalsToggle.isChecked():
             text = ''
-        options = qtw.QFileDialog.Options()
-        filePath, _ = qtw.QFileDialog.getSaveFileName(
-            self, "Save File", "", "xlsx Files (*.xlsx);;All Files(*)", options=options)
+        options = QFileDialog.Options()
+        filePath, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save File",
+            "",
+            "xlsx Files (*.xlsx);;All Files(*)",
+            options=options)
         if filePath:
             try:
                 category = self.categoryComboBox.currentText()
                 adr = self.adrComboBox.currentText()
                 coef = self.parent.settings.value('koef_for_intervals')
-                self.controller.save_report(filePath,
-                                            category,
-                                            adr,
-                                            coef,
-                                            text)
+                self.controller.save_report(
+                    filePath, category, adr, coef, text
+                )
                 self.filePath = filePath
                 self.openButton.show()
                 self.parent.setNotify(

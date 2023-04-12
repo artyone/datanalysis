@@ -1,12 +1,17 @@
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QMdiSubWindow,
+    QAction, QMenu, QHBoxLayout,
+    QFrame, QSlider,
+    QDoubleSpinBox
+)
 import app.resource.qrc_resources
 import pyqtgraph as pg
 from PyQt5.sip import delete
 from PyQt5.QtCore import Qt
-from PyQt5 import QtWidgets as qtw
 from functools import partial
 
 
-class GraphWindow(qtw.QMdiSubWindow):
+class GraphWindow(QMdiSubWindow):
     '''
     Класс окон для построения графиков.
     parent - родительское окно
@@ -16,14 +21,17 @@ class GraphWindow(qtw.QMdiSubWindow):
     colors - цвета для графиков
     curves - словарь названия и объектов графиков.
     '''
+
     def __init__(self, data, treeSelected, decimation, parent) -> None:
         super().__init__()
         self.parent = parent
         self.data = data
         self.columns = treeSelected
         self.decimation = decimation
-        self.colors = ['red', 'blue', 'green',
-                       'orange', 'black', 'purple', 'cyan']
+        self.colors = [
+            'red', 'blue', 'green',
+            'orange', 'black', 'purple', 'cyan'
+        ]
         self.curves = dict()
         self.initUI()
 
@@ -32,9 +40,9 @@ class GraphWindow(qtw.QMdiSubWindow):
         Метод построения интерфейса окна.
         '''
         self.shiftWidget = None
-        self.mainWidget = qtw.QWidget()
+        self.mainWidget = QWidget()
         self.setWidget(self.mainWidget)
-        self.mainLayout = qtw.QVBoxLayout()
+        self.mainLayout = QVBoxLayout()
         self.mainWidget.setLayout(self.mainLayout)
         self.setWindowTitle('/'.join([i[2] for i in self.columns]))
         self.setStyleSheet("color: gray;")
@@ -57,25 +65,33 @@ class GraphWindow(qtw.QMdiSubWindow):
             raise ValueError
 
         self.plt = pg.PlotWidget()
-        self.plt.setBackground(self.parent.settings.value('graphs')['background'])
+        self.plt.setBackground(
+            self.parent.settings.value('graphs')['background']
+        )
         self.plt.showGrid(x=True, y=True)
         self.plt.addLegend(pen='gray', offset=(0, 0))
 
         for category, adr, item in self.columns:
             dataForGraph = self.data[category][adr].iloc[::self.decimation]
             pen = pg.mkPen(color=self.colors[0])
-            curve = pg.PlotDataItem(dataForGraph.time,
-                                    dataForGraph[item],
-                                    name=item,
-                                    pen=pen)
-            self.curves[f'{category}/{adr}/{item}'] = {'curve': curve, 'pen': pen, 'adr': adr, 'category':category}
+            curve = pg.PlotDataItem(
+                dataForGraph.time,
+                dataForGraph[item],
+                name=item,
+                pen=pen
+            )
+            self.curves[f'{category}/{adr}/{item}'] = {
+                'curve': curve, 'pen': pen, 'adr': adr, 'category': category
+            }
             self.plt.addItem(curve)
             self.colors.append(self.colors.pop(0))
         self.plt.setMenuEnabled(False)
         self.mainLayout.addWidget(self.plt)
-        self.plt.proxy = pg.SignalProxy(self.plt.scene().sigMouseMoved,
-                                        rateLimit=30,
-                                        slot=self.mouseMoved)
+        self.plt.proxy = pg.SignalProxy(
+            self.plt.scene().sigMouseMoved,
+            rateLimit=30,
+            slot=self.mouseMoved
+        )
         self.plt.scene().sigMouseClicked.connect(self.mouseClickEvent)
         self.plt.setClipToView(True)
 
@@ -87,10 +103,14 @@ class GraphWindow(qtw.QMdiSubWindow):
         pos = e[0]
         if self.plt.sceneBoundingRect().contains(pos):
             mousePoint = self.plt.getPlotItem().vb.mapSceneToView(pos)
+            x = float(mousePoint.x())
+            y = float(mousePoint.y())
             self.setWindowTitle(
-                f'x: {round(float(mousePoint.x()), 3)}, y: {round(float(mousePoint.y()), 3)}')
+                f'x: {round(x, 3)}, y: {round(y, 3)}'
+            )
             self.setToolTip(
-                f'x: <b>{round(float(mousePoint.x()), 1)}</b>,<br> y: <b>{round(float(mousePoint.y()), 1)}</b>')
+                f'x: <b>{round(x, 1)}</b>,<br> y: <b>{round(y, 1)}</b>'
+            )
 
     def mouseClickEvent(self, event):
         '''
@@ -112,13 +132,13 @@ class GraphWindow(qtw.QMdiSubWindow):
         '''
         Метод создания кастомного контекстного меню.
         '''
-        menu = qtw.QMenu()
+        menu = QMenu()
         self.setBackgrounMenu(menu)
         self.setLineTypeMenu(menu)
         self.setTimeShiftMenu(menu)
         menu.addSeparator()
 
-        closeAction = qtw.QAction('&Закрыть')
+        closeAction = QAction('&Закрыть')
         menu.addAction(closeAction)
         closeAction.triggered.connect(self.close)
 
@@ -127,7 +147,7 @@ class GraphWindow(qtw.QMdiSubWindow):
     def setBackgrounMenu(self, parent):
         changeBackground = parent.addMenu('&Фон')
 
-        whiteBackgroundAction = qtw.QAction('&Белый ', self)
+        whiteBackgroundAction = QAction('&Белый ', self)
         whiteBackgroundAction.setCheckable(True)
         if getattr(self.plt, '_background') == 'white':
             whiteBackgroundAction.setChecked(True)
@@ -136,7 +156,7 @@ class GraphWindow(qtw.QMdiSubWindow):
         changeBackground.addAction(whiteBackgroundAction)
         whiteBackgroundAction.triggered.connect(self.whiteBackground)
 
-        blackBackgroundAction = qtw.QAction('&Черный ', self)
+        blackBackgroundAction = QAction('&Черный ', self)
         blackBackgroundAction.setCheckable(True)
         if getattr(self.plt, '_background') == 'black':
             blackBackgroundAction.setChecked(True)
@@ -150,7 +170,7 @@ class GraphWindow(qtw.QMdiSubWindow):
         for name, data in self.curves.items():
             nameLine = lineType.addMenu(name)
 
-            lineGraphAction = qtw.QAction('&Линия', self)
+            lineGraphAction = QAction('&Линия', self)
             lineGraphAction.setCheckable(True)
             if data['curve'].opts['pen'] == data['pen']:
                 lineGraphAction.setChecked(True)
@@ -159,7 +179,7 @@ class GraphWindow(qtw.QMdiSubWindow):
             nameLine.addAction(lineGraphAction)
             lineGraphAction.triggered.connect(partial(self.lineGraph, data))
 
-            crossGraphAction = qtw.QAction('&Точки', self)
+            crossGraphAction = QAction('&Точки', self)
             crossGraphAction.setCheckable(True)
             if data['curve'].opts['symbol'] is None:
                 crossGraphAction.setChecked(False)
@@ -171,10 +191,11 @@ class GraphWindow(qtw.QMdiSubWindow):
     def setTimeShiftMenu(self, parent):
         timeShiftMenu = parent.addMenu('&Сдвиг графика')
         for name, data in self.curves.items():
-            timeShiftAction = qtw.QAction(name, self)
+            timeShiftAction = QAction(name, self)
             timeShiftMenu.addAction(timeShiftAction)
             timeShiftAction.triggered.connect(
-                partial(self.timeShift, data))
+                partial(self.timeShift, data)
+            )
 
     def whiteBackground(self):
         '''
@@ -219,22 +240,23 @@ class GraphWindow(qtw.QMdiSubWindow):
         '''
         if self.shiftWidget is not None:
             delete(self.shiftWidget)
-        self.shiftWidget = qtw.QFrame()
+        self.shiftWidget = QFrame()
         self.mainLayout.addWidget(self.shiftWidget)
-        self.layoutShift = qtw.QHBoxLayout()
+        self.layoutShift = QHBoxLayout()
         self.shiftWidget.setLayout(self.layoutShift)
         max = int(curve_data['curve'].getData()[0].max())
-        self.slider = qtw.QSlider(Qt.Orientation.Horizontal, self)
+        self.slider = QSlider(Qt.Orientation.Horizontal, self)
         self.slider.setRange(-max, max)
         self.slider.setSingleStep(100)
         self.slider.setPageStep(100)
         self.slider.valueChanged.connect(partial(self.updateGraph, curve_data))
-        self.spinBox = qtw.QDoubleSpinBox(self)
+        self.spinBox = QDoubleSpinBox(self)
         self.spinBox.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.spinBox.setMinimumWidth(80)
         self.spinBox.setRange(-max, max)
         self.spinBox.setSingleStep(.1)
-        self.spinBox.valueChanged.connect(partial(self.updateGraph, curve_data))
+        self.spinBox.valueChanged.connect(
+            partial(self.updateGraph, curve_data))
         self.layoutShift.addWidget(self.slider)
         self.layoutShift.addWidget(self.spinBox)
 

@@ -1,8 +1,12 @@
 from os import startfile
-from PyQt5 import QtWidgets as qtw
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QFormLayout,
+    QComboBox, QDialogButtonBox,
+    QFileDialog
+)
 
 
-class SaveCsvWindow(qtw.QWidget):
+class SaveCsvWindow(QWidget):
     '''
     Класс окна выбора категории и адр для сохранения csv файла
     parent - родительское окно
@@ -19,7 +23,7 @@ class SaveCsvWindow(qtw.QWidget):
         '''Метод отрисовки основных элементов окна.'''
         self.setGeometry(0, 0, 350, 200)
         self.setWindowTitle("Сохранить в CSV...")
-        dlgLayout = qtw.QVBoxLayout()
+        dlgLayout = QVBoxLayout()
 
         self.initInputBlock()
         self.initButtonBlock()
@@ -30,15 +34,15 @@ class SaveCsvWindow(qtw.QWidget):
 
     def initInputBlock(self):
         '''Метод инициализации элементов ввода и выбора пользователя'''
-        self.formLayout = qtw.QFormLayout()
+        self.formLayout = QFormLayout()
         self.formLayout.setVerticalSpacing(20)
 
-        self.categoryComboBox = qtw.QComboBox()
+        self.categoryComboBox = QComboBox()
         categories = self.controller.get_data().keys()
         self.categoryComboBox.addItems(categories)
         self.categoryComboBox.activated.connect(self.updateAdrComboBox)
 
-        self.adrComboBox = qtw.QComboBox()
+        self.adrComboBox = QComboBox()
         current_category = self.categoryComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrComboBox.addItems(adrs)
@@ -48,17 +52,19 @@ class SaveCsvWindow(qtw.QWidget):
 
     def initButtonBlock(self):
         '''Метод инициализации кнопок на форме'''
-        self.btnBox = qtw.QDialogButtonBox()
-        self.btnBox.setStandardButtons(qtw.QDialogButtonBox.Open |
-                                       qtw.QDialogButtonBox.Save |
-                                       qtw.QDialogButtonBox.Cancel)
+        self.btnBox = QDialogButtonBox()
+        self.btnBox.setStandardButtons(
+            QDialogButtonBox.Open |
+            QDialogButtonBox.Save |
+            QDialogButtonBox.Cancel
+        )
         self.btnBox.rejected.connect(self.close)
 
-        self.openButton = self.btnBox.button(qtw.QDialogButtonBox.Open)
+        self.openButton = self.btnBox.button(QDialogButtonBox.Open)
         self.openButton.clicked.connect(self.openFile)
         self.openButton.hide()
 
-        saveButton = self.btnBox.button(qtw.QDialogButtonBox.Save)
+        saveButton = self.btnBox.button(QDialogButtonBox.Save)
         saveButton.clicked.connect(self.saveCsv)
 
     def updateAdrComboBox(self):
@@ -70,10 +76,14 @@ class SaveCsvWindow(qtw.QWidget):
     def saveCsv(self):
         category = self.categoryComboBox.currentText()
         adr = self.adrComboBox.currentText()
-        options = qtw.QFileDialog.Options()
-        filePath, _ = qtw.QFileDialog.getSaveFileName(self,
-                                                      "Save File", "", f"CSV Files (*.csv);;All Files(*)",
-                                                      options=options)
+        options = QFileDialog.Options()
+        filePath, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save File",
+            "",
+            f"CSV Files (*.csv);;All Files(*)",
+            options=options
+        )
         if filePath:
             try:
                 self.controller.save_csv(filePath, category, adr)

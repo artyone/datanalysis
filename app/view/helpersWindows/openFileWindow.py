@@ -1,7 +1,12 @@
-from PyQt5 import QtWidgets as qtw
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QFormLayout,
+    QCheckBox, QComboBox, QHBoxLayout,
+    QDialogButtonBox, QFileDialog,
+    QLineEdit, QPushButton
+)
 
 
-class OpenFileWindow(qtw.QWidget):
+class OpenFileWindow(QWidget):
     '''
     Класс окна для выбора json для парсинга данных файла txt или csv
     parent - родительское окно
@@ -24,7 +29,7 @@ class OpenFileWindow(qtw.QWidget):
         '''
         self.setGeometry(0, 0, 400, 200)
         self.setWindowTitle(f'Открыть {self.filetype} файл...')
-        dlgLayout = qtw.QVBoxLayout()
+        dlgLayout = QVBoxLayout()
 
         self.initInputBlock()
         self.initButtonBlock()
@@ -35,12 +40,12 @@ class OpenFileWindow(qtw.QWidget):
 
     def initInputBlock(self):
         '''Метод инициализации элементов ввода и выбора пользователя'''
-        self.formLayout = qtw.QFormLayout()
+        self.formLayout = QFormLayout()
         self.formLayout.setVerticalSpacing(20)
 
         self.initCategoryBlock()
 
-        self.loadUnknownCheckBox = qtw.QCheckBox()
+        self.loadUnknownCheckBox = QCheckBox()
         self.loadUnknownCheckBox.setChecked(True)
         self.loadUnknownCheckBox.setText('загружать незвестные элементы')
 
@@ -50,17 +55,17 @@ class OpenFileWindow(qtw.QWidget):
         self.formLayout.addRow(self.loadUnknownCheckBox)
 
     def initCategoryBlock(self):
-        self.categoryComboBox = qtw.QComboBox()
+        self.categoryComboBox = QComboBox()
         self.categoryComboBox.addItems(self.categories.keys())
-        self.adrComboBox = qtw.QComboBox()
+        self.adrComboBox = QComboBox()
         adrs = self.categories[self.categoryComboBox.currentText()]
         self.adrComboBox.addItems([adr['adr_name'] for adr in adrs])
         self.categoryComboBox.activated.connect(self.updateAdrComboBox)
 
     def initBrowseBlock(self):
-        horizontalLayer = qtw.QHBoxLayout()
-        self.browseLineEdit = qtw.QLineEdit()
-        browseButton = qtw.QPushButton()
+        horizontalLayer = QHBoxLayout()
+        self.browseLineEdit = QLineEdit()
+        browseButton = QPushButton()
         browseButton.setText('...')
         browseButton.setFixedSize(40, 22)
         browseButton.clicked.connect(self.openFileDialog)
@@ -71,12 +76,13 @@ class OpenFileWindow(qtw.QWidget):
 
     def initButtonBlock(self):
         '''Метод инициализации кнопок на форме'''
-        self.btnBox = qtw.QDialogButtonBox()
-        self.btnBox.setStandardButtons(qtw.QDialogButtonBox.Open |
-                                       qtw.QDialogButtonBox.Cancel)
+        self.btnBox = QDialogButtonBox()
+        self.btnBox.setStandardButtons(
+            QDialogButtonBox.Open | QDialogButtonBox.Cancel
+        )
         self.btnBox.rejected.connect(self.close)
 
-        self.openButton = self.btnBox.button(qtw.QDialogButtonBox.Open)
+        self.openButton = self.btnBox.button(QDialogButtonBox.Open)
         self.openButton.clicked.connect(self.openFile)
 
     def updateAdrComboBox(self):
@@ -85,21 +91,28 @@ class OpenFileWindow(qtw.QWidget):
         self.adrComboBox.addItems([adr['adr_name'] for adr in adrs])
 
     def openFileDialog(self):
-        filePath, check = qtw.QFileDialog.getOpenFileName(None,
-                                                          'Open file', '', f'Open File (*.{self.filetype})')
+        filePath, check = QFileDialog.getOpenFileName(
+            None,
+            'Open file',
+            '',
+            f'Open File (*.{self.filetype})'
+        )
         if check:
             self.browseLineEdit.setText(filePath)
 
     def openFile(self):
         try:
-            self.controller.load_text(self.browseLineEdit.text(),
-                                      self.categoryComboBox.currentText(),
-                                      self.adrComboBox.currentText(),
-                                      self.filetype,
-                                      self.loadUnknownCheckBox.isChecked())
+            self.controller.load_text(
+                self.browseLineEdit.text(),
+                self.categoryComboBox.currentText(),
+                self.adrComboBox.currentText(),
+                self.filetype,
+                self.loadUnknownCheckBox.isChecked()
+            )
             self.parent.tree.updateCheckBox()
             self.parent.setNotify(
-                'успех', f'Файл {self.browseLineEdit.text()} открыт')
+                'успех', f'Файл {self.browseLineEdit.text()} открыт'
+            )
             self.parent.destroyChildWindow()
         except ValueError as e:
             self.setNotify('ошибка', str(e))
