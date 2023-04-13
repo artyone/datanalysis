@@ -96,8 +96,8 @@ class ConsoleWindow(QMainWindow):
         to_csv(dataframe, filepath) - метод для сохранения датафрейма в файл
         '''
         self.autoSave()
-        f = io.StringIO()
-        with contextlib.redirect_stdout(f), contextlib.redirect_stderr(f):
+        self.f = io.StringIO()
+        with contextlib.redirect_stdout(self.f), contextlib.redirect_stderr(self.f):
             try:
                 command = self.textEdit.toPlainText()
                 model = file_methods()
@@ -107,14 +107,14 @@ class ConsoleWindow(QMainWindow):
                 exec(command)
             except:
                 print(traceback.format_exc(), file=sys.stderr)
-        output = f.getvalue()
+        output = self.f.getvalue()
         self.label.setPlainText(output)
 
     def openScript(self):
         '''
         Метод загрузки ранее сохраненного скрипта.
         '''
-        self.filepath, check = QFileDialog.getOpenFileName(
+        filepath, check = QFileDialog.getOpenFileName(
             None,
             'Open python file',
             '',
@@ -123,9 +123,10 @@ class ConsoleWindow(QMainWindow):
         if check:
             try:
                 scriptData = self.controller.load_pytnon_script(
-                    self.filepath)
+                    filepath)
                 self.textEdit.setPlainText(scriptData)
                 self.parent.setNotify('успех', 'Скрипт загружен')
+                self.filepath = filepath
             except Exception as e:
                 self.parent.setNotify('ошибка', str(e))
 
@@ -182,18 +183,16 @@ class ConsoleWindow(QMainWindow):
             graphWindow.show()
             self.parent.trackGraph()
             self.parent.checkPositioningWindows()
-        except AttributeError:
+        except AttributeError as e:
+            self.f.write(f'Данные для графика не являются dataframe\n{str(e)}')
             self.parent.setNotify(
                 'предупреждение',
-                'Данные не являются dataframe'
+                'Данные для графика не являются dataframe'
             )
-        except KeyError:
+        except KeyError as e:
+            self.f.write(
+                f'Необходимо правильно выбрать данные для графика или ошибка имен элементов\n{str(e)}')
             self.parent.setNotify(
                 'предупреждение',
-                'Необходимо правильно выбрать данные или ошибка имен элементов'
-            )
-        except ValueError:
-            self.parent.setNotify(
-                'предупреждение',
-                'Упси,что-то пошло не так'
+                'Необходимо правильно выбрать данные для графика или ошибка имен элементов'
             )

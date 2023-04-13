@@ -1,12 +1,13 @@
 from app.controller import (
-    Control, NoneJsonError
+    Control, NoneJsonError, defaultSettings,
+    getPalette
 )
 from app.view.servicesWindows import (
     GraphWindow, MapWindow, ReportWindow,
     ConsoleWindow, CalcWindow
 )
 from app.view.helpersWindows import (
-    SettingsWindow, SaveCsvWindow, 
+    SettingsWindow, SaveCsvWindow,
     OpenFileWindow, LeftMenuTree
 )
 from PyQt5.QtGui import (
@@ -16,8 +17,8 @@ from PyQt5.QtCore import (
     Qt, QSettings, QCoreApplication, QProcess
 )
 from PyQt5.QtWidgets import (
-    QApplication, QMdiArea, QSplitter, 
-    QToolBar, QSpinBox, QAction, QFileDialog, 
+    QApplication, QMdiArea, QSplitter,
+    QToolBar, QSpinBox, QAction, QFileDialog,
     QTreeWidgetItemIterator, QMainWindow
 )
 from PyQt5.sip import delete
@@ -48,13 +49,13 @@ class MainWindow(QMainWindow):
         self.openFileWindow: OpenFileWindow = None
         self.controller: Control = Control()
         self.notify: notificator = None
-        self.app_version = QCoreApplication.applicationVersion()
-        self.app_name = QCoreApplication.applicationName()
+        self.appVersion = QCoreApplication.applicationVersion()
+        self.appName = QCoreApplication.applicationName()
         self.notify = notificator()
 
-        self.settings : QSettings = QSettings()
+        self.settings: QSettings = QSettings()
         if (self.settings.allKeys() == [] or
-                self.settings.value('version') != self.app_version):
+                self.settings.value('version') != self.appVersion):
             self.setDefaultSettings()
         self.setTheme()
         self.initUI()
@@ -71,14 +72,13 @@ class MainWindow(QMainWindow):
         Для уведомлений используется сторонняя библиотека.
         '''
         self.setGeometry(100, 100, 800, 600)
-        self.setWindowTitle(f'{self.app_name} {self.app_version}')
+        self.setWindowTitle(f'{self.appName} {self.appVersion}')
         self.app.setWindowIcon(QIcon('icon.ico'))
         self._createActions()
         self._createMenuBar()
         self._createToolBar()
         self._createStatusBar()
         self._connectActions()
-
 
         self.mdi = QMdiArea()
         if self.settings.value('mainSettings')['theme'] == 'black':
@@ -96,35 +96,13 @@ class MainWindow(QMainWindow):
         self.splitter.addWidget(self.mdi)
 
         self.setCentralWidget(self.splitter)
-        self.center()
+        #self.center()
         self.showMaximized()
 
-    def getPalette(self):
-        if self.settings.value('mainSettings')['theme'] == 'black':
-            palette = QPalette()
-            palette.setColor(QPalette.Window, QColor(60, 60, 60))
-            palette.setColor(QPalette.WindowText, Qt.white)
-            palette.setColor(QPalette.Button, QColor(53, 53, 53))
-            palette.setColor(QPalette.ButtonText, Qt.white)
-            palette.setColor(QPalette.Base, QColor(30, 30, 30))
-            palette.setColor(QPalette.AlternateBase, QColor(45, 45, 45))
-            palette.setColor(QPalette.ToolTipBase, Qt.white)
-            palette.setColor(QPalette.ToolTipText, Qt.white)
-            palette.setColor(QPalette.Text, Qt.white)
-            palette.setColor(QPalette.Link, QColor(43, 130, 218))
-            palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-            palette.setColor(QPalette.HighlightedText, Qt.white)
-            palette.setColor(QPalette.BrightText, Qt.red)
-        else:
-            palette = QPalette()
-        return palette
-
     def setTheme(self):
-        self.app.setPalette(self.getPalette())
-        # self.app.setStyleSheet(
-        #     self.getCustomStyleSheet(self.settings.value('mainSettings')['theme'])
-        # )
-        # self.setStyleSheet(self.getCustomStyleSheet(self.settings.value('mainSettings')['theme']))
+        pallete = getPalette(self.settings.value('mainSettings')['theme'])
+        self.app.setPalette(pallete)
+
 
     def _createMenuBar(self):
         '''
@@ -193,11 +171,11 @@ class MainWindow(QMainWindow):
             position = Qt.LeftToolBarArea
         else:
             position = Qt.TopToolBarArea
-        self.addToolBar(position, self.fileToolBar())
-        self.addToolBar(position, self.serviceToolBar())
-        self.addToolBar(position, self.viewToolBar())
+        self.addToolBar(position, self._fileToolBar())
+        self.addToolBar(position, self._serviceToolBar())
+        self.addToolBar(position, self._viewToolBar())
 
-    def fileToolBar(self):
+    def _fileToolBar(self):
         fileToolBar = QToolBar('File')
         fileToolBar.addAction(self.openTxtAction)
         fileToolBar.addAction(self.openPickleAction)
@@ -207,14 +185,14 @@ class MainWindow(QMainWindow):
         fileToolBar.setMovable(False)
         return fileToolBar
 
-    def serviceToolBar(self):
+    def _serviceToolBar(self):
         serviceToolBar = QToolBar('Service')
         serviceToolBar.addAction(self.calculateDataAction)
         serviceToolBar.addAction(self.pythonConsoleAction)
         serviceToolBar.setMovable(False)
         return serviceToolBar
 
-    def viewToolBar(self):
+    def _viewToolBar(self):
         viewToolBar = QToolBar('Service')
         viewToolBar.addAction(self.hideLeftMenuAction)
         viewToolBar.addAction(self.createGraphAction)
@@ -458,15 +436,19 @@ class MainWindow(QMainWindow):
     def openBinaryFile(self, filetype, filepath=None):
         '''
         Метод открытия файлов в зависимостиот параметра.
-        Открывает любые типы файлов, которые могут использоваться
+        Открывает любые бинарные, которые могут использоваться
         в программе.
         '''
         # TODO передалть на ласт файл на filepath открыть последний открытый
         if filepath:
             check = True
         else:
-            filepath, check = QFileDialog.getOpenFileName(None,
-                                                              'Open file', '', f'Open File (*.{filetype})')
+            filepath, check = QFileDialog.getOpenFileName(
+                None,
+                'Open file',
+                '',
+                f'Open File (*.{filetype})'
+            )
         if check:
             try:
                 if filetype == 'pkl':
@@ -475,9 +457,13 @@ class MainWindow(QMainWindow):
                     self.controller.load_pdd(filepath)
                 self.tree.updateCheckBox()
                 self.destroyChildWindow()
-                self.settings.setValue('lastFile',
-                                       {'filePath': filepath,
-                                        'param': filetype})
+                self.settings.setValue(
+                    'lastFile',
+                    {
+                        'filePath': filepath,
+                        'param': filetype
+                    }
+                )
                 self.setNotify('успех', f'Файл {filepath} открыт')
             except FileNotFoundError:
                 self.setNotify('ошибка', 'Файл не найден')
@@ -553,9 +539,13 @@ class MainWindow(QMainWindow):
             return
 
         options = QFileDialog.Options()
-        filePath, _ = QFileDialog.getSaveFileName(self,
-                                                      "Save File", "", "Pickle Files (*.pkl);;All Files(*)",
-                                                      options=options)
+        filePath, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save File",
+            "",
+            "Pickle Files (*.pkl);;All Files(*)",
+            options=options
+        )
         if filePath:
             try:
                 self.controller.save_pickle(filePath)
@@ -603,8 +593,10 @@ class MainWindow(QMainWindow):
             return
 
         if not self.controller.is_calculated():
-            self.setNotify('предупреждение',
-                           'Нужно получить расчетные данные.')
+            self.setNotify(
+                'предупреждение',
+                'Нужно получить расчетные данные.'
+            )
             return
         if self.reportWindow is None:
             self.reportWindow = ReportWindow(self.controller, self)
@@ -634,7 +626,11 @@ class MainWindow(QMainWindow):
             decimation = 1
         try:
             graphWindow = GraphWindow(
-                self.controller.get_data(), treeSelected, decimation, self)
+                self.controller.get_data(), 
+                treeSelected, 
+                decimation, 
+                self
+            )
             self.mdi.addSubWindow(graphWindow)
             graphWindow.show()
             self.trackGraph()
@@ -759,7 +755,9 @@ class MainWindow(QMainWindow):
             self.tree.show()
             QCoreApplication.processEvents()
             self.mdi.resize(
-                self.splitter.width() - self.tree.width() - 5, self.splitter.height())
+                self.splitter.width() - self.tree.width() - 5,
+                self.splitter.height()
+            )
         self.checkPositioningWindows()
 
     def trackGraph(self):
@@ -818,74 +816,6 @@ class MainWindow(QMainWindow):
             notify = self.notify.critical
         notify(type.title(), txt, self, Align=BottomRight, duracion=6)
 
-    def defaultSettings(self):
-        '''
-        Метод установки стандартных настроек.
-        '''
-        self.settings.setValue('version', self.app_version)
-        self.settings.setValue('koef_for_intervals',
-                               {
-                                   # макс разница, макс значение
-                                   'tang': [4, 10],
-                                   # макс разница, макс значение
-                                   'kren': [1.4, 10],
-                                   # макс разница, макс значение
-                                   'h': [20, 200],
-                                   # макс отношение, макс значение,усредение до, усреднение в моменте
-                                   'wx': [0.025, 200, 150, 50]
-                               })
-        headers = ('popr_prib_cor_V_cod',
-                   'popr_prib_cor_FI_cod',
-                   'popr_prib_cor_B_cod',
-                   'kurs_DISS_grad',
-                   'kren_DISS_grad',
-                   'tang_DISS_grad',
-                   'k',
-                   'k1')
-        planesParams = {
-            'mdm': dict(zip(headers, (5, 14, 2, -0.62, 0.032, 3.33 - 0.032, 1, 1))),
-            'm2': dict(zip(headers, (7, 6, 1, 0.2833, 0.032, 3.33 - 0.2, 1, 1))),
-            'IL78m90a': dict(zip(headers, (7, 15, 1, 0.27, 0, 3.33, 1, 1))),
-            'IL76md90a': dict(zip(headers, (6, 15, 1, 0 - 0.665, -0.144, 3.33, 1, 1))),
-            'tu22': dict(zip(headers, (6, 6, 2, 0, 0, 0, 1 / 3.6, 0.00508))),
-            'tu160': dict(zip(headers, (6, 10, 1, 0, 0, -2.5, 1, 1)))
-        }
-        self.settings.setValue('planes', planesParams)
-        self.settings.setValue('map', {'jvdHMin': '100', 'decimation': '20'})
-        self.settings.setValue('lastFile', None)
-        corrections = {'koef_Wx_PNK': 1, 'koef_Wy_PNK': 1, 'koef_Wz_PNK': 1,
-                       'kurs_correct': 0, 'kren_correct': 0, 'tang_correct': 0}
-        self.settings.setValue('corrections', corrections)
-        graphs = {
-            'background': 'black',
-            'default': [
-                [('PNK', 'ADR8', 'latitude'), ('Calc', 'PNK', 'Wp_diss_pnki')],
-                [('PNK', 'ADR8', 'longitude'), ('Calc', 'PNK', 'Wp_KBTIi')]
-            ]
-        }
-        self.settings.setValue('graphs', graphs)
-        filters = {
-            'unknown': True,
-            'adrs': {
-                'ADR8': {head: True
-                         for head in [
-                             'time', 'latitude', 'longitude', 'JVD_H', 'JVD_VN', 'JVD_VE',
-                             'JVD_Vh', 'DIS_S266', 'DIS_Wx30', 'DIS_Wx31', 'DIS_S264', 'DIS_Wy30',
-                             'DIS_Wy31', 'DIS_S267', 'DIS_Wz30', 'DIS_Wz31', 'DIS_S206', 'DIS_US30',
-                             'DIS_US31', 'DIS_TIME', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'DIS_W', 'DIS_US',
-                             'I1_KursI', 'I1_Tang', 'I1_Kren', 'Wx_DISS_PNK', 'Wz_DISS_PNK',
-                             'Wy_DISS_PNK', 'Kren_sin', 'Kren_cos', 'Tang_sin', 'Tang_cos',
-                             'Kurs_sin', 'Kurs_cos', 'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
-                             'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi', 'Wp_KBTIi', 'Wp_diss_pnki'
-                         ]
-                    }
-            }
-        }
-        self.settings.setValue('leftMenuFilters', filters)
-        mainSettings = {'theme': 'black',
-                        'jsonDir': 'templates', 'toolBar': 'left'}
-        self.settings.setValue('mainSettings', mainSettings)
-
     def openSettings(self):
         '''
         Метод открытия окна настроек.
@@ -901,8 +831,12 @@ class MainWindow(QMainWindow):
         '''
         Метод загрузки настроек из файла.
         '''
-        filePath, check = QFileDialog.getOpenFileName(None,
-                                                          'Open file', '', 'Json File (*.json)')
+        filePath, check = QFileDialog.getOpenFileName(
+            None,
+            'Open file',
+            '', 
+            'Json File (*.json)'
+        )
         if check:
             try:
                 data = self.controller.load_settings_json(filePath)
@@ -921,16 +855,18 @@ class MainWindow(QMainWindow):
         '''
         options = QFileDialog.Options()
         filepath, _ = QFileDialog.getSaveFileName(self,
-                                                      "Save File", "", f"Json Files (*.json);;All Files(*)",
-                                                      options=options)
-        data = {name: self.settings.value(name)
-                for name in self.settings.allKeys()}
+                                                  "Save File", "", f"Json Files (*.json);;All Files(*)",
+                                                  options=options)
+        data = {
+            name: self.settings.value(name)
+            for name in self.settings.allKeys()
+        }
         if filepath:
             try:
                 self.controller.save_settings_json(filepath, data)
-                self.setNotify('успех', f'Settings file saved to {filepath}')
+                self.setNotify('успех', f'Настройки сохранены в {filepath}')
             except PermissionError:
-                self.setNotify('ошибка', 'File opened in another program')
+                self.setNotify('ошибка', 'Файл открыт в другой программе')
             except Exception as e:
                 self.setNotify('ошибка', str(e))
 
@@ -939,7 +875,7 @@ class MainWindow(QMainWindow):
         Метод очистки и установки стандартных настроек.
         '''
         self.settings.clear()
-        self.defaultSettings()
+        defaultSettings(self.settings, self.appVersion)
         if needRestart:
             self.restartApp()
 

@@ -6,7 +6,7 @@ from app.resource.constants import (
     ORGANIZATION_DOMAIN,
     ORGANIZATION_NAME,
     APPLICATION_NAME,
-    VERSION,
+    APPLICATION_VERSION
 )
 
 
@@ -15,7 +15,7 @@ def main():
     QCoreApplication.setOrganizationName(ORGANIZATION_NAME)
     QCoreApplication.setOrganizationDomain(ORGANIZATION_DOMAIN)
     QCoreApplication.setApplicationName(APPLICATION_NAME)
-    QCoreApplication.setApplicationVersion(VERSION)
+    QCoreApplication.setApplicationVersion(APPLICATION_VERSION)
 
     app = QApplication(argv)
     app.setStyle('Fusion')
