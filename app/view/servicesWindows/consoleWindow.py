@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
 from app.model import file_methods
 from PyQt5.QtCore import Qt
 from app.view.servicesWindows.graphWindow import GraphWindow
+from pprint import pprint
 import app.resource.qrc_resources
 import contextlib
 import traceback
@@ -35,7 +36,7 @@ class ConsoleWindow(QMainWindow):
         '''
         Метод инициализации интерфейса окна.
         '''
-        self.setGeometry(0, 0, 600, 600)
+        self.setGeometry(0, 0, 900, 800)
         self.setWindowTitle("Python console")
         self.createAction()
         self.createMenu()

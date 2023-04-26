@@ -37,7 +37,7 @@ class Mathematical(object):
         self.d['Wz_DISS_PNK'] = self.d.DIS_Wz * wz
         self.d['Wy_DISS_PNK'] = self.d.DIS_Wy * wy
 
-    def calc_angles(self, kren: float, tang: float, kurs: float):
+    def calc_angles(self, kren: float, tang: float, kurs: float) -> None:
         '''
         Метод расчета углов для рассчетов.
         '''
