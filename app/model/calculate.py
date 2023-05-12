@@ -167,7 +167,7 @@ class Mathematical(object):
             self._get_us()
             name = f'{start}-{stop}'
             time = stop - start
-            length = round((stop - start) * self.Wxc_kbti_acc / 3.6 / 1000, 3)
+            length = round((stop - start) * self.Wp_kbti_acc / 3600, 3)
             height = self._get_height(start)
             US = round(self.USpnk - self.USkbti, 3)
             # USdissms=(USdiss-USkbti)

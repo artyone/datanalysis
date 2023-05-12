@@ -8,7 +8,8 @@ from app.resource.constants import (
     APPLICATION_NAME,
     APPLICATION_VERSION
 )
-
+#TODO сделать сортировку в левом меню
+#сделать фильтрацию пропусков в графиках
 
 def main():
     '''Точка входа в программу.'''
