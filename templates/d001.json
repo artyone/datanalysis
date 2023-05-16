@@ -1,0 +1,1138 @@
+{
+    "name": "D001 v1_11",
+    "adr": [
+        {
+            "adr_name": "ADR1",
+            "checksum": "0xd10a",
+            "time_koef": 0.0001,
+            "bytes_swap": true,
+            "fields": [
+                {
+                    "name": "Fd1",
+                    "position": 0,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "Fd2",
+                    "position": 1,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "Fd3",
+                    "position": 2,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "Korr",
+                    "position": 3,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "Korr_Track",
+                    "position": 4,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "F_pg",
+                    "position": 5,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "group_channels",
+                    "group": true,
+                    "condition_byte": 6,
+                    "condition_bit": "13:14",
+                    "fields": {
+                        "0": [
+                            {
+                                "name": "Korr_ch0",
+                                "position": 3,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "Korr_Track_ch0",
+                                "position": 4,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "F_pg_ch0",
+                                "position": 5,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "ARU1_ch0",
+                                "position": 9,
+                                "type": "uint16",
+                                "size": "0:11",
+                                "koef": 1
+                            },
+                            {
+                                "name": "ARU2_ch0",
+                                "position": 10,
+                                "type": "uint16",
+                                "size": "0:11",
+                                "koef": 1
+                            },
+                            {
+                                "name": "KorrUp_ch0",
+                                "position": 11,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "KorrDown_ch0",
+                                "position": 12,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "F_pg_1_ch0",
+                                "position": 13,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "Korr_Track_1_ch0",
+                                "position": 14,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            }
+                        ],
+                        "1": [
+                            {
+                                "name": "Korr_ch1",
+                                "position": 3,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "Korr_Track_ch1",
+                                "position": 4,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "F_pg_ch1",
+                                "position": 5,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "ARU1_ch1",
+                                "position": 9,
+                                "type": "uint16",
+                                "size": "0:11",
+                                "koef": 1
+                            },
+                            {
+                                "name": "ARU2_ch1",
+                                "position": 10,
+                                "type": "uint16",
+                                "size": "0:11",
+                                "koef": 1
+                            },
+                            {
+                                "name": "KorrUp_ch1",
+                                "position": 11,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "KorrDown_ch1",
+                                "position": 12,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "F_pg_1_ch1",
+                                "position": 13,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "Korr_Track_1_ch1",
+                                "position": 14,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            }
+                        ],
+                        "2": [
+                            {
+                                "name": "Korr_ch2",
+                                "position": 3,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "Korr_Track_ch2",
+                                "position": 4,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "F_pg_ch2",
+                                "position": 5,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "ARU1_ch2",
+                                "position": 9,
+                                "type": "uint16",
+                                "size": "0:11",
+                                "koef": 1
+                            },
+                            {
+                                "name": "ARU2_ch2",
+                                "position": 10,
+                                "type": "uint16",
+                                "size": "0:11",
+                                "koef": 1
+                            },
+                            {
+                                "name": "KorrUp_ch2",
+                                "position": 11,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "KorrDown_ch2",
+                                "position": 12,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "F_pg_1_ch2",
+                                "position": 13,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            },
+                            {
+                                "name": "Korr_Track_1_ch2",
+                                "position": 14,
+                                "type": "uint16",
+                                "size": "0:15",
+                                "koef": 1
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "group_otkaz",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "otkaz_MPP",
+                            "position": 6,
+                            "size": "0:0",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "otkaz_MPP3",
+                            "position": 6,
+                            "size": "1:1",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "otkaz_MPP2",
+                            "position": 6,
+                            "size": "2:2",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "otkaz_MPP1",
+                            "position": 6,
+                            "size": "3:3",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "vkl_27_12",
+                            "position": 6,
+                            "size": "4:4",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "obogr_12V",
+                            "position": 6,
+                            "size": "5:5",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "VKL_m15V",
+                            "position": 6,
+                            "size": "6:6",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "VKL_15V",
+                            "position": 6,
+                            "size": "7:7",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "VKL_m12V",
+                            "position": 6,
+                            "size": "8:8",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "VKL_12V",
+                            "position": 6,
+                            "size": "9:9",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "VKL_9V",
+                            "position": 6,
+                            "size": "5:10",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "CH_UPF",
+                            "position": 6,
+                            "size": "11:12",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "CH_UNCH",
+                            "position": 6,
+                            "size": "13:14",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "parasite_flag_pop",
+                            "position": 6,
+                            "size": "15:15",
+                            "type": "pre",
+                            "koef": 1
+                        }
+                    ]
+                },
+                {
+                    "name": "group_ctrl",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "CTRL_Synhr_FAPCH",
+                            "position": 7,
+                            "size": "0:0",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "Ctrl_Pitaniya",
+                            "position": 7,
+                            "size": "1:1",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "CTRL_TEMP",
+                            "position": 7,
+                            "size": "2:2",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "kontrol_vch",
+                            "position": 7,
+                            "size": "3:3",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "kontrol_nch",
+                            "position": 7,
+                            "size": "4:4",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "MANUAL_MODE",
+                            "position": 7,
+                            "size": "5:5",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "rt_on",
+                            "position": 7,
+                            "size": "6:6",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "kz_on",
+                            "position": 7,
+                            "size": "7:7",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "RM_DISS",
+                            "position": 7,
+                            "size": "8:8",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "skor_peredachi",
+                            "position": 7,
+                            "size": "9:9",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "shassi_obzhato",
+                            "position": 7,
+                            "size": "10:10",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "kren",
+                            "position": 7,
+                            "size": "11:11",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "more",
+                            "position": 7,
+                            "size": "12:12",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "otkaz_MAO",
+                            "position": 7,
+                            "size": "13:13",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "otkaz_MAO2",
+                            "position": 7,
+                            "size": "14:14",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "otkaz_MAO1",
+                            "position": 7,
+                            "size": "15:15",
+                            "type": "pre",
+                            "koef": 1
+                        }
+                    ]
+                },
+                {
+                    "name": "group_att",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "Att_1_db",
+                            "position": 8,
+                            "size": "0:0",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "Att_2_db",
+                            "position": 8,
+                            "size": "1:1",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "Att_4_db",
+                            "position": 8,
+                            "size": "2:2",
+                            "type": "pre",
+                            "koef": 4
+                        },
+                        {
+                            "name": "Att_8_db",
+                            "position": 8,
+                            "size": "3:3",
+                            "type": "pre",
+                            "koef": 8
+                        },
+                        {
+                            "name": "Att_16_db",
+                            "position": 8,
+                            "size": "4:4",
+                            "type": "pre",
+                            "koef": 16
+                        },
+                        {
+                            "name": "Att_18_db",
+                            "position": 8,
+                            "size": "5:5",
+                            "type": "pre",
+                            "koef": 18
+                        },
+                        {
+                            "name": "tracking1",
+                            "position": 8,
+                            "size": "6:6",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "tracking2",
+                            "position": 8,
+                            "size": "7:7",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "tracking3",
+                            "position": 8,
+                            "size": "8:8",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "lock_on",
+                            "position": 8,
+                            "size": "9:9",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "BlankAru1",
+                            "position": 8,
+                            "size": "10:10",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "BlankAru2",
+                            "position": 8,
+                            "size": "11:11",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "BlankAru3",
+                            "position": 8,
+                            "size": "12:12",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "BlankUPF",
+                            "position": 8,
+                            "size": "13:13",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "mem1",
+                            "position": 8,
+                            "size": "14:14",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "mem2",
+                            "position": 8,
+                            "size": "15:15",
+                            "type": "pre",
+                            "koef": 1
+                        }
+                    ]
+                },
+                {
+                    "name": "ARU1",
+                    "position": 9,
+                    "type": "uint16",
+                    "size": "0:11",
+                    "koef": 1
+                },
+                {
+                    "name": "ARU2",
+                    "position": 10,
+                    "type": "uint16",
+                    "size": "0:11",
+                    "koef": 1
+                },
+                {
+                    "name": "KorrUp",
+                    "position": 11,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "KorrDown",
+                    "position": 12,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "F_pg_1",
+                    "position": 13,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "Korr_Track_1",
+                    "position": 14,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "Absol_H",
+                    "position": 15,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                }
+            ]
+        },
+        {
+            "adr_name": "ADR2",
+            "checksum": "0xd20a",
+            "time_koef": 0.0001,
+            "bytes_swap": false,
+            "byte_order": "big",
+            "fields": [
+                {
+                    "name": "unch",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "Ch_UPF",
+                            "position": 0,
+                            "size": "0:1",
+                            "type": "uint16",
+                            "koef": 1
+                        },
+                        {
+                            "name": "CH_UNCH",
+                            "position": 0,
+                            "size": "2:3",
+                            "type": "uint16",
+                            "koef": 1
+                        },
+                        {
+                            "name": "UNCH1",
+                            "position": 0,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_1",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_1",
+                            "position": 1,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_1",
+                            "position": 1,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_2",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_2",
+                            "position": 2,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_2",
+                            "position": 2,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_3",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_3",
+                            "position": 3,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_3",
+                            "position": 3,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_4",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_4",
+                            "position": 4,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_4",
+                            "position": 4,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_5",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_5",
+                            "position": 5,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_5",
+                            "position": 5,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_6",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_6",
+                            "position": 6,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_6",
+                            "position": 6,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_7",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_7",
+                            "position": 7,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_7",
+                            "position": 7,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_8",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_8",
+                            "position": 8,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_8",
+                            "position": 8,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_9",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_9",
+                            "position": 9,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_9",
+                            "position": 9,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_10",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_10",
+                            "position": 10,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_10",
+                            "position": 10,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_11",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_11",
+                            "position": 11,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_11",
+                            "position": 11,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_12",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_12",
+                            "position": 12,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_12",
+                            "position": 12,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_13",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_13",
+                            "position": 13,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_13",
+                            "position": 13,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_14",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_14",
+                            "position": 14,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        },
+                        {
+                            "name": "UNCH1_14",
+                            "position": 14,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "unch_15",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "UNCH2_15",
+                            "position": 15,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "adr_name": "ADR3",
+            "checksum": "0xd30a",
+            "time_koef": 0.0001,
+            "bytes_swap": true,
+            "byte_order": "big",
+            "fields": [
+                {
+                    "name": "k_tract_1ch",
+                    "position": 0,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "k_tract_1ch_",
+                    "position": 1,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "version",
+                    "position": 2,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "ang_kren",
+                    "position": 3,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "ang_tangazh",
+                    "position": 4,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "pop_kurs",
+                    "position": 5,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "pop_kren",
+                    "position": 6,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "pop_tang",
+                    "position": 7,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "group_parasite",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "temp",
+                            "position": 8,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 1
+
+                        },
+                        {
+                            "name": "parasite1",
+                            "position": 8,
+                            "size": "8:8",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "parasite2",
+                            "position": 8,
+                            "size": "9:9",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "parasite3",
+                            "position": 8,
+                            "size": "10:10",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "povorot",
+                            "position": 8,
+                            "size": "11:11",
+                            "type": "pre",
+                            "koef": 1
+                        },
+                        {
+                            "name": "PLUS_9V_ACT",
+                            "position": 8,
+                            "size": "12:15",
+                            "type": "int8",
+                            "koef": 16
+                        }
+                    ]
+                },
+                {
+                    "name": "k_tract_2ch",
+                    "position": 9,
+                    "type": "uint16",
+                    "size": "0:11",
+                    "koef": 1
+                },
+                {
+                    "name": "k_tract_2ch_",
+                    "position": 10,
+                    "type": "uint16",
+                    "size": "0:11",
+                    "koef": 1
+                },
+                {
+                    "name": "k_tract_3ch",
+                    "position": 11,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "k_tract_3ch_",
+                    "position": 12,
+                    "type": "uint16",
+                    "size": "0:15",
+                    "koef": 1
+                },
+                {
+                    "name": "group_temperature",
+                    "group": true,
+                    "fields": [
+                        {
+                            "name": "MAN_heat_state",
+                            "position": 13,
+                            "size": "0:7",
+                            "type": "int8",
+                            "koef": 1
+                        },
+                        {
+                            "name": "Temperature",
+                            "position": 13,
+                            "size": "8:15",
+                            "type": "int8",
+                            "koef": 1
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

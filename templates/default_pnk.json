@@ -3,195 +3,163 @@
     "adr": [
         {
             "adr_name": "ADR8",
-            "ks": "d80a",
+            "checksum": "d80a",
+            "time_koef": 0.0001,
             "bytes_swap": false,
-            "time_koef": 0.1,
-            "data_info": [
+            "fields": [
                 {
                     "name": "DIS_Wx",
-                    "position": 1,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 1,
-                    "group": false
+                    "position": 0,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 1
                 },
                 {
                     "name": "DIS_Wy",
-                    "position": 2,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 1,
-                    "group": false
+                    "position": 1,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 1
                 },
                 {
                     "name": "DIS_Wz",
-                    "position": 3,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 1,
-                    "group": false
+                    "position": 2,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 1
                 },
                 {
                     "name": "DIS_US",
-                    "position": 4,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 1,
-                    "group": false
+                    "position": 3,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 1
                 },
                 {
                     "name": "JVD_VN",
-                    "position": 5,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 0.3,
-                    "group": false
+                    "position": 4,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 0.3
                 },
                 {
                     "name": "JVD_VE",
-                    "position": 6,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 0.3,
-                    "group": false
+                    "position": 5,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 0.3
                 },
                 {
                     "name": "JVD_Vh",
-                    "position": 7,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 0.3,
-                    "group": false
+                    "position": 6,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 0.3
                 },
                 {
                     "name": "I1_KursI",
-                    "position": 8,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 0.03,
-                    "group": false
+                    "position": 7,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 0.03
                 },
                 {
                     "name": "I1_Kren",
-                    "position": 9,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 0.03,
-                    "group": false
+                    "position": 8,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 0.03
                 },
                 {
                     "name": "I1_Tang",
-                    "position": 10,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 0.03,
-                    "group": false
+                    "position": 9,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 0.03
                 },
                 {
                     "name": "US",
-                    "position": 11,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 1,
-                    "group": false
+                    "position": 10,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 1
                 },
                 {
                     "name": "W",
-                    "position": 12,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 1,
-                    "group": false
+                    "position": 11,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 1
                 },
                 {
                     "name": "JVD_H",
-                    "position": 13,
-                    "type": "int",
-                    "length": 16,
-                    "koef": 1,
-                    "group": false
+                    "position": 12,
+                    "type": "int16",
+                    "size": "0:15",
+                    "koef": 1
                 },
                 {
-                    "name": null,
-                    "position": 14,
-                    "type": null,
-                    "length": null,
-                    "koef": null,
-                    "group": false
-                },
-                {
-                    "name": null,
-                    "position": 15,
-                    "type": "pr",
-                    "length": 8,
-                    "koef": 1,
+                    "name": "group_additional",
                     "group": true,
-                    "members": [
+                    "fields": [
+
                         {
                             "name": "SHASSI_OB",
-                            "position": 1,
-                            "type": "pr",
-                            "length": 1,
+                            "position": 14,
+                            "type": "pre",
+                            "size": "0:0",
                             "koef": 1
                         },
                         {
                             "name": "MORE",
-                            "position": 2,
-                            "type": "pr",
-                            "length": 1,
+                            "position": 14,
+                            "type": "pre",
+                            "size": "1:1",
                             "koef": 1
                         },
                         {
                             "name": "POPRAVKI",
-                            "position": 3,
-                            "type": "pr",
-                            "length": 1,
+                            "position": 14,
+                            "type": "pre",
+                            "size": "2:2",
                             "koef": 1
                         },
                         {
                             "name": "CONTROL",
-                            "position": 4,
-                            "type": "pr",
-                            "length": 1,
+                            "position": 14,
+                            "type": "pre",
+                            "size": "3:3",
                             "koef": 1
                         },
                         {
                             "name": "MEMORY",
-                            "position": 5,
-                            "type": "pr",
-                            "length": 1,
+                            "position": 14,
+                            "type": "pre",
+                            "size": "4:4",
                             "koef": 1
                         },
                         {
                             "name": "ISPRAV",
-                            "position": 6,
-                            "type": "pr",
-                            "length": 1,
+                            "position": 14,
+                            "type": "pre",
+                            "size": "5:5",
                             "koef": 1
                         },
                         {
                             "name": "OTKAZ_US",
-                            "position": 7,
-                            "type": "pr",
-                            "length": 1,
+                            "position": 14,
+                            "type": "pre",
+                            "size": "6:6",
                             "koef": 1
                         },
                         {
                             "name": "OTKAZ_MPP",
-                            "position": 8,
-                            "type": "pr",
-                            "length": 1,
+                            "position": 14,
+                            "type": "pre",
+                            "size": "7:7",
                             "koef": 1
                         }
                     ]
-                },
-                {
-                    "name": null,
-                    "position": 16,
-                    "type": null,
-                    "length": null,
-                    "koef": null,
-                    "group": false
                 }
             ]
         }
