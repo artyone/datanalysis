@@ -53,11 +53,11 @@ class Control(object):
         self.data['PNK'] = {'ADR8': data_from_file}
         self.data_calculated = self._check_calculated()
 
-    def load_pickle(self, filepath: str) -> None:
+    def load_gzip(self, filepath: str) -> None:
         '''
-        Загрузка данных из pickle формата.
+        Загрузка данных из pickle gzip формата.
         '''
-        data_from_file = file_methods.load_pickle(filepath)
+        data_from_file = file_methods.load_gzip(filepath)
         self.data = data_from_file
         self.data_calculated = self._check_calculated()
 
@@ -220,13 +220,13 @@ class Control(object):
         data_for_csv = self.data[category][adr]
         file_methods.write_csv(data_for_csv, filepath)
 
-    def save_pickle(self, filepath: str) -> None:
+    def save_gzip(self, filepath: str) -> None:
         '''
-        Сохранение данных в формате pickle.
+        Сохранение данных в формате pickle gzip.
         '''
         if self.data_is_none():
             raise Exception('Data must be not none')
-        file_methods.write_pickle(self.data, filepath)
+        file_methods.write_gzip(self.data, filepath)
 
     def get_data(self) -> dict:
         '''

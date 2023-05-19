@@ -41,17 +41,17 @@ class Datas(object):
         data.to_excel(filepath, index=False)
 
     @staticmethod
-    def write_pickle(data: dict, filepath: str) -> None:
-        with open(filepath, 'wb') as f:
-            pickle.dump(data, f, protocol=4)
+    def write_gzip(data: dict, filepath: str) -> None:
+        with gzip.open(filepath, 'wb', compresslevel=1) as f:
+            pickle.dump(data, f)
 
     @staticmethod
     def write_csv(data: pd.DataFrame, filepath: str) -> None:
         data.to_csv(filepath, index=False, sep=',')
 
     @staticmethod
-    def load_pickle(filepath: str) -> Any:
-        with open(filepath, 'rb') as f:
+    def load_gzip(filepath: str) -> Any:
+        with gzip.open(filepath, 'rb') as f:
             return pickle.load(f)
 
     @staticmethod
@@ -91,7 +91,7 @@ class Datas(object):
     def get_jsons_data(cls, list_json: list) -> list:
         '''Метод получения данных все json файлов'''
         return [cls.load_json(filepath) for filepath in list_json]
-    
+
     @staticmethod
     def get_mask_shift_from_field(size):
         # получаем маску и смещение для побитового сравнения и получения данных
@@ -99,7 +99,7 @@ class Datas(object):
         number_mask = int('1' * (stop - start + 1), 2)
         shift = start
         return number_mask, shift
-    
+
     @staticmethod
     def get_unpacked_data_list(filepath):
         with open(filepath, 'rb') as file:
@@ -146,7 +146,7 @@ class Datas(object):
             mask_condition, shift_condition = cls.get_mask_shift_from_field(
                 group_info['condition_bit'])
             condition_data = (data_source[:, group_info['condition_byte'] + 2]
-                            & (mask_condition << shift_condition)) >> shift_condition
+                              & (mask_condition << shift_condition)) >> shift_condition
             for condition, fields in group_info['fields'].items():
                 condition_mask = condition_data == int(condition)
                 for field in fields:
@@ -182,7 +182,8 @@ class Datas(object):
     @classmethod
     def unpack_adr(cls, adr, unpacked_data_list):
         checksum = int(adr['checksum'], base=16)
-        data_list = cls.get_filtered_data_by_checksum(checksum, unpacked_data_list)
+        data_list = cls.get_filtered_data_by_checksum(
+            checksum, unpacked_data_list)
         df_dict = {}
         df_dict['time'] = cls.get_time_list(adr['time_koef'], data_list)
         df_dict = cls.unpack_fields(
@@ -202,6 +203,3 @@ class Datas(object):
             result_dict['adr'][adr['adr_name']] = pd.DataFrame(adr_data)
 
         return result_dict
-        
-
-

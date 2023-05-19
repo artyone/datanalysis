@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QMdiSubWindow,
     QAction, QMenu, QHBoxLayout,
     QFrame, QSlider,
-    QDoubleSpinBox
+    QDoubleSpinBox, QPushButton
 )
 import app.resource.qrc_resources
 import pyqtgraph as pg
@@ -234,7 +234,7 @@ class GraphWindow(QMdiSubWindow):
         else:
             data['curve'].setSymbol(None)
 
-    def timeShift(self, curve_data):
+    def timeShift(self, curveData):
         '''
         Метод смещения графика по оси Ox.
         '''
@@ -244,19 +244,22 @@ class GraphWindow(QMdiSubWindow):
         self.mainLayout.addWidget(self.shiftWidget)
         self.layoutShift = QHBoxLayout()
         self.shiftWidget.setLayout(self.layoutShift)
-        max = int(curve_data['curve'].getData()[0].max())
+        max = int(curveData['curve'].getData()[0].max()) * 2
         self.slider = QSlider(Qt.Orientation.Horizontal, self)
         self.slider.setRange(-max, max)
-        self.slider.setSingleStep(100)
-        self.slider.setPageStep(100)
-        self.slider.valueChanged.connect(partial(self.updateGraph, curve_data))
+        self.slider.setSingleStep(50)
+        self.slider.setPageStep(50)
+        self.slider.valueChanged.connect(partial(self.updateGraph, curveData))
         self.spinBox = QDoubleSpinBox(self)
         self.spinBox.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.spinBox.setMinimumWidth(80)
         self.spinBox.setRange(-max, max)
         self.spinBox.setSingleStep(.1)
         self.spinBox.valueChanged.connect(
-            partial(self.updateGraph, curve_data))
+            partial(self.updateGraph, curveData))
+        self.applyShiftButton = QPushButton('Применить смещение')
+        self.applyShiftButton.clicked.connect(partial(self.applyShift, curveData))
+        self.layoutShift.addWidget(self.applyShiftButton)
         self.layoutShift.addWidget(self.slider)
         self.layoutShift.addWidget(self.spinBox)
 
@@ -274,3 +277,12 @@ class GraphWindow(QMdiSubWindow):
         x = [i + value for i in dataForGraph.time]
         y = dataForGraph[item]
         curve.setData(x, y)
+
+    def applyShift(self, curveData):
+        value = self.spinBox.value(), 
+        data = self.data[curveData['category']][curveData['adr']]
+        print(data['time'])
+
+        data['time'] = data['time'] + value
+        print(data['time'])
+        self.parent.setNotify('успех', 'Смещение задано. Не забудьте сохранить изменения')

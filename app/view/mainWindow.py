@@ -96,13 +96,12 @@ class MainWindow(QMainWindow):
         self.splitter.addWidget(self.mdi)
 
         self.setCentralWidget(self.splitter)
-        #self.center()
+        # self.center()
         self.showMaximized()
 
     def setTheme(self):
         pallete = getPalette(self.settings.value('mainSettings')['theme'])
         self.app.setPalette(pallete)
-
 
     def _createMenuBar(self):
         '''
@@ -118,19 +117,19 @@ class MainWindow(QMainWindow):
         fileMenu = self.menuBar.addMenu('&Файл')
         fileMenu.addAction(self.clearAction)
 
-        openSourceMenu = fileMenu.addMenu('Открыть txt или pdd')
+        openSourceMenu = fileMenu.addMenu('Открыть txt или csv')
         openSourceMenu.setIcon(self.getIcon(':file-plus.svg'))
         openSourceMenu.addAction(self.openTxtAction)
-        openSourceMenu.addAction(self.openPddAction)
+        openSourceMenu.addAction(self.openCsvAction)
 
-        openDataMenu = fileMenu.addMenu('&Открыть pickle или csv')
+        openDataMenu = fileMenu.addMenu('&Открыть gzip или pdd')
         openDataMenu.setIcon(self.getIcon(':database.svg'))
-        openDataMenu.addAction(self.openPickleAction)
-        openDataMenu.addAction(self.openCsvAction)
+        openDataMenu.addAction(self.openPddAction)
+        openDataMenu.addAction(self.openGzipAction)
 
         saveMenu = fileMenu.addMenu('&Сохранить как')
         saveMenu.setIcon(self.getIcon(':save'))
-        saveMenu.addAction(self.savePickleAction)
+        saveMenu.addAction(self.saveGzipAction)
         saveMenu.addAction(self.saveCsvAction)
 
         fileMenu.addSeparator()
@@ -178,8 +177,8 @@ class MainWindow(QMainWindow):
     def _fileToolBar(self):
         fileToolBar = QToolBar('File')
         fileToolBar.addAction(self.openTxtAction)
-        fileToolBar.addAction(self.openPickleAction)
-        fileToolBar.addAction(self.savePickleAction)
+        fileToolBar.addAction(self.openGzipAction)
+        fileToolBar.addAction(self.saveGzipAction)
         fileToolBar.addSeparator()
         fileToolBar.addAction(self.exitAction)
         fileToolBar.setMovable(False)
@@ -244,15 +243,15 @@ class MainWindow(QMainWindow):
         self.openCsvAction.setIcon(self.getIcon(':file-text.svg'))
         self.openCsvAction.setStatusTip('Открыть csv файл с данными.')
 
-        self.openPickleAction = QAction('Открыть *.&pickle...', self)
-        self.openPickleAction.setIcon(self.getIcon(':file.svg'))
-        self.openPickleAction.setStatusTip('Открыть pickle файл с данными.')
-        self.openPickleAction.setShortcut('Ctrl+O')
+        self.openGzipAction = QAction('Открыть *.&gzip...', self)
+        self.openGzipAction.setIcon(self.getIcon(':file.svg'))
+        self.openGzipAction.setStatusTip('Открыть gzip файл с данными.')
+        self.openGzipAction.setShortcut('Ctrl+O')
 
-        self.savePickleAction = QAction('Сохранить как *.pickle...', self)
-        self.savePickleAction.setIcon(self.getIcon(':save.svg'))
-        self.savePickleAction.setStatusTip('Сохранить данные в формате pickle')
-        self.savePickleAction.setShortcut('Ctrl+S')
+        self.saveGzipAction = QAction('Сохранить как *.gzip...', self)
+        self.saveGzipAction.setIcon(self.getIcon(':save.svg'))
+        self.saveGzipAction.setStatusTip('Сохранить данные в формате gzip')
+        self.saveGzipAction.setShortcut('Ctrl+S')
 
         self.saveCsvAction = QAction('Сохранить как *.csv...', self)
         self.saveCsvAction.setIcon(self.getIcon(':file-text.svg'))
@@ -365,10 +364,10 @@ class MainWindow(QMainWindow):
         self.openTxtAction.triggered.connect(partial(self.openTextFile, 'txt'))
         self.openPddAction.triggered.connect(
             partial(self.openBinaryFile, 'pdd'))
-        self.openPickleAction.triggered.connect(
-            partial(self.openBinaryFile, 'pkl'))
+        self.openGzipAction.triggered.connect(
+            partial(self.openBinaryFile, 'gzip'))
         self.openCsvAction.triggered.connect(partial(self.openTextFile, 'csv'))
-        self.savePickleAction.triggered.connect(self.savePickleData)
+        self.saveGzipAction.triggered.connect(self.saveGzipData)
         self.saveCsvAction.triggered.connect(self.saveCsvData)
         self.exitAction.triggered.connect(self.close)
 
@@ -451,8 +450,8 @@ class MainWindow(QMainWindow):
             )
         if check:
             try:
-                if filetype == 'pkl':
-                    self.controller.load_pickle(filepath)
+                if filetype == 'gzip':
+                    self.controller.load_gzip(filepath)
                 if filetype == 'pdd':
                     self.controller.load_pdd(filepath)
                 self.tree.updateCheckBox()
@@ -531,9 +530,9 @@ class MainWindow(QMainWindow):
         self.center(self.saveCsvWindow)
         self.saveCsvWindow.show()
 
-    def savePickleData(self):
+    def saveGzipData(self):
         '''
-        Сохранение данных в формате pickle
+        Сохранение данных в формате pickle gzip 
         '''
         if not self.checkData():
             return
@@ -543,13 +542,13 @@ class MainWindow(QMainWindow):
             self,
             "Save File",
             "",
-            "Pickle Files (*.pkl);;All Files(*)",
+            "gzip Files (*.gzip);;All Files(*)",
             options=options
         )
         if filePath:
             try:
-                self.controller.save_pickle(filePath)
-                self.setNotify('успех', f'Pickle файл сохранен в {filePath}')
+                self.controller.save_gzip(filePath)
+                self.setNotify('успех', f'gzip файл сохранен в {filePath}')
             except PermissionError:
                 self.setNotify(
                     'ошибка', 'Файл открыт в другой программе или занят.')
@@ -626,9 +625,9 @@ class MainWindow(QMainWindow):
             decimation = 1
         try:
             graphWindow = GraphWindow(
-                self.controller.get_data(), 
-                treeSelected, 
-                decimation, 
+                self.controller.get_data(),
+                treeSelected,
+                decimation,
                 self
             )
             self.mdi.addSubWindow(graphWindow)
@@ -834,7 +833,7 @@ class MainWindow(QMainWindow):
         filePath, check = QFileDialog.getOpenFileName(
             None,
             'Open file',
-            '', 
+            '',
             'Json File (*.json)'
         )
         if check:
