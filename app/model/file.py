@@ -1,5 +1,8 @@
 from collections import defaultdict
 from typing import Any
+import struct
+import numpy as np
+import gzip
 import chardet as cd
 import pandas as pd
 import json as js
@@ -76,114 +79,6 @@ class Datas(object):
             js.dump(data, file)
 
     @staticmethod
-    def check_adr(data: dict) -> bool:
-        '''
-        Метод проверки словаря, загруженного из json файла.
-        Так как 10 байт для всех явлюятся обязательными и одинаковыми,
-        то проверка осуществляется только, что данных в словаре не более
-        32 байт
-        '''
-        summ = sum(elem['length'] for elem in data['data_info'])
-        if summ < 33:
-            return True
-        return False
-
-    @staticmethod
-    def _convert_to_int(byte_num: bytes, koef: float = 1) -> int:
-        '''Метод конвертации байткода (hex) в десятичную систему'''
-        result = int.from_bytes(
-            byte_num[::-1],
-            byteorder='big',
-            signed=True
-        ) * koef
-        return result
-
-    @classmethod
-    def _convert_to_bin(cls, byte_num: int, koef: float, length: int) -> str:
-        '''Метод конвертации байткода (hex) в двоичную систему'''
-        int_number = cls._convert_to_int(byte_num, koef)
-        result = bin(int_number)[2:].zfill(length)
-        return result
-
-    @classmethod
-    def _unpack_elem(cls, byte_num: bytes, j_elem: dict) -> int | str:
-        '''Метод распаковки элемента'''
-        name = j_elem['name']
-        koef = j_elem['koef']
-        type = j_elem['type']
-        if type == 'int':
-            return cls._convert_to_int(byte_num, koef)
-        if type == 'pr':
-            return cls._convert_to_bin(byte_num, koef, j_elem['length'])
-
-        raise ValueError(
-            f'Unknown type in json: {name}, {type}, {j_elem["position"]}'
-        )
-
-    @staticmethod
-    def _unpack_group(value, members: list, data: dict) -> None:
-        '''Метод распаковки группы'''
-        for member in sorted(members, key=lambda x: x['position']):
-            if member['length'] is None:
-                continue
-            name = member['name']
-            length = member['length']
-            data[name].append(value[:length])
-            value = value[length:]
-
-    @classmethod
-    def _unpack_string(cls, byte_str: bytes, j_elems: dict, data: dict) -> None:
-        '''
-        Метод распаковки строки байткода
-        0-3 байт - время
-        4-5 байт - контрольная сумма
-        6-9 байт - нулевые
-        10-41 байт - данные
-        '''
-        if j_elems['ks'] != byte_str[4:6][::-1].hex():
-            return
-        data['time'].append(
-            cls._convert_to_int(byte_str[:4], j_elems['time_koef']) * 0.001
-        )  # 0.001 коэффициент подобранный именно для времени
-        byte_str = byte_str[10:]
-        for elem in sorted(j_elems['data_info'], key=lambda x: x['position']):
-            if elem['length'] is None:
-                continue
-
-            length = elem['length'] // 8
-            byte_num = byte_str[:length]
-            value = cls._unpack_elem(byte_num, elem)
-            byte_str = byte_str[length:]
-            if not elem['group']:
-                data[elem['name']].append(value)
-            else:
-                cls._unpack_group(value, elem['members'], data)
-
-    @classmethod
-    def load_pdd(cls, pddfilepath: str, json_filepath: str) -> dict:
-        '''
-        Метод считывание данных из файла pdd по 42 байта.
-        '''
-        j_data = cls.load_json(json_filepath)
-        result = {}
-        result['name'] = j_data['name']
-        result['adr'] = {
-            adr['adr_name']: defaultdict(list) for adr in j_data['adr']
-        }
-        with open(pddfilepath, 'rb') as file:
-            string = file.read(42)
-            while string:
-                for elem in j_data['adr']:
-                    cls._unpack_string(
-                        string, elem, result['adr'][elem['adr_name']]
-                    )
-                string = file.read(42)
-        result['adr'] = {
-            key: pd.DataFrame(value) for key, value in result['adr'].items()
-        }
-        return result
-
-    @staticmethod
     def get_list_json_in_folder(dirpath: str) -> list:
         '''Метод получения списка всех json файлов в папке'''
         result = []
@@ -196,3 +91,117 @@ class Datas(object):
     def get_jsons_data(cls, list_json: list) -> list:
         '''Метод получения данных все json файлов'''
         return [cls.load_json(filepath) for filepath in list_json]
+    
+    @staticmethod
+    def get_mask_shift_from_field(size):
+        # получаем маску и смещение для побитового сравнения и получения данных
+        start, stop = [int(i) for i in size.split(':')]
+        number_mask = int('1' * (stop - start + 1), 2)
+        shift = start
+        return number_mask, shift
+    
+    @staticmethod
+    def get_unpacked_data_list(filepath):
+        with open(filepath, 'rb') as file:
+            string = file.read()
+            unpacked_data_list = [
+                i for i in struct.iter_unpack('>IH4x16H', string)]
+            unpacked_data_list = np.array(unpacked_data_list)
+        return unpacked_data_list
+
+    @classmethod
+    def unpack_element(cls, byteswap, field_data, data_source: np.array):
+        position = field_data['position'] + 2
+        koef = field_data['koef']
+        size = field_data['size']
+        type = field_data['type']
+        mask, shift = cls.get_mask_shift_from_field(size)
+        data_column = data_source[:, position]
+        # if type == 'uint16' or type == 'pre':
+        #     data_column = data_column.astype(np.uint16)
+
+        if type == 'int16':
+            data_column = data_column.astype(np.int16)
+
+        if not byteswap:
+            data_column = data_column.byteswap()
+        if mask != 65535 or shift != 0:
+            masked_data = np.bitwise_and(data_column, (mask << shift))
+            masked_data = np.right_shift(masked_data, shift) * koef
+        else:
+            masked_data = data_column
+        if type == 'int8':
+            masked_data = masked_data.astype(np.int8)
+
+        return masked_data
+
+    @classmethod
+    def unpack_group(cls, byteswap, group_info, data_source, result_data):
+        if type(group_info['fields']) == list:
+            for field in group_info['fields']:
+                column_name = field['name']
+                column = cls.unpack_element(byteswap, field, data_source)
+                result_data[column_name] = column
+        else:
+            mask_condition, shift_condition = cls.get_mask_shift_from_field(
+                group_info['condition_bit'])
+            condition_data = (data_source[:, group_info['condition_byte'] + 2]
+                            & (mask_condition << shift_condition)) >> shift_condition
+            for condition, fields in group_info['fields'].items():
+                condition_mask = condition_data == int(condition)
+                for field in fields:
+                    column_name = field['name']
+                    column = cls.unpack_element(byteswap, field, data_source)
+                    column = np.where(condition_mask, column, np.nan)
+                    result_data[column_name] = column
+
+    @staticmethod
+    def get_filtered_data_by_checksum(checksum, source_data):
+        control_sum = source_data[:, 1].astype(np.uint16).byteswap()
+        control_sum_mask = control_sum == checksum
+        data_list = source_data[control_sum_mask]
+        return data_list
+
+    @staticmethod
+    def get_time_list(koef, source):
+        time_list = source[:, 0].astype(np.uint32)
+        time_list = time_list.byteswap() * koef
+        return time_list
+
+    @classmethod
+    def unpack_fields(cls, byteswap, fields, data_list, result_dict):
+        for field in fields:
+            if 'group' in field.keys() and field['group'] == True:
+                cls.unpack_group(byteswap, field, data_list, result_dict)
+            else:
+                column_name = field['name']
+                column = cls.unpack_element(byteswap, field, data_list)
+                result_dict[column_name] = column
+        return result_dict
+
+    @classmethod
+    def unpack_adr(cls, adr, unpacked_data_list):
+        checksum = int(adr['checksum'], base=16)
+        data_list = cls.get_filtered_data_by_checksum(checksum, unpacked_data_list)
+        df_dict = {}
+        df_dict['time'] = cls.get_time_list(adr['time_koef'], data_list)
+        df_dict = cls.unpack_fields(
+            adr['bytes_swap'], adr['fields'], data_list, df_dict)
+        return df_dict
+
+    @classmethod
+    def load_pdd(cls, filepath_pdd, filepath_json):
+        json_data = cls.load_json(filepath_json)
+        unpacked_data_list = cls.get_unpacked_data_list(filepath_pdd)
+        result_dict = {}
+        result_dict['name'] = json_data['name']
+        result_dict['adr'] = {}
+
+        for adr in json_data['adr']:
+            adr_data = cls.unpack_adr(adr, unpacked_data_list)
+            result_dict['adr'][adr['adr_name']] = pd.DataFrame(adr_data)
+
+        return result_dict
+        
+
+

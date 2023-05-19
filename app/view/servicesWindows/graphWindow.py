@@ -72,11 +72,11 @@ class GraphWindow(QMdiSubWindow):
         self.plt.addLegend(pen='gray', offset=(0, 0))
 
         for category, adr, item in self.columns:
-            dataForGraph = self.data[category][adr].iloc[::self.decimation]
+            dataForGraph = self.data[category][adr].dropna(subset=['time', item]).reset_index().iloc[::self.decimation]
             pen = pg.mkPen(color=self.colors[0])
             curve = pg.PlotDataItem(
-                dataForGraph.time,
-                dataForGraph[item],
+                dataForGraph.time.to_list(),
+                dataForGraph[item].to_list(),
                 name=item,
                 pen=pen
             )

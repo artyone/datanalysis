@@ -7,14 +7,10 @@ from functools import lru_cache
 from time import perf_counter_ns
 import struct
 import numpy as np
+import pickle
+import gzip
 
 
-def get_mask_shift_from_field(size):
-    # получаем маску и смещение для побитового сравнения и получения данных
-    start, stop = [int(i) for i in size.split(':')]
-    number_mask = int('1' * (stop - start + 1), 2)
-    shift = start
-    return number_mask, shift
 
 
 def load_json(filepath: str):
@@ -38,6 +34,12 @@ def graph(df: pd.DataFrame, column):
     win.show()
     sys.exit(app.exec_())
 
+def get_mask_shift_from_field(size):
+    # получаем маску и смещение для побитового сравнения и получения данных
+    start, stop = [int(i) for i in size.split(':')]
+    number_mask = int('1' * (stop - start + 1), 2)
+    shift = start
+    return number_mask, shift
 
 def get_unpacked_data_list(filepath):
     with open(filepath, 'rb') as file:
@@ -55,20 +57,23 @@ def unpack_element(byteswap, field_data, data_source: np.array):
     type = field_data['type']
     mask, shift = get_mask_shift_from_field(size)
     data_column = data_source[:, position]
-    if type == 'uint16' or type == 'pre':
-        type = np.uint16
-    elif type == 'uint8':
-        type = np.uint8
-    elif type == 'int16':
-        type = np.int16
-    elif type == 'int8':
-        type = np.int8
-    data_column = data_column.astype(type)
+    # if type == 'uint16' or type == 'pre':
+    #     data_column = data_column.astype(np.uint16)
+
+    if type == 'int16':
+        data_column = data_column.astype(np.int16)
+
     if not byteswap:
         data_column = data_column.byteswap()
-    masked_data = np.bitwise_and(data_column, (mask << shift))
-    masked_data = np.right_shift(masked_data, shift) * koef
-    return data_column
+    if mask != 65535 or shift != 0:
+        masked_data = np.bitwise_and(data_column, (mask << shift))
+        masked_data = np.right_shift(masked_data, shift) * koef
+    else:
+        masked_data = data_column
+    if type == 'int8':
+        masked_data = masked_data.astype(np.int8)
+
+    return masked_data
 
 
 def unpack_group(byteswap, group_info, data_source, result_data):
@@ -129,22 +134,34 @@ def load_pdd(filepath_pdd, filepath_json):
     json_data = load_json(filepath_json)
     unpacked_data_list = get_unpacked_data_list(filepath_pdd)
     result_dict = {}
+    result_dict['name'] = json_data['name']
+    result_dict['adr'] = {}
+
     for adr in json_data['adr']:
         adr_data = unpack_adr(adr, unpacked_data_list)
-        result_dict[adr['adr_name']] = pd.DataFrame(adr_data)
+        result_dict['adr'][adr['adr_name']] = pd.DataFrame(adr_data)
+
     return result_dict
 
 
 start = perf_counter_ns()
 
 json_path = r'C:\Tikhonov\datanalysis\templates\d001.json'
-pdd_filepath = r"C:\Users\ONT\Downloads\RES (1).pdd"
+# json_path = r'C:\Tikhonov\datanalysis\templates\default_pnk.json'
+pdd_filepath = r"C:\Users\ONT\Downloads\RES.pdd"
+# pdd_filepath = r"C:\Users\ONT\Downloads\данные_инс1_дисс.pdd"
 
 
-result = load_pdd(pdd_filepath, json_path)
+# result = load_pdd(pdd_filepath, json_path)
 
+# with gzip.open(r'C:\Tikhonov\datanalysis\temp\123.gz', 'wb', compresslevel=1) as file:
+#     pickle.dump(result, file)
 
+with gzip.open(r'C:\Tikhonov\datanalysis\temp\123.gz', 'rb') as file:
+    loaded_data = pickle.load(file)
+
+print(loaded_data)
 print(perf_counter_ns() - start, 'finish')
 
 # print(result)
-graph(result['ADR1'], 'Fd2')
+# graph(result['ADR1'], 'CH_UPF')

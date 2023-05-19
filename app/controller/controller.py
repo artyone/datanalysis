@@ -85,7 +85,7 @@ class Control(object):
         # временно пока json файл стандартный
         # добавить проверку jsona
 
-        json_file = 'templates/default_pnk.json'
+        json_file = 'templates/d001.json'
         data_from_file = file_methods.load_pdd(filepath, json_file)
         self.data[data_from_file['name']] = data_from_file['adr']
 
