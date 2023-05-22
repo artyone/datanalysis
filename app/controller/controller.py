@@ -45,13 +45,13 @@ class Control(object):
         self.data[category] = {adr: data_from_file}
         self.data_calculated = self._check_calculated()
 
-    def load_csv(self, filepath: str) -> None:
-        '''
-        Загрузка данных из csv формата.
-        '''
-        data_from_file = file_methods.load_csv(filepath)
-        self.data['PNK'] = {'ADR8': data_from_file}
-        self.data_calculated = self._check_calculated()
+    # def load_csv(self, filepath: str) -> None:
+    #     '''
+    #     Загрузка данных из csv формата.
+    #     '''
+    #     data_from_file = file_methods.load_csv(filepath)
+    #     self.data['PNK'] = {'ADR8': data_from_file}
+    #     self.data_calculated = self._check_calculated()
 
     def load_gzip(self, filepath: str) -> None:
         '''
@@ -77,17 +77,14 @@ class Control(object):
         data_for_settings = file_methods.load_json(filepath)
         return data_for_settings
 
-    def load_pdd(self, filepath: str) -> None:
+    def load_pdd(self, filepath: str, category, json_data) -> None:
         '''
         Загрузка данных из pdd формата.
         '''
-        # TODO необходимо внедрить json файлы в настройки программы
-        # временно пока json файл стандартный
-        # добавить проверку jsona
+        # TODO добавить проверку json_data
 
-        json_file = 'templates/d001.json'
-        data_from_file = file_methods.load_pdd(filepath, json_file)
-        self.data[data_from_file['name']] = data_from_file['adr']
+        data_from_file = file_methods.load_pdd(filepath, json_data)
+        self.data[category] = data_from_file
 
     @staticmethod
     def save_python_sript(filepath: str, data: DataFrame) -> None:

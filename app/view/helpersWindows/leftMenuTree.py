@@ -31,13 +31,13 @@ class LeftMenuTree(QTreeWidget):
             treeCategory = QTreeWidgetItem(self)
             treeCategory.setText(0, nameCategory)
             treeCategory.setExpanded(True)
-            for nameAdr, adrValues in adrs.items():
+            for nameAdr, adrValues in sorted(adrs.items(), key=lambda x: x[0]):
                 treeAdr = QTreeWidgetItem(treeCategory)
                 treeAdr.setText(0, nameAdr)
                 treeAdr.setExpanded(True)
                 filters = self.settings.value('leftMenuFilters')
                 adrFilters = filters['adrs'].get(nameAdr, {})
-                for nameItem in adrValues.columns:
+                for nameItem in sorted(adrValues.columns):
                     if adrFilters.get(nameItem, filters['unknown']):
                         treeItem = QTreeWidgetItem(treeAdr)
                         treeItem.setText(0, nameItem)

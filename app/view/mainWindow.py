@@ -361,12 +361,17 @@ class MainWindow(QMainWindow):
 
     def _connectFileActions(self):
         self.clearAction.triggered.connect(self.clearMainWindow)
-        self.openTxtAction.triggered.connect(partial(self.openTextFile, 'txt'))
+        self.openTxtAction.triggered.connect(
+            partial(self.getOpenFileWindow, 'txt')
+        )
         self.openPddAction.triggered.connect(
-            partial(self.openBinaryFile, 'pdd'))
+            partial(self.getOpenFileWindow, 'pdd')
+        )
         self.openGzipAction.triggered.connect(
-            partial(self.openBinaryFile, 'gzip'))
-        self.openCsvAction.triggered.connect(partial(self.openTextFile, 'csv'))
+            partial(self.openBinaryFile, 'gzip')
+        )
+        self.openCsvAction.triggered.connect(
+            partial(self.getOpenFileWindow, 'csv'))
         self.saveGzipAction.triggered.connect(self.saveGzipData)
         self.saveCsvAction.triggered.connect(self.saveCsvData)
         self.exitAction.triggered.connect(self.close)
@@ -469,13 +474,15 @@ class MainWindow(QMainWindow):
             except ValueError as e:
                 self.setNotify('ошибка', str(e))
 
-    def openTextFile(self, filetype):
+    def getOpenFileWindow(self, filetype):
         if self.openFileWindow is None:
             try:
                 categories = self.controller.get_json_categories(
-                    self.settings.value('mainSettings')['jsonDir'])
+                    self.settings.value('mainSettings')['jsonDir']
+                )
                 self.openFileWindow = OpenFileWindow(
-                    self.controller, filetype, categories, self)
+                    self.controller, filetype, categories, self
+                )
             except KeyError:
                 self.setNotify('ошибка', 'Неверные данные в json файлах')
                 return

@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
 )
 
 
+
 class OpenFileWindow(QWidget):
     '''
     Класс окна для выбора json для парсинга данных файла txt или csv
@@ -50,7 +51,8 @@ class OpenFileWindow(QWidget):
         self.loadUnknownCheckBox.setText('загружать незвестные элементы')
 
         self.formLayout.addRow('Категория', self.categoryComboBox)
-        self.formLayout.addRow('АДР', self.adrComboBox)
+        if self.filetype != 'pdd':
+            self.formLayout.addRow('АДР', self.adrComboBox)
         self.formLayout.addRow('Файл', self.initBrowseBlock())
         self.formLayout.addRow(self.loadUnknownCheckBox)
 
@@ -83,7 +85,9 @@ class OpenFileWindow(QWidget):
         self.btnBox.rejected.connect(self.close)
 
         self.openButton = self.btnBox.button(QDialogButtonBox.Open)
-        self.openButton.clicked.connect(self.openFile)
+        self.openButton.clicked.connect(
+            self.openFilePdd if self.filetype == 'pdd' else self.openFileTxt
+        )
 
     def updateAdrComboBox(self):
         adrs = self.categories[self.categoryComboBox.currentText()]
@@ -100,7 +104,7 @@ class OpenFileWindow(QWidget):
         if check:
             self.browseLineEdit.setText(filePath)
 
-    def openFile(self):
+    def openFileTxt(self):
         try:
             self.controller.load_text(
                 self.browseLineEdit.text(),
@@ -115,4 +119,30 @@ class OpenFileWindow(QWidget):
             )
             self.parent.destroyChildWindow()
         except ValueError as e:
-            self.setNotify('ошибка', str(e))
+            self.parent.setNotify('ошибка', str(e))
+
+    def openFilePdd(self):
+        currentCategory = self.categoryComboBox.currentText()
+        json_data = self.categories[currentCategory]
+        filepath = self.browseLineEdit.text()
+        try:
+            self.controller.load_pdd(
+                filepath,
+                currentCategory, 
+                json_data
+            )
+            self.parent.tree.updateCheckBox()
+            self.parent.setNotify(
+                'успех', f'Файл {self.browseLineEdit.text()} открыт'
+            )
+            self.parent.destroyChildWindow()
+        except Exception as e:
+            self.parent.setNotify('ошибка', str(e))
+
+    def closeEvent(self, event):
+        '''
+        Переназначение функции закрытия, для уничтожение окна.
+        '''
+        self.deleteLater()
+        self.parent.openFileWindow = None
+        event.accept()

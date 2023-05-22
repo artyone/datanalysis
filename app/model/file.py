@@ -191,15 +191,12 @@ class Datas(object):
         return df_dict
 
     @classmethod
-    def load_pdd(cls, filepath_pdd, filepath_json):
-        json_data = cls.load_json(filepath_json)
+    def load_pdd(cls, filepath_pdd, json_data):
         unpacked_data_list = cls.get_unpacked_data_list(filepath_pdd)
         result_dict = {}
-        result_dict['name'] = json_data['name']
-        result_dict['adr'] = {}
 
-        for adr in json_data['adr']:
+        for adr in json_data:
             adr_data = cls.unpack_adr(adr, unpacked_data_list)
-            result_dict['adr'][adr['adr_name']] = pd.DataFrame(adr_data)
+            result_dict[adr['adr_name']] = pd.DataFrame(adr_data)
 
         return result_dict

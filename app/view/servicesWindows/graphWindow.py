@@ -281,8 +281,5 @@ class GraphWindow(QMdiSubWindow):
     def applyShift(self, curveData):
         value = self.spinBox.value(), 
         data = self.data[curveData['category']][curveData['adr']]
-        print(data['time'])
-
         data['time'] = data['time'] + value
-        print(data['time'])
         self.parent.setNotify('успех', 'Смещение задано. Не забудьте сохранить изменения')
