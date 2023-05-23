@@ -48,10 +48,9 @@ class MainWindow(QMainWindow):
         self.saveCsvWindow: SaveCsvWindow = None
         self.openFileWindow: OpenFileWindow = None
         self.controller: Control = Control()
-        self.notify: notificator = None
         self.appVersion = QCoreApplication.applicationVersion()
         self.appName = QCoreApplication.applicationName()
-        self.notify = notificator()
+        self.notify: notificator = notificator()
 
         self.settings: QSettings = QSettings()
         if (self.settings.allKeys() == [] or
@@ -457,8 +456,11 @@ class MainWindow(QMainWindow):
             try:
                 if filetype == 'gzip':
                     self.controller.load_gzip(filepath)
-                if filetype == 'pdd':
-                    self.controller.load_pdd(filepath)
+            except FileNotFoundError:
+                self.setNotify('ошибка', 'Файл не найден')
+            except ValueError as e:
+                self.setNotify('ошибка', str(e))
+            else:
                 self.tree.updateCheckBox()
                 self.destroyChildWindow()
                 self.settings.setValue(
@@ -469,10 +471,6 @@ class MainWindow(QMainWindow):
                     }
                 )
                 self.setNotify('успех', f'Файл {filepath} открыт')
-            except FileNotFoundError:
-                self.setNotify('ошибка', 'Файл не найден')
-            except ValueError as e:
-                self.setNotify('ошибка', str(e))
 
     def getOpenFileWindow(self, filetype):
         if self.openFileWindow is None:
@@ -555,12 +553,14 @@ class MainWindow(QMainWindow):
         if filePath:
             try:
                 self.controller.save_gzip(filePath)
-                self.setNotify('успех', f'gzip файл сохранен в {filePath}')
             except PermissionError:
                 self.setNotify(
                     'ошибка', 'Файл открыт в другой программе или занят.')
             except Exception as e:
                 self.setNotify('ошибка', str(e))
+            else:
+                self.setNotify('успех', f'gzip файл сохранен в {filePath}')
+
 
     def calculateData(self):
         '''
@@ -637,10 +637,6 @@ class MainWindow(QMainWindow):
                 decimation,
                 self
             )
-            self.mdi.addSubWindow(graphWindow)
-            graphWindow.show()
-            self.trackGraph()
-            self.checkPositioningWindows()
         except AttributeError:
             self.setNotify('предупреждение', 'Данные не в нужном формате.')
         except KeyError:
@@ -659,6 +655,12 @@ class MainWindow(QMainWindow):
                                'Выберите элементы для графика в левом меню.')
         except Exception as e:
             self.setNotify('предупреждение', e)
+        else:
+            self.mdi.addSubWindow(graphWindow)
+            graphWindow.show()
+            self.trackGraph()
+            self.checkPositioningWindows()
+
 
     def createDefaultGraph(self):
         '''
@@ -820,7 +822,7 @@ class MainWindow(QMainWindow):
             notify = self.notify.sucess
         if type == 'ошибка':
             notify = self.notify.critical
-        notify(type.title(), txt, self, Align=BottomRight, duracion=6)
+        notify(type.title(), txt, self, Align=BottomRight, duracion=6, onclick=None)
 
     def openSettings(self):
         '''

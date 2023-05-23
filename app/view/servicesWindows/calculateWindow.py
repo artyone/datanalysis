@@ -151,9 +151,9 @@ class CalcWindow(QWidget):
         рассчет значений с их последующей передачей в главное окно
         '''
         # TODO в дальнейшейм необходимо будет добавить рассчеты
-        # дисс, пока только пнк
+        # дисс, пока только пнк 
         if not self.calcPnkCheckBox.isChecked():
-            self.parent.setNotify('предупреждение', 'pnk checkbox required')
+            self.parent.setNotify('предупреждение', 'Необходимо установить хотя бы расчет ПНК')
 
         plane_corr = self.parent.settings.value(
             'planes')[self.planeComboBox.currentText()]

@@ -7,6 +7,7 @@ from app.model import file_methods
 from PyQt5.QtCore import Qt
 from app.view.servicesWindows.graphWindow import GraphWindow
 from pprint import pprint
+import copy
 import app.resource.qrc_resources
 import contextlib
 import traceback
@@ -60,7 +61,7 @@ class ConsoleWindow(QMainWindow):
         splitter.addWidget(self.label)
         self.textEdit.setPlainText(
             '# Все данные хранятся в переменной "data" print(data).\n' +
-            '# Тип данных Dataframe из библиотеки pandas\n' +
+            '# Тип данных словарь с Dataframe из библиотеки pandas\n' +
             '# Для постройки графика используется синтаксис graph(data["PNK"]["ADR8"], "JVD_VN", "JVD_H")\n' +
             '# Можно использовать numpy, math, pandas\n' +
             '# Для выгрузки данных используем код to_csv(data["PNK"]["ADR8"], "123.csv")\n'
@@ -103,7 +104,7 @@ class ConsoleWindow(QMainWindow):
                 command = self.textEdit.toPlainText()
                 model = file_methods()
                 to_csv = model.write_csv
-                data = self.controller.get_data().copy()
+                data = copy.deepcopy(self.controller.get_data())
                 graph = self.graph
                 exec(command)
             except:
