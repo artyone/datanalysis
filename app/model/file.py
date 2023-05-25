@@ -76,7 +76,7 @@ class Datas(object):
     @staticmethod
     def save_json(filepath: str, data) -> None:
         with open(filepath, 'w', encoding='utf-8') as file:
-            js.dump(data, file)
+            js.dump(data, file, indent=4)
 
     @staticmethod
     def get_list_json_in_folder(dirpath: str) -> list:

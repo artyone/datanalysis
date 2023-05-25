@@ -1,4 +1,5 @@
 from PyQt5.QtGui import QColor, QPalette
+import os
 
 
 def defaultSettings(settings, appVersion):
@@ -48,8 +49,92 @@ def defaultSettings(settings, appVersion):
     graphs = {
         'background': 'black',
         'default': [
-            [('PNK', 'ADR8', 'latitude'), ('Calc', 'PNK', 'Wp_diss_pnki')],
-            [('PNK', 'ADR8', 'longitude'), ('Calc', 'PNK', 'Wp_KBTIi')]
+            {
+                "name": "Анализ Частот",
+                "rows": [
+                        {
+                            "row": 1,
+                            "width": 50,
+                            "fields": [
+                                {
+                                    "category": "DIS D001",
+                                    "adr": "ADR1",
+                                    "column": "Fd1",
+                                },
+                            ]
+                        },
+                    {
+                            "row": 2,
+                            "width": 50,
+                            "fields": [
+                                {
+                                    "category": "DIS D001",
+                                    "adr": "ADR1",
+                                    "column": "Fd2",
+                                }
+                            ]
+                        }
+                ],
+            },
+            {
+                "name": "Анализ Wp",
+                "rows": [
+                        {
+                            "row": 1,
+                            "width": 20,
+                            "fields": [
+                                {
+                                    "category": "PNK",
+                                    "adr": "ADR8",
+                                    "column": "JVD_H",
+                                },
+                            ]
+                        },
+                    {
+                            "row": 2,
+                            "width": 20,
+                            "fields": [
+                                {
+                                    "category": "PNK",
+                                    "adr": "ADR8",
+                                    "column": "Kren",
+                                },
+                                {
+                                    "category": "PNK",
+                                    "adr": "ADR8",
+                                    "column": "Tang",
+                                }
+                            ]
+                        },
+                    {
+                            "row": 3,
+                            "width": 10,
+                            "fields": [
+                                {
+                                    "category": "DIS D001",
+                                    "adr": "ADR1",
+                                    "column": "mem",
+                                },
+                            ]
+                        },
+                    {
+                            "row": 4,
+                            "width": 50,
+                            "fields": [
+                                {
+                                    "category": "Calc",
+                                    "adr": "PNK",
+                                    "column": "Wp_KBTi",
+                                },
+                                {
+                                    "category": "Calc",
+                                    "adr": "PNK",
+                                    "column": "Wp_diss_pnki",
+                                }
+                            ]
+                        }
+                ]
+            }
         ]
     }
     settings.setValue('graphs', graphs)
@@ -74,7 +159,7 @@ def defaultSettings(settings, appVersion):
     settings.setValue('leftMenuFilters', filters)
     mainSettings = {
         'theme': 'black',
-        'jsonDir': 'templates',
+        'jsonDir': os.path.dirname(__file__).replace('\\', '/') + '/templates/',
         'toolBar': 'left'
     }
     settings.setValue('mainSettings', mainSettings)

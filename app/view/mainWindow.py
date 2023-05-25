@@ -19,7 +19,7 @@ from PyQt5.QtCore import (
 from PyQt5.QtWidgets import (
     QApplication, QMdiArea, QSplitter,
     QToolBar, QSpinBox, QAction, QFileDialog,
-    QTreeWidgetItemIterator, QMainWindow
+    QTreeWidgetItemIterator, QMainWindow, QMenu
 )
 from PyQt5.sip import delete
 from functools import partial
@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
         viewMenu = self.menuBar.addMenu('&Просмотр')
         viewMenu.addAction(self.hideLeftMenuAction)
         viewMenu.addAction(self.createGraphAction)
-        viewMenu.addAction(self.createDefaultGraphAction)
+        viewMenu.addAction(self.menuDefaultGraphAction)
         viewMenu.addAction(self.cascadeAction)
         viewMenu.addAction(self.horizontalAction)
         viewMenu.addAction(self.verticalAction)
@@ -194,7 +194,7 @@ class MainWindow(QMainWindow):
         viewToolBar = QToolBar('Service')
         viewToolBar.addAction(self.hideLeftMenuAction)
         viewToolBar.addAction(self.createGraphAction)
-        viewToolBar.addAction(self.createDefaultGraphAction)
+        viewToolBar.addAction(self.menuDefaultGraphAction)
         self.spinBox = QSpinBox()
         self.spinBox.setMinimum(1)
         viewToolBar.addWidget(self.spinBox)
@@ -290,10 +290,11 @@ class MainWindow(QMainWindow):
         self.createGraphAction.setIcon(self.getIcon(':trending-up.svg'))
         self.createGraphAction.setStatusTip('Создать график в новом окне')
 
-        self.createDefaultGraphAction = QAction(
+        self.menuDefaultGraphAction = QAction(
             '&Создать графики по умолчанию')
-        self.createDefaultGraphAction.setIcon(self.getIcon(':shuffle.svg'))
-        self.createDefaultGraphAction.setStatusTip(
+        self.menuDefaultGraphAction.setMenu(self.createDropdownDefaultGraph())
+        self.menuDefaultGraphAction.setIcon(self.getIcon(':shuffle.svg'))
+        self.menuDefaultGraphAction.setStatusTip(
             'Создать графики по умолчанию в новых окнах')
 
         self.cascadeAction = QAction('&Каскадное расположение')
@@ -384,8 +385,9 @@ class MainWindow(QMainWindow):
     def _connectViewActions(self):
         self.hideLeftMenuAction.triggered.connect(self.hideLeftMenuOnClick)
         self.createGraphAction.triggered.connect(self.createGraph)
-        self.createDefaultGraphAction.triggered.connect(
-            self.createDefaultGraph)
+        # self.createDefaultGraphAction.triggered.connect(
+        #     self.createDefaultGraph)
+        self.menuDefaultGraphAction.triggered.connect(self.createDropdownDefaultGraph)
         self.cascadeAction.triggered.connect(self.cascadeWindows)
         self.horizontalAction.triggered.connect(self.horizontalWindows)
         self.verticalAction.triggered.connect(self.verticalWindows)
@@ -661,6 +663,11 @@ class MainWindow(QMainWindow):
             self.trackGraph()
             self.checkPositioningWindows()
 
+    def createDropdownDefaultGraph(self):
+        menu = QMenu(self)
+        for category in self.settings.value('graphs')['default']:
+            menu.addAction(category['name'])
+        return menu
 
     def createDefaultGraph(self):
         '''

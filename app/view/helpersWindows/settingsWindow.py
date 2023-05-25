@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 from functools import partial
+from .settingsWindowGraph import GraphTab
 
 
 class SettingsWindow(QWidget):
@@ -34,7 +35,7 @@ class SettingsWindow(QWidget):
         '''
         Метод инициализации основных элементов окна.
         '''
-        self.setGeometry(0, 0, 700, 500)
+        self.setGeometry(0, 0, 800, 600)
         self.setWindowTitle("Settings menu")
         layout = QVBoxLayout()
         tabWidget = QTabWidget()
@@ -183,30 +184,34 @@ class SettingsWindow(QWidget):
         tabWidget.setLayout(tabLayout)
         return tabWidget
 
+
     def graphTab(self):
-        '''
-        Вкладка настроек графиков.
-        '''
-        tabWidget = QWidget()
-        tabLayout = QFormLayout()
-        bground = QComboBox()
-        bground.addItems(
-            ['black', 'white', 'red', 'green', 'pink', 'blue', 'gray']
-        )
-        bground.setCurrentText(self.listGraphs['background'])
-        tabLayout.addRow('Фон графиков:', bground)
-        self.listGraphs['background'] = bground
-        string = '\n'.join(
-            [
-                ','.join([' '.join(x) for x in item])
-                for item in self.listGraphs['default']
-            ]
-        )
-        defaultTextEdit = QPlainTextEdit(string)
-        tabLayout.addRow('Графики по умолчанию:', defaultTextEdit)
-        self.listGraphs['default'] = defaultTextEdit
-        tabWidget.setLayout(tabLayout)
-        return tabWidget
+        self.graphTabWidget = GraphTab(self.listGraphs)
+        return self.graphTabWidget
+    # def graphTab(self):
+    #     '''
+    #     Вкладка настроек графиков.
+    #     '''
+    #     tabWidget = QWidget()
+    #     tabLayout = QFormLayout()
+    #     bground = QComboBox()
+    #     bground.addItems(
+    #         ['black', 'white', 'red', 'green', 'pink', 'blue', 'gray']
+    #     )
+    #     bground.setCurrentText(self.listGraphs['background'])
+    #     tabLayout.addRow('Фон графиков:', bground)
+    #     self.listGraphs['background'] = bground
+    #     string = '\n'.join(
+    #         [
+    #             ','.join([' '.join(x) for x in item])
+    #             for item in self.listGraphs['default']
+    #         ]
+    #     )
+    #     defaultTextEdit = QPlainTextEdit(string)
+    #     tabLayout.addRow('Графики по умолчанию:', defaultTextEdit)
+    #     self.listGraphs['default'] = defaultTextEdit
+    #     tabWidget.setLayout(tabLayout)
+    #     return tabWidget
 
     def switchPage(self, layout, widget):
         '''
@@ -253,18 +258,19 @@ class SettingsWindow(QWidget):
         }
         self.settings.setValue('corrections', newValueCorrections)
 
-    def saveGraphSettings(self):
-        graphBackground = self.listGraphs['background'].currentText()
-        graphDefault = [
-            [tuple(x.split()) for x in row.split(',')]
-            for row in self.listGraphs['default'].toPlainText().split('\n')
-        ]
+    #TODO вернуть сохранение настроек
+    # def saveGraphSettings(self):
+    #     graphBackground = self.listGraphs['background'].currentText()
+    #     graphDefault = [
+    #         [tuple(x.split()) for x in row.split(',')]
+    #         for row in self.listGraphs['default'].toPlainText().split('\n')
+    #     ]
 
-        graphSettings = {
-            'background': graphBackground,
-            'default': graphDefault
-        }
-        self.settings.setValue('graphs', graphSettings)
+    #     graphSettings = {
+    #         'background': graphBackground,
+    #         'default': graphDefault
+    #     }
+    #     self.settings.setValue('graphs', graphSettings)
 
     def saveLeftMenuFilterSettings(self):
         newValueAdr = {
