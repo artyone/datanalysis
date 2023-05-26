@@ -11,7 +11,7 @@ from app.view.helpersWindows import (
     OpenFileWindow, LeftMenuTree
 )
 from PyQt5.QtGui import (
-    QIcon, QColor, QPalette, QPainter
+    QIcon, QColor, QPainter
 )
 from PyQt5.QtCore import (
     Qt, QSettings, QCoreApplication, QProcess
@@ -19,7 +19,8 @@ from PyQt5.QtCore import (
 from PyQt5.QtWidgets import (
     QApplication, QMdiArea, QSplitter,
     QToolBar, QSpinBox, QAction, QFileDialog,
-    QTreeWidgetItemIterator, QMainWindow, QMenu
+    QTreeWidgetItemIterator, QMainWindow, QMenu,
+    QMessageBox
 )
 from PyQt5.sip import delete
 from functools import partial
@@ -37,7 +38,7 @@ class MainWindow(QMainWindow):
     Если настройки пустые или устарели - создаются настройки по-умолчанию.
     '''
 
-    def __init__(self, app: QApplication):
+    def __init__(self, app: QApplication) -> None:
         super().__init__()
         self.app = app
         self.mapWindow: MapWindow = None
@@ -51,7 +52,7 @@ class MainWindow(QMainWindow):
         self.appVersion = QCoreApplication.applicationVersion()
         self.appName = QCoreApplication.applicationName()
         self.notify: notificator = notificator()
-
+        # self.setWindowFlags(Qt.FramelessWindowHint)
         self.settings: QSettings = QSettings()
         if (self.settings.allKeys() == [] or
                 self.settings.value('version') != self.appVersion):
@@ -62,9 +63,9 @@ class MainWindow(QMainWindow):
         # TODO удалить на релизе
         lastFile = self.settings.value('lastFile')
         if lastFile is not None:
-            self.openBinaryFile(lastFile['param'], lastFile['filePath'])
+            self.openBinaryFile(lastFile['filePath'])
 
-    def initUI(self):
+    def initUI(self) -> None:
         '''
         Создание основных элементов интерфейса.
         Создание Экшенов, меню, тулбара, статус бара, связей.
@@ -98,11 +99,11 @@ class MainWindow(QMainWindow):
         # self.center()
         self.showMaximized()
 
-    def setTheme(self):
+    def setTheme(self) -> None:
         pallete = getPalette(self.settings.value('mainSettings')['theme'])
         self.app.setPalette(pallete)
 
-    def _createMenuBar(self):
+    def _createMenuBar(self) -> None:
         '''
         Генерация меню
         '''
@@ -112,7 +113,7 @@ class MainWindow(QMainWindow):
         self._createServiceMenu()
         self._createSettingsMenu()
 
-    def _createFileMenu(self):
+    def _createFileMenu(self) -> None:
         fileMenu = self.menuBar.addMenu('&Файл')
         fileMenu.addAction(self.clearAction)
 
@@ -134,7 +135,7 @@ class MainWindow(QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAction)
 
-    def _createViewMenu(self):
+    def _createViewMenu(self) -> None:
         viewMenu = self.menuBar.addMenu('&Просмотр')
         viewMenu.addAction(self.hideLeftMenuAction)
         viewMenu.addAction(self.createGraphAction)
@@ -173,7 +174,7 @@ class MainWindow(QMainWindow):
         self.addToolBar(position, self._serviceToolBar())
         self.addToolBar(position, self._viewToolBar())
 
-    def _fileToolBar(self):
+    def _fileToolBar(self) -> QToolBar:
         fileToolBar = QToolBar('File')
         fileToolBar.addAction(self.openTxtAction)
         fileToolBar.addAction(self.openGzipAction)
@@ -183,15 +184,15 @@ class MainWindow(QMainWindow):
         fileToolBar.setMovable(False)
         return fileToolBar
 
-    def _serviceToolBar(self):
+    def _serviceToolBar(self) -> QToolBar:
         serviceToolBar = QToolBar('Service')
         serviceToolBar.addAction(self.calculateDataAction)
         serviceToolBar.addAction(self.pythonConsoleAction)
         serviceToolBar.setMovable(False)
         return serviceToolBar
 
-    def _viewToolBar(self):
-        viewToolBar = QToolBar('Service')
+    def _viewToolBar(self) -> QToolBar:
+        viewToolBar = QToolBar('View')
         viewToolBar.addAction(self.hideLeftMenuAction)
         viewToolBar.addAction(self.createGraphAction)
         viewToolBar.addAction(self.menuDefaultGraphAction)
@@ -208,7 +209,7 @@ class MainWindow(QMainWindow):
         viewToolBar.setMovable(False)
         return viewToolBar
 
-    def _createStatusBar(self):
+    def _createStatusBar(self) -> None:
         '''
         Создание статус бара.
         '''
@@ -216,7 +217,7 @@ class MainWindow(QMainWindow):
         self.statusbar.showMessage(
             'Привет, пользователь! Я за тобой слежу!', 30000)
 
-    def _createActions(self):
+    def _createActions(self) -> None:
         '''
         Создание Actions
         '''
@@ -225,7 +226,7 @@ class MainWindow(QMainWindow):
         self._createViewActions()
         self._createSettingsActions()
 
-    def _creteFileActions(self):
+    def _creteFileActions(self) -> None:
         self.clearAction = QAction('&Очистить окно', self)
         self.clearAction.setIcon(self.getIcon(':x.svg'))
         self.clearAction.setStatusTip('Очистить все данные в программе.')
@@ -261,7 +262,7 @@ class MainWindow(QMainWindow):
         self.exitAction.setStatusTip('Закрыть приложение навсегда')
         self.exitAction.setShortcut('Ctrl+Q')
 
-    def _creteServiceActions(self):
+    def _creteServiceActions(self) -> None:
         self.calculateDataAction = QAction('&Рассчитать данные')
         self.calculateDataAction.setIcon(self.getIcon(':percent.svg'))
         self.calculateDataAction.setStatusTip(
@@ -280,7 +281,7 @@ class MainWindow(QMainWindow):
         self.pythonConsoleAction.setIcon(self.getIcon(':terminal'))
         self.pythonConsoleAction.setStatusTip('Открыть окно консоли')
 
-    def _createViewActions(self):
+    def _createViewActions(self) -> None:
         self.hideLeftMenuAction = QAction('&Скрыть левое меню')
         self.hideLeftMenuAction.setIcon(self.getIcon(':eye-off'))
         self.hideLeftMenuAction.setStatusTip('Скрыть/показать левое меню')
@@ -323,7 +324,7 @@ class MainWindow(QMainWindow):
         self.closeAllAction.setIcon(self.getIcon(':x-circle.svg'))
         self.closeAllAction.setStatusTip('Закрыть все открытые окна')
 
-    def _createSettingsActions(self):
+    def _createSettingsActions(self) -> None:
         self.openSettingsActions = QAction('&Настройки')
         self.openSettingsActions.setIcon(self.getIcon(':settings.svg'))
         self.openSettingsActions.setStatusTip('Меню настроек')
@@ -350,7 +351,7 @@ class MainWindow(QMainWindow):
         self.aboutAction.setIcon(self.getIcon(':help-circle.svg'))
         self.aboutAction.setStatusTip('О программе')
 
-    def _connectActions(self):
+    def _connectActions(self) -> None:
         '''
         Соединение функций и Actions
         '''
@@ -359,7 +360,7 @@ class MainWindow(QMainWindow):
         self._connectViewActions()
         self._connectSettingsActions()
 
-    def _connectFileActions(self):
+    def _connectFileActions(self) -> None:
         self.clearAction.triggered.connect(self.clearMainWindow)
         self.openTxtAction.triggered.connect(
             partial(self.getOpenFileWindow, 'txt')
@@ -368,33 +369,31 @@ class MainWindow(QMainWindow):
             partial(self.getOpenFileWindow, 'pdd')
         )
         self.openGzipAction.triggered.connect(
-            partial(self.openBinaryFile, 'gzip')
+            self.openBinaryFile
         )
+
         self.openCsvAction.triggered.connect(
             partial(self.getOpenFileWindow, 'csv'))
         self.saveGzipAction.triggered.connect(self.saveGzipData)
         self.saveCsvAction.triggered.connect(self.saveCsvData)
         self.exitAction.triggered.connect(self.close)
 
-    def _connectServiceActions(self):
+    def _connectServiceActions(self) -> None:
         self.calculateDataAction.triggered.connect(self.calculateData)
         self.createMapAction.triggered.connect(self.createMap)
         self.createReportAction.triggered.connect(self.createReport)
         self.pythonConsoleAction.triggered.connect(self.pythonConsole)
 
-    def _connectViewActions(self):
+    def _connectViewActions(self) -> None:
         self.hideLeftMenuAction.triggered.connect(self.hideLeftMenuOnClick)
         self.createGraphAction.triggered.connect(self.createGraph)
-        # self.createDefaultGraphAction.triggered.connect(
-        #     self.createDefaultGraph)
-        self.menuDefaultGraphAction.triggered.connect(self.createDropdownDefaultGraph)
         self.cascadeAction.triggered.connect(self.cascadeWindows)
         self.horizontalAction.triggered.connect(self.horizontalWindows)
         self.verticalAction.triggered.connect(self.verticalWindows)
         self.trackGraphAction.triggered.connect(self.trackGraph)
         self.closeAllAction.triggered.connect(self._closeAllWindows)
 
-    def _connectSettingsActions(self):
+    def _connectSettingsActions(self) -> None:
         self.openSettingsActions.triggered.connect(self.openSettings)
         self.loadSettingsFromFileActions.triggered.connect(
             self.loadSettingFromFile)
@@ -404,7 +403,7 @@ class MainWindow(QMainWindow):
             partial(self.setDefaultSettings, True))
         self.aboutAction.triggered.connect(self.about)
 
-    def center(self, obj=None):
+    def center(self, obj=None) -> None:
         '''
         Метод для установки окна в центре экрана
         '''
@@ -415,7 +414,7 @@ class MainWindow(QMainWindow):
         qr.moveCenter(cp)
         obj.move(qr.topLeft())
 
-    def clearMainWindow(self):
+    def clearMainWindow(self) -> None:
         del self.controller
         self.controller = Control()
         self.tree.clear()
@@ -426,7 +425,7 @@ class MainWindow(QMainWindow):
         self.trackGraph()
         self.settings.setValue('lastFile', None)
 
-    def getIcon(self, name):
+    def getIcon(self, name) -> QIcon:
         icon = QIcon(name)
         if self.settings.value('mainSettings')['theme'] == 'white':
             return icon
@@ -438,7 +437,7 @@ class MainWindow(QMainWindow):
         painter.end()
         return QIcon(pixmap)
 
-    def openBinaryFile(self, filetype, filepath=None):
+    def openBinaryFile(self, filepath=None) -> None:
         '''
         Метод открытия файлов в зависимостиот параметра.
         Открывает любые бинарные, которые могут использоваться
@@ -452,12 +451,11 @@ class MainWindow(QMainWindow):
                 None,
                 'Open file',
                 '',
-                f'Open File (*.{filetype})'
+                f'Open File (*.gzip)'
             )
         if check:
             try:
-                if filetype == 'gzip':
-                    self.controller.load_gzip(filepath)
+                self.controller.load_gzip(filepath)
             except FileNotFoundError:
                 self.setNotify('ошибка', 'Файл не найден')
             except ValueError as e:
@@ -466,15 +464,14 @@ class MainWindow(QMainWindow):
                 self.tree.updateCheckBox()
                 self.destroyChildWindow()
                 self.settings.setValue(
-                    'lastFile',
-                    {
+                    'lastFile', {
                         'filePath': filepath,
-                        'param': filetype
+                        'param': 'gzip'
                     }
                 )
                 self.setNotify('успех', f'Файл {filepath} открыт')
 
-    def getOpenFileWindow(self, filetype):
+    def getOpenFileWindow(self, filetype: str) -> None:
         if self.openFileWindow is None:
             try:
                 categories = self.controller.get_json_categories(
@@ -484,23 +481,31 @@ class MainWindow(QMainWindow):
                     self.controller, filetype, categories, self
                 )
             except KeyError:
-                self.setNotify('ошибка', 'Неверные данные в json файлах')
+                self.setNotify(
+                    'ошибка', 'Неверные данные в json файлах'
+                )
                 return
             except NoneJsonError:
-                self.setNotify('ошибка', 'Нет json файлов в папке')
+                self.setNotify(
+                    'ошибка', 'Нет json файлов в папке'
+                )
                 return
             except FileNotFoundError:
-                self.setNotify('ошибка', 'Не найден путь к папке json')
+                self.setNotify(
+                    'ошибка', 'Не найден путь к папке json'
+                )
                 return
             except Exception as e:
-                self.setNotify('ошибка', str(e))
+                self.setNotify(
+                    'ошибка', str(e)
+                )
                 return
         else:
             self.openFileWindow.hide()
         self.center(self.openFileWindow)
         self.openFileWindow.show()
 
-    def destroyChildWindow(self):
+    def destroyChildWindow(self) -> None:
         '''
         Метод удаления дочерних окон.
         Необходим для обновления информации в них. Временное решение.
@@ -523,7 +528,7 @@ class MainWindow(QMainWindow):
             delete(self.settingsWindow)
             self.settingsWindow = None
 
-    def saveCsvData(self):
+    def saveCsvData(self) -> None:
         '''
         Сохранение данных в формате CSV
         '''
@@ -537,7 +542,7 @@ class MainWindow(QMainWindow):
         self.center(self.saveCsvWindow)
         self.saveCsvWindow.show()
 
-    def saveGzipData(self):
+    def saveGzipData(self) -> None:
         '''
         Сохранение данных в формате pickle gzip 
         '''
@@ -559,12 +564,15 @@ class MainWindow(QMainWindow):
                 self.setNotify(
                     'ошибка', 'Файл открыт в другой программе или занят.')
             except Exception as e:
-                self.setNotify('ошибка', str(e))
+                self.setNotify(
+                    'ошибка', str(e)
+                )
             else:
-                self.setNotify('успех', f'gzip файл сохранен в {filePath}')
+                self.setNotify(
+                    'успех', f'gzip файл сохранен в {filePath}'
+                )
 
-
-    def calculateData(self):
+    def calculateData(self) -> None:
         '''
         Метод для расчета данных
         '''
@@ -578,7 +586,7 @@ class MainWindow(QMainWindow):
         self.center(self.calcWindow)
         self.calcWindow.show()
 
-    def createMap(self):
+    def createMap(self) -> None:
         '''
         Метод для открытия окна генерации карты
         '''
@@ -592,7 +600,7 @@ class MainWindow(QMainWindow):
         self.center(self.mapWindow)
         self.mapWindow.show()
 
-    def createReport(self):
+    def createReport(self) -> None:
         '''
         Метод для открытия окна создания отчёта
         '''
@@ -613,13 +621,13 @@ class MainWindow(QMainWindow):
         self.center(self.reportWindow)
         self.reportWindow.show()
 
-    def about(self):
+    def about(self) -> None:
         '''
         Метод для открытия окна about
         '''
         return
 
-    def createGraph(self, customSelected=None):
+    def createGraph(self, customSelected=None) -> None:
         '''
         Метод для создания окон графиков по чек-боксу бокового меню
         '''
@@ -665,27 +673,47 @@ class MainWindow(QMainWindow):
 
     def createDropdownDefaultGraph(self):
         menu = QMenu(self)
+        if not self.settings.value('graphs')['default']:
+            return
         for category in self.settings.value('graphs')['default']:
-            menu.addAction(category['name'])
+            menu.addAction(
+                category['name'],
+                partial(self.createDefaultGraph, category['rows']))
         return menu
 
-    def createDefaultGraph(self):
+    def createDefaultGraph(self, rows) -> None:
         '''
         Метод создания типовых графиков, которые задаются в настройках
         '''
-
         if not self.checkData():
             return
-
-        if self.settings.value('graphs')['default'] == []:
-            self.setNotify(
-                'предупреждение', 'Проверьте настройки графиков в настройках программы.')
-            return
-
-        for graph in self.settings.value('graphs')['default']:
+        rows = sorted(rows, key=lambda x: x['row'])
+        for row in rows:
+            graph = [
+                (field['category'], field['adr'], field['column'])
+                for field in row['fields']
+            ]
             self.createGraph(graph)
 
-    def pythonConsole(self):
+        width = self.mdi.width()
+        heigth = self.mdi.height()
+        pnt = [0, 0]
+        for row, window in zip(rows, self.mdi.subWindowList()):
+            currentHeigth = int(heigth * row['width'] * 0.01)
+            window.showNormal()
+            window.setGeometry(0, 0, width, currentHeigth)
+            window.move(pnt[0], pnt[1])
+            pnt[1] += currentHeigth
+
+        # if self.settings.value('graphs')['default'] == []:
+        #     self.setNotify(
+        #         'предупреждение', 'Проверьте настройки графиков в настройках программы.')
+        #     return
+
+        # for graph in self.settings.value('graphs')['default']:
+        #     self.createGraph(graph)
+
+    def pythonConsole(self) -> None:
         '''
         Метод для открытия окна консоли
         '''
@@ -699,7 +727,7 @@ class MainWindow(QMainWindow):
         self.center(self.consoleWindow)
         self.consoleWindow.show()
 
-    def cascadeWindows(self):
+    def cascadeWindows(self) -> None:
         '''
         Метод для построения окон в виде каскада.
         '''
@@ -709,7 +737,7 @@ class MainWindow(QMainWindow):
         self.horizontalAction.setChecked(False)
         self.mdi.cascadeSubWindows()
 
-    def horizontalWindows(self):
+    def horizontalWindows(self) -> None:
         '''
         Метод для построения окон в горизональном виде.
         '''
@@ -727,7 +755,7 @@ class MainWindow(QMainWindow):
             window.move(pnt[0], pnt[1])
             pnt[1] += heigth
 
-    def verticalWindows(self):
+    def verticalWindows(self) -> None:
         '''
         Метод для построения окон в вертикальном виде.
         '''
@@ -746,7 +774,7 @@ class MainWindow(QMainWindow):
             window.move(pnt[0], pnt[1])
             pnt[0] += width
 
-    def checkPositioningWindows(self):
+    def checkPositioningWindows(self) -> None:
         if not self.mdi.subWindowList():
             self.verticalAction.setChecked(False)
             self.horizontalAction.setChecked(False)
@@ -758,7 +786,7 @@ class MainWindow(QMainWindow):
             self.horizontalWindows()
             return
 
-    def hideLeftMenuOnClick(self):
+    def hideLeftMenuOnClick(self) -> None:
         '''Метод скрытия левого меню'''
         if self.hideLeftMenuAction.isChecked():
             self.hideLeftMenuAction.setIcon(self.getIcon(':eye'))
@@ -775,7 +803,7 @@ class MainWindow(QMainWindow):
             )
         self.checkPositioningWindows()
 
-    def trackGraph(self):
+    def trackGraph(self) -> None:
         '''
         Метод для связи графиков по оси Ох.
         '''
@@ -790,19 +818,19 @@ class MainWindow(QMainWindow):
             for child in self.mdi.subWindowList():
                 child.findChild(pg.PlotWidget).setXLink(None)
 
-    def _closeAllWindows(self):
+    def _closeAllWindows(self) -> None:
         self.mdi.closeAllSubWindows()
         self.trackGraph()
         self.checkPositioningWindows()
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
         '''
         Переназначение функции закрытия, для закрытия всех дочерних окон.
         '''
         QApplication.closeAllWindows()
         event.accept()
 
-    def _getTreeSelected(self):
+    def _getTreeSelected(self) -> list:
         '''
         Фукнция для получения всех отмеченных чек-боксов левого меню.
         '''
@@ -818,7 +846,7 @@ class MainWindow(QMainWindow):
             iterator += 1
         return treeSelected
 
-    def setNotify(self, type, txt):
+    def setNotify(self, type: str, txt: str) -> None:
         '''
         Метод отправки библиотеки
         '''
@@ -829,9 +857,10 @@ class MainWindow(QMainWindow):
             notify = self.notify.sucess
         if type == 'ошибка':
             notify = self.notify.critical
-        notify(type.title(), txt, self, Align=BottomRight, duracion=6, onclick=None)
+        notify(type.title(), txt, self, Align=BottomRight,
+               duracion=6, onclick=None)
 
-    def openSettings(self):
+    def openSettings(self) -> None:
         '''
         Метод открытия окна настроек.
         '''
@@ -842,7 +871,14 @@ class MainWindow(QMainWindow):
         self.center(self.settingsWindow)
         self.settingsWindow.show()
 
-    def loadSettingFromFile(self):
+    def updateInterfaceFromSettings(self, param) -> None:
+        if param == 'graphs':
+            self.menuDefaultGraphAction.setMenu(
+                self.createDropdownDefaultGraph())
+        if param == 'leftMenuFilters':
+            self.tree.updateCheckBox()
+
+    def loadSettingFromFile(self) -> None:
         '''
         Метод загрузки настроек из файла.
         '''
@@ -859,12 +895,22 @@ class MainWindow(QMainWindow):
                 for key, value in data.items():
                     self.settings.setValue(key, value)
                 self.setNotify(
-                    'успех', f'Настройки применены.')
-                self.restartApp()
+                    'успех', f'Настройки загружены.'
+                )
+                question = QMessageBox.question(
+                    None,
+                    "Вопрос",
+                    "Настройки установлены, необходим перезапуск программы. Делаем?",
+                    QMessageBox.Yes | QMessageBox.No
+                )
+                if question == QMessageBox.Yes:
+                    self.restartApp()
             except Exception as e:
-                self.setNotify('ошибка', str(e))
+                self.setNotify(
+                    'ошибка', str(e)
+                )
 
-    def saveSettingsToFile(self):
+    def saveSettingsToFile(self) -> None:
         '''
         Метод сохранения настроек в файл.
         '''
@@ -885,21 +931,28 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 self.setNotify('ошибка', str(e))
 
-    def setDefaultSettings(self, needRestart=False):
+    def setDefaultSettings(self, needRestart=False) -> None:
         '''
         Метод очистки и установки стандартных настроек.
         '''
         self.settings.clear()
         defaultSettings(self.settings, self.appVersion)
         if needRestart:
-            self.restartApp()
+            question = QMessageBox.question(
+                None,
+                "Вопрос",
+                "Стандартные настройки установлены, необходим перезапуск программы. Делаем?",
+                QMessageBox.Yes | QMessageBox.No
+            )
+            if question == QMessageBox.Yes:
+                self.restartApp()
 
-    def restartApp(self):
+    def restartApp(self) -> None:
         program = sys.executable
         QProcess.startDetached(program, sys.argv)
         QCoreApplication.quit()
 
-    def checkData(self):
+    def checkData(self) -> bool:
         if self.controller.data_is_none():
             self.setNotify('предупреждение', 'Нужно выбрать данные')
             return False

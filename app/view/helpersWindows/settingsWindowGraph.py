@@ -137,6 +137,11 @@ class CategoryGraphWidget(QWidget):
         self.addRowBtn.clicked.connect(self.addRow)
 
         self.layout.addWidget(self.addRowBtn)
+
+        lineWidget = QFrame()
+        lineWidget.setFrameShape(QFrame.HLine)
+        lineWidget.setFrameShadow(QFrame.Sunken)
+        self.layout.addWidget(lineWidget)
         self.setLayout(self.layout)
 
     def addRow(self):
@@ -166,7 +171,6 @@ class CategoryGraphWidget(QWidget):
 class GraphTab(QWidget):
     def __init__(self, data) -> None:
         super().__init__()
-        print(data)
         background = data['background']
         self.data = data['default']
         self.widgets = [CategoryGraphWidget(
@@ -176,18 +180,14 @@ class GraphTab(QWidget):
         scrollWidget = QWidget()
         self.scrollLayout = QFormLayout(scrollWidget)
 
-        backgroundCombo = QComboBox()
-        backgroundCombo.addItems(
+        self.backgroundCombo = QComboBox()
+        self.backgroundCombo.addItems(
             ['black', 'white', 'red', 'green', 'pink', 'blue', 'gray']
         )
-        backgroundCombo.setCurrentText(background)
+        self.backgroundCombo.setCurrentText(background)
 
         for widget in self.widgets:
             self.scrollLayout.addRow(widget)
-            lineWidget = QFrame()
-            lineWidget.setFrameShape(QFrame.HLine)
-            lineWidget.setFrameShadow(QFrame.Sunken)
-            self.scrollLayout.addWidget(lineWidget)
 
         self.add_analysis_btn = QPushButton('+ категорию графиков')
         self.add_analysis_btn.clicked.connect(self.add_analysis)
@@ -197,7 +197,7 @@ class GraphTab(QWidget):
         scrollArea.setWidgetResizable(True)
 
         mainLayout = QFormLayout()
-        mainLayout.addRow(QLabel('Цвет фона: '), backgroundCombo)
+        mainLayout.addRow(QLabel('Цвет фона: '), self.backgroundCombo)
         mainLayout.addRow(QLabel('Графики по умолчанию'), scrollArea)
 
         self.setLayout(mainLayout)
@@ -211,7 +211,11 @@ class GraphTab(QWidget):
         self.scrollLayout.addRow(self.add_analysis_btn)
 
     def get_data(self) -> list:
-        return [category.getCategory() for category in self.widgets]
+        result = {
+            'background': self.backgroundCombo.currentText(),
+            'default': [category.getCategory() for category in self.widgets if category.getCategory()]
+        }
+        return result
 
 
 if __name__ == '__main__':
@@ -242,7 +246,7 @@ if __name__ == '__main__':
                                     "column": "Fd2",
                                 }
                             ]
-                        }
+                    }
                 ],
             }
         ]

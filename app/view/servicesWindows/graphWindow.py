@@ -27,12 +27,14 @@ class GraphWindow(QMdiSubWindow):
         self.parent = parent
         self.data = data
         self.columns = treeSelected
+        self.title = '/'.join([i[2] for i in self.columns])
         self.decimation = decimation
         self.colors = [
             'red', 'blue', 'green',
             'orange', 'black', 'purple', 'cyan'
         ]
         self.curves = dict()
+        self.theme = self.parent.settings.value('graphs')['background']
         self.initUI()
 
     def initUI(self):
@@ -44,7 +46,7 @@ class GraphWindow(QMdiSubWindow):
         self.setWidget(self.mainWidget)
         self.mainLayout = QVBoxLayout()
         self.mainWidget.setLayout(self.mainLayout)
-        self.setWindowTitle('/'.join([i[2] for i in self.columns]))
+        self.setWindowTitle(self.title)
         self.setStyleSheet("color: gray;")
         self.setGeometry(0, 0, 500, 300)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
@@ -65,14 +67,18 @@ class GraphWindow(QMdiSubWindow):
             raise ValueError
 
         self.plt = pg.PlotWidget()
-        self.plt.setBackground(
-            self.parent.settings.value('graphs')['background']
-        )
+        self.plt.setBackground(self.theme)
         self.plt.showGrid(x=True, y=True)
-        self.plt.addLegend(pen='gray', offset=(0, 0))
+
+        self.legend: pg.LegendItem = self.plt.addLegend(
+            pen='black' if self.theme == 'white' else 'white',
+            labelTextColor='black' if self.theme == 'white' else 'white',
+            offset=(0, 0)
+        )
 
         for category, adr, item in self.columns:
-            dataForGraph = self.data[category][adr].dropna(subset=['time', item]).reset_index().iloc[::self.decimation]
+            dataForGraph = self.data[category][adr].dropna(
+                subset=['time', item]).reset_index().iloc[::self.decimation]
             pen = pg.mkPen(color=self.colors[0])
             curve = pg.PlotDataItem(
                 dataForGraph.time.to_list(),
@@ -106,7 +112,7 @@ class GraphWindow(QMdiSubWindow):
             x = float(mousePoint.x())
             y = float(mousePoint.y())
             self.setWindowTitle(
-                f'x: {round(x, 3)}, y: {round(y, 3)}'
+                f'{self.title}       x: {round(x, 3)}, y: {round(y, 3)}                 '
             )
             self.setToolTip(
                 f'x: <b>{round(x, 1)}</b>,<br> y: <b>{round(y, 1)}</b>'
@@ -205,6 +211,9 @@ class GraphWindow(QMdiSubWindow):
         settings = self.parent.settings.value('graphs')
         settings['background'] = 'white'
         self.parent.settings.setValue('graphs', settings)
+        self.legend.setPen('black')
+        # setLabelTextColor не меняет цвет текста, видимо баг
+        self.legend.setLabelTextColor('black')
 
     def blackBackground(self):
         '''
@@ -214,6 +223,9 @@ class GraphWindow(QMdiSubWindow):
         settings = self.parent.settings.value('graphs')
         settings['background'] = 'black'
         self.parent.settings.setValue('graphs', settings)
+        self.legend.setPen('white')
+        # setLabelTextColor не меняет цвет текста, видимо баг
+        self.legend.setLabelTextColor('white')
 
     def lineGraph(self, data):
         '''
@@ -258,7 +270,8 @@ class GraphWindow(QMdiSubWindow):
         self.spinBox.valueChanged.connect(
             partial(self.updateGraph, curveData))
         self.applyShiftButton = QPushButton('Применить смещение')
-        self.applyShiftButton.clicked.connect(partial(self.applyShift, curveData))
+        self.applyShiftButton.clicked.connect(
+            partial(self.applyShift, curveData))
         self.layoutShift.addWidget(self.applyShiftButton)
         self.layoutShift.addWidget(self.slider)
         self.layoutShift.addWidget(self.spinBox)
@@ -279,7 +292,8 @@ class GraphWindow(QMdiSubWindow):
         curve.setData(x, y)
 
     def applyShift(self, curveData):
-        value = self.spinBox.value(), 
+        value = self.spinBox.value(),
         data = self.data[curveData['category']][curveData['adr']]
         data['time'] = data['time'] + value
-        self.parent.setNotify('успех', 'Смещение задано. Не забудьте сохранить изменения')
+        self.parent.setNotify(
+            'успех', 'Смещение задано. Не забудьте сохранить изменения')

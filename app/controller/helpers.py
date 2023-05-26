@@ -1,5 +1,4 @@
 from PyQt5.QtGui import QColor, QPalette
-import os
 
 
 def defaultSettings(settings, appVersion):
@@ -57,7 +56,7 @@ def defaultSettings(settings, appVersion):
                             "width": 50,
                             "fields": [
                                 {
-                                    "category": "DIS D001",
+                                    "category": "D001 v1_11",
                                     "adr": "ADR1",
                                     "column": "Fd1",
                                 },
@@ -68,7 +67,7 @@ def defaultSettings(settings, appVersion):
                             "width": 50,
                             "fields": [
                                 {
-                                    "category": "DIS D001",
+                                    "category": "D001 v1_11",
                                     "adr": "ADR1",
                                     "column": "Fd2",
                                 }
@@ -97,12 +96,12 @@ def defaultSettings(settings, appVersion):
                                 {
                                     "category": "PNK",
                                     "adr": "ADR8",
-                                    "column": "Kren",
+                                    "column": "I1_Kren",
                                 },
                                 {
                                     "category": "PNK",
                                     "adr": "ADR8",
-                                    "column": "Tang",
+                                    "column": "I1_Tang",
                                 }
                             ]
                         },
@@ -111,9 +110,9 @@ def defaultSettings(settings, appVersion):
                             "width": 10,
                             "fields": [
                                 {
-                                    "category": "DIS D001",
+                                    "category": "D001 v1_11",
                                     "adr": "ADR1",
-                                    "column": "mem",
+                                    "column": "mem1",
                                 },
                             ]
                         },
@@ -124,7 +123,7 @@ def defaultSettings(settings, appVersion):
                                 {
                                     "category": "Calc",
                                     "adr": "PNK",
-                                    "column": "Wp_KBTi",
+                                    "column": "Wp_KBTIi",
                                 },
                                 {
                                     "category": "Calc",
@@ -159,7 +158,7 @@ def defaultSettings(settings, appVersion):
     settings.setValue('leftMenuFilters', filters)
     mainSettings = {
         'theme': 'black',
-        'jsonDir': os.path.dirname(__file__).replace('\\', '/') + '/templates/',
+        'jsonDir': 'templates/',
         'toolBar': 'left'
     }
     settings.setValue('mainSettings', mainSettings)

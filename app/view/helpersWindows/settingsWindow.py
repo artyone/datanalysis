@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QTabWidget, QFileDialog,
     QLineEdit, QPushButton,
     QStackedLayout, QScrollArea,
-    QPlainTextEdit
+    QMessageBox
 )
 from PyQt5.QtCore import Qt
 from functools import partial
@@ -19,7 +19,7 @@ class SettingsWindow(QWidget):
     controller - контроллер.
     '''
 
-    def __init__(self, controller, parent=None):
+    def __init__(self, controller, parent=None) -> None:
         super().__init__()
         self.parent = parent
         self.settings = self.parent.settings
@@ -31,7 +31,7 @@ class SettingsWindow(QWidget):
         self.controller = controller
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         '''
         Метод инициализации основных элементов окна.
         '''
@@ -50,7 +50,7 @@ class SettingsWindow(QWidget):
         layout.addWidget(self.saveButton)
         self.setLayout(layout)
 
-    def mainTab(self):
+    def mainTab(self) -> QWidget:
         '''
         Вкладка основных настроек.
         '''
@@ -73,7 +73,7 @@ class SettingsWindow(QWidget):
         tabWidget.setLayout(tabLayout)
         return tabWidget
 
-    def initBrowseBlock(self):
+    def initBrowseBlock(self) -> QHBoxLayout:
         horizontalLayer = QHBoxLayout()
         self.browseLineEdit = QLineEdit()
         self.browseLineEdit.setText(self.listMainSettings['jsonDir'])
@@ -86,13 +86,13 @@ class SettingsWindow(QWidget):
         horizontalLayer.setSpacing(15)
         return horizontalLayer
 
-    def openDirectoryDialog(self):
+    def openDirectoryDialog(self) -> None:
         directoryPath = QFileDialog.getExistingDirectory(None,
                                                          "Выберите папку")
         if directoryPath:
             self.browseLineEdit.setText(directoryPath)
 
-    def filterMenuTab(self):
+    def filterMenuTab(self) -> QWidget:
         '''
         Вкладка настройки фильтра бокового чек-бокс меню.
         '''
@@ -116,7 +116,7 @@ class SettingsWindow(QWidget):
         tabLayout.addLayout(self.filtersStackedLayout)
         return tabWidget
 
-    def pageFilterStacked(self, adr):
+    def pageFilterStacked(self, adr: str) -> QScrollArea:
         pageWidget = QWidget()
         pageLayout = QFormLayout()
         for elements in self.settings.value('leftMenuFilters')['adrs'][adr]:
@@ -133,7 +133,7 @@ class SettingsWindow(QWidget):
 
         return scrollArea
 
-    def planeTab(self):
+    def planeTab(self) -> QWidget:
         '''
         Вкладка настройки коэффициентов самолётов
         '''
@@ -154,7 +154,7 @@ class SettingsWindow(QWidget):
         tabLayout.addLayout(self.planesStackedLayout)
         return tabWidget
 
-    def pagePlaneStacked(self, plane):
+    def pagePlaneStacked(self, plane: str) -> QWidget:
         '''
         Создает страницу настроек для вкладки самолета.
         Значения берет из настроек и записывает объект в словарь listPlanes 
@@ -170,7 +170,7 @@ class SettingsWindow(QWidget):
         pageWidget.setLayout(pageLayout)
         return pageWidget
 
-    def correctionTab(self):
+    def correctionTab(self) -> QWidget:
         '''
         Вкладка настройки корректировки коэффициентов
         '''
@@ -184,64 +184,52 @@ class SettingsWindow(QWidget):
         tabWidget.setLayout(tabLayout)
         return tabWidget
 
-
-    def graphTab(self):
+    def graphTab(self) -> GraphTab:
         self.graphTabWidget = GraphTab(self.listGraphs)
         return self.graphTabWidget
-    # def graphTab(self):
-    #     '''
-    #     Вкладка настроек графиков.
-    #     '''
-    #     tabWidget = QWidget()
-    #     tabLayout = QFormLayout()
-    #     bground = QComboBox()
-    #     bground.addItems(
-    #         ['black', 'white', 'red', 'green', 'pink', 'blue', 'gray']
-    #     )
-    #     bground.setCurrentText(self.listGraphs['background'])
-    #     tabLayout.addRow('Фон графиков:', bground)
-    #     self.listGraphs['background'] = bground
-    #     string = '\n'.join(
-    #         [
-    #             ','.join([' '.join(x) for x in item])
-    #             for item in self.listGraphs['default']
-    #         ]
-    #     )
-    #     defaultTextEdit = QPlainTextEdit(string)
-    #     tabLayout.addRow('Графики по умолчанию:', defaultTextEdit)
-    #     self.listGraphs['default'] = defaultTextEdit
-    #     tabWidget.setLayout(tabLayout)
-    #     return tabWidget
 
-    def switchPage(self, layout, widget):
+    def switchPage(self, layout, widget) -> None:
         '''
         Метод переключения для изменения отображения в зависимости от индекса комбобокса.
         '''
         layout.setCurrentIndex(widget.currentIndex())
 
-    def saveSettings(self):
+    def saveSettings(self) -> None:
         '''
         Метод сохранения всех настроек.
         '''
-        self.saveMainSettings()
-        self.savePlanesSettings()
-        self.saveCorrectionsSettings()
-        self.saveGraphSettings()
-        self.saveLeftMenuFilterSettings()
-        self.parent.setNotify(
-            'успех', 'Настройки сохранены, перезапустите приложение!'
-        )
-        self.parent.restartApp()
+        # TODO придумать контроль ошибок при сохранении, особенно графиков
+        try:
+            self.saveMainSettings()
+            self.savePlanesSettings()
+            self.saveCorrectionsSettings()
+            self.saveGraphSettings()
+            self.saveLeftMenuFilterSettings()
+            self.parent.setNotify(
+                'успех', 'Настройки сохранены.'
+            )
+        except:
+            self.parent.setNotify(
+                'ошибка', 'Настройки не сохранены, проверьте правильность введенных данных!'
+            )
 
-    def saveMainSettings(self):
+    def saveMainSettings(self) -> None:
         newValueMainSettings = {
             'theme': self.themeComboBox.currentText(),
             'jsonDir': self.browseLineEdit.text(),
             'toolBar': self.toolbarComboBox.currentText()
         }
+        if self.settings.value('mainSettings') == newValueMainSettings:
+            return
         self.settings.setValue('mainSettings', newValueMainSettings)
+        question = QMessageBox.question(
+            None, "Вопрос", "Для применения настроек нужно перезапустить программу. Делаем?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+        if question == QMessageBox.Yes:
+            self.parent.restartApp()
 
-    def savePlanesSettings(self):
+    def savePlanesSettings(self) -> None:
         newValuePlanes = {
             plane: {
                 param: float(widget.text())
@@ -249,30 +237,30 @@ class SettingsWindow(QWidget):
             }
             for plane, value in self.listPlanes.items()
         }
+        if self.settings.value('planes') == newValuePlanes:
+            return
         self.settings.setValue('planes', newValuePlanes)
 
-    def saveCorrectionsSettings(self):
+    def saveCorrectionsSettings(self) -> None:
         newValueCorrections = {
             correction: float(widget.text())
             for correction, widget in self.listCorrections.items()
         }
+        if self.settings.value('corrections') == newValueCorrections:
+            return
         self.settings.setValue('corrections', newValueCorrections)
+        self.listCorrections = newValueCorrections
 
-    #TODO вернуть сохранение настроек
-    # def saveGraphSettings(self):
-    #     graphBackground = self.listGraphs['background'].currentText()
-    #     graphDefault = [
-    #         [tuple(x.split()) for x in row.split(',')]
-    #         for row in self.listGraphs['default'].toPlainText().split('\n')
-    #     ]
+    def saveGraphSettings(self) -> None:
+        newGraphSettings = self.graphTabWidget.get_data()
+        if self.settings.value('graphs') == newGraphSettings:
+            return
+        self.settings.setValue('graphs', newGraphSettings)
+        self.parent.updateInterfaceFromSettings('graphs')
+        self.listGraphs = newGraphSettings
 
-    #     graphSettings = {
-    #         'background': graphBackground,
-    #         'default': graphDefault
-    #     }
-    #     self.settings.setValue('graphs', graphSettings)
-
-    def saveLeftMenuFilterSettings(self):
+    def saveLeftMenuFilterSettings(self) -> None:
+        # TODO добавить заголовки и вообще продумать это всё
         newValueAdr = {
             adr: {
                 name: widget.isChecked()
@@ -284,7 +272,11 @@ class SettingsWindow(QWidget):
             'unknown': self.unknownCheckBox.isChecked(),
             'adrs': newValueAdr
         }
+        if self.settings.value('leftMenuFilters') == newValueFilters:
+            return
         self.settings.setValue('leftMenuFilters', newValueFilters)
+        self.listMenuFilters = newValueFilters
+        self.parent.updateInterfaceFromSettings('leftMenuFilters')
 
     def checkDigit(self, widget: QLineEdit):
         try:
@@ -295,7 +287,7 @@ class SettingsWindow(QWidget):
             widget.setStyleSheet("background:#FA8072;")
             self.saveButton.setDisabled(True)
 
-    def uncheckAllCheckBox(self):
+    def uncheckAllCheckBox(self) -> None:
         '''
         Метод снятия всех чек-боксов.
         '''
