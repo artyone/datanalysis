@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import (
     QComboBox, QLineEdit, QFileDialog,
     QDialogButtonBox
 )
-
+from PyQt5.QtGui import QKeyEvent
+from PyQt5.QtCore import Qt
 
 class MapWindow(QWidget):
     '''
@@ -133,3 +134,9 @@ class MapWindow(QWidget):
         '''
         startfile(self.filePath)
         self.close()
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Escape:
+            self.hide()
+        else:
+            super().keyPressEvent(event)

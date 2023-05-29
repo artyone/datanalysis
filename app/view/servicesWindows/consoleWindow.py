@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
     QAction, QFileDialog
 )
 from app.model import file_methods
+from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
 from app.view.servicesWindows.graphWindow import GraphWindow
 from pprint import pprint
@@ -198,3 +199,9 @@ class ConsoleWindow(QMainWindow):
                 'предупреждение',
                 'Необходимо правильно выбрать данные для графика или ошибка имен элементов'
             )
+            
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Escape:
+            self.hide()
+        else:
+            super().keyPressEvent(event)

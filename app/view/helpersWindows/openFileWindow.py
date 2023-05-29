@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import (
     QDialogButtonBox, QFileDialog,
     QLineEdit, QPushButton
 )
-
+from PyQt5.QtGui import QKeyEvent
+from PyQt5.QtCore import Qt
 
 
 class OpenFileWindow(QWidget):
@@ -146,3 +147,10 @@ class OpenFileWindow(QWidget):
         self.deleteLater()
         self.parent.openFileWindow = None
         event.accept()
+
+    
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Escape:
+            self.close()
+        else:
+            super().keyPressEvent(event)

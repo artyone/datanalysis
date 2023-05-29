@@ -30,6 +30,11 @@ class FieldWidget(QWidget):
         self.setLayout(layout)
 
     def get_field(self):
+        if (self.category_edit.text() == '' or
+            self.adr_edit.text() == '' or
+            self.column_edit.text() == ''
+        ):
+            raise ValueError
         try:
             field = {
                 'category': self.category_edit.text(),
@@ -91,6 +96,8 @@ class RowWidget(QWidget):
         self.layout.addRow(self.add_field_btn)
 
     def get_row(self):
+        if self.rowEdit.text() == '' or self.widthEdit.text() == '':
+            raise ValueError
         try:
             row = {
                 'row': int(self.rowEdit.text()),
@@ -150,11 +157,14 @@ class CategoryGraphWidget(QWidget):
             'row': '', 'width': '', 'fields': []
         }
         row_widget = RowWidget(row)
+        row_widget.add_field()
         self.rowWidgets.append(row_widget)
         self.layout.addWidget(row_widget)
         self.layout.addWidget(self.addRowBtn)
 
     def getCategory(self):
+        if self.categoryEdit.text() == '':
+            raise ValueError
         try:
             analysisResult = {
                 'name': self.categoryEdit.text(),
@@ -206,15 +216,18 @@ class GraphTab(QWidget):
     def add_analysis(self) -> None:
         self.scrollLayout.removeWidget(self.add_analysis_btn)
         analysis_widget = CategoryGraphWidget('', [])
+        analysis_widget.addRow()
         self.widgets.append(analysis_widget)
         self.scrollLayout.addRow(analysis_widget)
         self.scrollLayout.addRow(self.add_analysis_btn)
 
     def get_data(self) -> list:
+        if self.backgroundCombo.currentText() == '':
+            raise ValueError
         result = {
-            'background': self.backgroundCombo.currentText(),
-            'default': [category.getCategory() for category in self.widgets if category.getCategory()]
-        }
+                'background': self.backgroundCombo.currentText(),
+                'default': [category.getCategory() for category in self.widgets if category.getCategory()]
+            }
         return result
 
 

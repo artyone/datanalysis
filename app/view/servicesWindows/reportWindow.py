@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
     QDialogButtonBox, QFileDialog,
     QPlainTextEdit
 )
+from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
 from qtwidgets import AnimatedToggle
 from os import startfile
@@ -156,3 +157,9 @@ class ReportWindow(QWidget):
         '''
         startfile(self.filePath)
         self.close()
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Escape:
+            self.hide()
+        else:
+            super().keyPressEvent(event)

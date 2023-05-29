@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
     QStackedLayout, QScrollArea,
     QMessageBox
 )
+from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
 from functools import partial
 from .settingsWindowGraph import GraphTab
@@ -299,3 +300,9 @@ class SettingsWindow(QWidget):
             for widget in self.listMenuFilters.values():
                 widget.setChecked(True)
             self.uncheckButton.setText('Снять все отметки')
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Escape:
+            self.hide()
+        else:
+            super().keyPressEvent(event)

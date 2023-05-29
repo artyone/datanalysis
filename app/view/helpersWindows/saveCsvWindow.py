@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import (
     QComboBox, QDialogButtonBox,
     QFileDialog
 )
-
+from PyQt5.QtGui import QKeyEvent
+from PyQt5.QtCore import Qt
 
 class SaveCsvWindow(QWidget):
     '''
@@ -103,3 +104,10 @@ class SaveCsvWindow(QWidget):
         '''
         startfile(self.filePath)
         self.close()
+
+    
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Escape:
+            self.hide()
+        else:
+            super().keyPressEvent(event)

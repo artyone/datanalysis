@@ -3,7 +3,8 @@ from PyQt5.QtWidgets import (
     QCheckBox, QComboBox,
     QDialogButtonBox
 )
-
+from PyQt5.QtGui import QKeyEvent
+from PyQt5.QtCore import Qt
 
 class CalcWindow(QWidget):
     '''
@@ -172,3 +173,9 @@ class CalcWindow(QWidget):
             self.close()
         except Exception as e:
             self.parent.setNotify('предупреждение', str(e))
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Escape:
+            self.hide()
+        else:
+            super().keyPressEvent(event)

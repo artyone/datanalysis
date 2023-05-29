@@ -11,7 +11,7 @@ from app.view.helpersWindows import (
     OpenFileWindow, LeftMenuTree
 )
 from PyQt5.QtGui import (
-    QIcon, QColor, QPainter
+    QIcon, QColor, QPainter, QKeyEvent
 )
 from PyQt5.QtCore import (
     Qt, QSettings, QCoreApplication, QProcess
@@ -957,3 +957,16 @@ class MainWindow(QMainWindow):
             self.setNotify('предупреждение', 'Нужно выбрать данные')
             return False
         return True
+    
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Escape:
+            question = QMessageBox.question(
+                None,
+                "Вопрос",
+                "Вы точно хотите выйти?",
+                QMessageBox.Yes | QMessageBox.No
+            )
+            if question == QMessageBox.Yes:
+                self.close()
+        else:
+            super().keyPressEvent(event)
