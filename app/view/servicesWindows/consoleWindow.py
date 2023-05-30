@@ -27,14 +27,14 @@ class ConsoleWindow(QMainWindow):
     parent - окно родителя.
     '''
 
-    def __init__(self, controller, parent):
+    def __init__(self, controller, parent) -> None:
         super().__init__()
         self.controller = controller
         self.parent = parent
         self.filepath = None
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         '''
         Метод инициализации интерфейса окна.
         '''
@@ -44,7 +44,7 @@ class ConsoleWindow(QMainWindow):
         self.createMenu()
         self.connectActions()
 
-        splitter = QSplitter(Qt.Vertical)
+        splitter = QSplitter(Qt.Vertical) # type: ignore
 
         font = QFont()
         font.setFamily('Courier')
@@ -65,16 +65,18 @@ class ConsoleWindow(QMainWindow):
             '# Тип данных словарь с Dataframe из библиотеки pandas\n' +
             '# Для постройки графика используется синтаксис graph(data["PNK"]["ADR8"], "JVD_VN", "JVD_H")\n' +
             '# Можно использовать numpy, math, pandas\n' +
-            '# Для выгрузки данных используем код to_csv(data["PNK"]["ADR8"], "123.csv")\n'
+            '# Для выгрузки данных используем код to_csv(data["PNK"]["ADR8"], "123.csv")\n' +
+            '# Для добавления в основные данные столбца используем метод: setNewData\n' +
+            '# setNewData(category: str, adr: str, columnName: str, timeData: list, columnData: list)\n'
         )
 
-    def createMenu(self):
+    def createMenu(self) -> None:
         fileToolBar = self.addToolBar('File')
         fileToolBar.addAction(self.openScriptAction)
         fileToolBar.addAction(self.saveScriptAction)
         fileToolBar.addAction(self.executeAction)
 
-    def createAction(self):
+    def createAction(self) -> None:
         self.openScriptAction = QAction('&Открыть *.py...')
         self.openScriptAction.setIcon(
             QIcon(self.parent.getIcon(':file-text.svg')))
@@ -84,12 +86,12 @@ class ConsoleWindow(QMainWindow):
         self.executeAction.setIcon(self.parent.getIcon((':play.svg')))
         self.executeAction.setShortcut("Ctrl+Return")
 
-    def connectActions(self):
+    def connectActions(self) -> None:
         self.openScriptAction.triggered.connect(self.openScript)
         self.saveScriptAction.triggered.connect(self.saveScript)
         self.executeAction.triggered.connect(self.execute)
 
-    def execute(self):
+    def execute(self) -> None:
         '''
         Метод выполнения команды и установки результата в label.
         Если filepath есть, то рядом будет сохранен бэкап файл.
@@ -107,13 +109,14 @@ class ConsoleWindow(QMainWindow):
                 to_csv = model.write_csv
                 data = copy.deepcopy(self.controller.get_data())
                 graph = self.graph
+                setNewData = self.setNewData
                 exec(command)
             except:
                 print(traceback.format_exc(), file=sys.stderr)
         output = self.f.getvalue()
         self.label.setPlainText(output)
 
-    def openScript(self):
+    def openScript(self) -> None:
         '''
         Метод загрузки ранее сохраненного скрипта.
         '''
@@ -133,7 +136,7 @@ class ConsoleWindow(QMainWindow):
             except Exception as e:
                 self.parent.setNotify('ошибка', str(e))
 
-    def saveScript(self):
+    def saveScript(self) -> None:
         '''
         Метод сохранения скрипта.
         '''
@@ -157,7 +160,7 @@ class ConsoleWindow(QMainWindow):
             except Exception as e:
                 self.parent.setNotify('ошибка', str(e))
 
-    def autoSave(self):
+    def autoSave(self) -> None:
         '''
         Метод автосхоранения, если был открыт или сохранен какой-либо скрипт.
         '''
@@ -172,7 +175,7 @@ class ConsoleWindow(QMainWindow):
             except Exception as e:
                 self.parent.setNotify('ошибка', str(e))
 
-    def graph(self, data, *args):
+    def graph(self, data: pandas.DataFrame, *args) -> None:
         '''
         Вспомогательный Метод для создания графика из консоли.
         '''
@@ -199,9 +202,44 @@ class ConsoleWindow(QMainWindow):
                 'предупреждение',
                 'Необходимо правильно выбрать данные для графика или ошибка имен элементов'
             )
+
+    def setNewData(
+            self, 
+            category: str, 
+            adr: str, 
+            columnName: str,
+            timeData: list, 
+            columnData: list
+    ) -> None:
+        
+        mainData = self.controller.get_data()
+        
+        if category not in mainData:
+            newData = pandas.DataFrame({'time': timeData, columnName: columnData})
+            mainData[category] = {adr: newData}
+        elif adr not in mainData[category]:
+            newData = pandas.DataFrame({'time': timeData, columnName: columnData})
+            mainData[category][adr] = newData
+        else:
+            df: pandas.DataFrame = mainData[category][adr]
+            while True:
+                if columnName not in df.columns:
+                    break
+                columnName += '1'
+            newData = pandas.DataFrame({'time': timeData, columnName: columnData})
+            newData['time'] = newData['time'].astype(df.dtypes['time'])
+            df = df.merge(newData, on='time', how='outer')
+            self.controller.get_data()[category][adr] = df
+
+
+        
+        self.parent.tree.updateCheckBox()
+        print(f'Столбец: {columnName} успешно добавлен в: {category}/{adr}')
+        
+
             
-    def keyPressEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key_Escape:
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key_Escape: # type: ignore
             self.hide()
         else:
             super().keyPressEvent(event)

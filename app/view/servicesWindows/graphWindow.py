@@ -25,34 +25,36 @@ class GraphWindow(QMdiSubWindow):
     def __init__(self, data, treeSelected, decimation, parent) -> None:
         super().__init__()
         self.parent = parent
-        self.data = data
-        self.columns = treeSelected
-        self.title = '/'.join([i[2] for i in self.columns])
-        self.decimation = decimation
-        self.colors = [
-            'red', 'blue', 'green',
-            'orange', 'black', 'purple', 'cyan'
+        self.data: dict = data
+        self.columns: list = treeSelected
+        self.title: str = '/'.join([i[2] for i in self.columns])
+        self.decimation: int = decimation
+        self.colors: list = [
+            'red', 'blue', 'green', 'orange',
+            'gray', 'purple', 'cyan', 'yellow',
+            'pink'
         ]
-        self.curves = dict()
-        self.theme = self.parent.settings.value('graphs')['background']
+
+        self.curves: dict = dict()
+        self.theme: str = self.parent.settings.value('graphs')['background']
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         '''
         Метод построения интерфейса окна.
         '''
         self.shiftWidget = None
-        self.mainWidget = QWidget()
+        self.mainWidget: QWidget = QWidget()
         self.setWidget(self.mainWidget)
-        self.mainLayout = QVBoxLayout()
+        self.mainLayout: QVBoxLayout = QVBoxLayout()
         self.mainWidget.setLayout(self.mainLayout)
         self.setWindowTitle(self.title)
         self.setStyleSheet("color: gray;")
         self.setGeometry(0, 0, 500, 300)
-        self.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.setAttribute(Qt.WA_DeleteOnClose, True)  # type: ignore
         self.createGraph()
 
-    def createGraph(self):
+    def createGraph(self) -> None:
         '''
         Метод построения непосредственно самого графика
         с использованием библиотеки pyqtgraph.
@@ -70,15 +72,18 @@ class GraphWindow(QMdiSubWindow):
         self.plt.setBackground(self.theme)
         self.plt.showGrid(x=True, y=True)
 
+        legendColor = 'white' if self.theme == 'black' else 'black'
         self.legend: pg.LegendItem = self.plt.addLegend(
-            pen='black' if self.theme == 'white' else 'white',
-            labelTextColor='black' if self.theme == 'white' else 'white',
+            pen=legendColor,
+            labelTextColor=legendColor,
             offset=(0, 0)
         )
 
         for category, adr, item in self.columns:
             dataForGraph = self.data[category][adr].dropna(
-                subset=['time', item]).reset_index().iloc[::self.decimation]
+                subset=['time', item]
+            )
+            dataForGraph = dataForGraph.reset_index().iloc[::self.decimation]
             pen = pg.mkPen(color=self.colors[0])
             curve = pg.PlotDataItem(
                 dataForGraph.time.to_list(),
@@ -101,14 +106,14 @@ class GraphWindow(QMdiSubWindow):
         self.plt.scene().sigMouseClicked.connect(self.mouseClickEvent)
         self.plt.setClipToView(True)
 
-    def mouseMoved(self, e):
+    def mouseMoved(self, e) -> None:
         '''
         Метод реализации высплывающей подсказки по координатам
         при перемещении мыши.
         '''
         pos = e[0]
         if self.plt.sceneBoundingRect().contains(pos):
-            mousePoint = self.plt.getPlotItem().vb.mapSceneToView(pos)
+            mousePoint = self.plt.getPlotItem().vb.mapSceneToView(pos)  # type: ignore
             x = float(mousePoint.x())
             y = float(mousePoint.y())
             self.setWindowTitle(
@@ -118,7 +123,7 @@ class GraphWindow(QMdiSubWindow):
                 f'x: <b>{round(x, 1)}</b>,<br> y: <b>{round(y, 1)}</b>'
             )
 
-    def mouseClickEvent(self, event):
+    def mouseClickEvent(self, event) -> None:
         '''
         Метод обработки событий нажатия мышки.
         '''
@@ -134,7 +139,7 @@ class GraphWindow(QMdiSubWindow):
         if event.button() == Qt.MouseButton.MiddleButton:
             self.close()
 
-    def contextMenu(self, event):
+    def contextMenu(self, event) -> None:
         '''
         Метод создания кастомного контекстного меню.
         '''
@@ -146,35 +151,31 @@ class GraphWindow(QMdiSubWindow):
 
         closeAction = QAction('&Закрыть')
         menu.addAction(closeAction)
-        closeAction.triggered.connect(self.close)
+        closeAction.triggered.connect(self.close)  # type: ignore
 
         menu.exec(event.screenPos().toPoint())
 
-    def setBackgrounMenu(self, parent):
-        changeBackground = parent.addMenu('&Фон')
+    def setBackgrounMenu(self, parent: QMenu) -> None:
+        menu = parent.addMenu('&Фон')
 
-        whiteBackgroundAction = QAction('&Белый ', self)
-        whiteBackgroundAction.setCheckable(True)
-        if getattr(self.plt, '_background') == 'white':
-            whiteBackgroundAction.setChecked(True)
-        else:
-            whiteBackgroundAction.setChecked(False)
-        changeBackground.addAction(whiteBackgroundAction)
-        whiteBackgroundAction.triggered.connect(self.whiteBackground)
+        colors = {'white': 'Белый', 'black': 'Черный'}
 
-        blackBackgroundAction = QAction('&Черный ', self)
-        blackBackgroundAction.setCheckable(True)
-        if getattr(self.plt, '_background') == 'black':
-            blackBackgroundAction.setChecked(True)
-        else:
-            blackBackgroundAction.setChecked(False)
-        changeBackground.addAction(blackBackgroundAction)
-        blackBackgroundAction.triggered.connect(self.blackBackground)
+        for encolor, rucolor in colors.items():
+            action = QAction(rucolor, self)
+            action.setCheckable(True)
+            if getattr(self.plt, '_background') == encolor:
+                action.setChecked(True)
+            else:
+                action.setChecked(False)
+            menu.addAction(action)
+            action.triggered.connect(
+                partial(self.changeBackground, encolor)
+            )
 
-    def setLineTypeMenu(self, parent):
+    def setLineTypeMenu(self, parent: QMenu) -> None:
         lineType = parent.addMenu('&Тип линии')
         for name, data in self.curves.items():
-            nameLine = lineType.addMenu(name)
+            nameLine: QMenu = lineType.addMenu(name)  # type: ignore
 
             lineGraphAction = QAction('&Линия', self)
             lineGraphAction.setCheckable(True)
@@ -194,7 +195,7 @@ class GraphWindow(QMdiSubWindow):
             nameLine.addAction(crossGraphAction)
             crossGraphAction.triggered.connect(partial(self.crossGraph, data))
 
-    def setTimeShiftMenu(self, parent):
+    def setTimeShiftMenu(self, parent: QMenu) -> None:
         timeShiftMenu = parent.addMenu('&Сдвиг графика')
         for name, data in self.curves.items():
             timeShiftAction = QAction(name, self)
@@ -203,31 +204,20 @@ class GraphWindow(QMdiSubWindow):
                 partial(self.timeShift, data)
             )
 
-    def whiteBackground(self):
+    def changeBackground(self, color: str):
         '''
         Метод изменения цвета фона и запись его в настройки.
         '''
-        self.plt.setBackground('white')
+        self.plt.setBackground(color)
         settings = self.parent.settings.value('graphs')
-        settings['background'] = 'white'
+        settings['background'] = color
         self.parent.settings.setValue('graphs', settings)
-        self.legend.setPen('black')
+        legendColor = 'white' if color == 'black' else 'black'
+        self.legend.setPen(legendColor)
         # setLabelTextColor не меняет цвет текста, видимо баг
-        self.legend.setLabelTextColor('black')
+        self.legend.setLabelTextColor(legendColor)
 
-    def blackBackground(self):
-        '''
-        Метод изменения цвета фона и запись его в настройки.
-        '''
-        self.plt.setBackground('black')
-        settings = self.parent.settings.value('graphs')
-        settings['background'] = 'black'
-        self.parent.settings.setValue('graphs', settings)
-        self.legend.setPen('white')
-        # setLabelTextColor не меняет цвет текста, видимо баг
-        self.legend.setLabelTextColor('white')
-
-    def lineGraph(self, data):
+    def lineGraph(self, data: dict) -> None:
         '''
         Метод изменения линии графика.
         '''
@@ -236,7 +226,7 @@ class GraphWindow(QMdiSubWindow):
         else:
             data['curve'].setPen(data['pen'])
 
-    def crossGraph(self, data):
+    def crossGraph(self, data: dict) -> None:
         '''
         Метод изменения линии графика.
         '''
@@ -246,7 +236,7 @@ class GraphWindow(QMdiSubWindow):
         else:
             data['curve'].setSymbol(None)
 
-    def timeShift(self, curveData):
+    def timeShift(self, curveData: dict) -> None:
         '''
         Метод смещения графика по оси Ox.
         '''
@@ -263,7 +253,8 @@ class GraphWindow(QMdiSubWindow):
         self.slider.setPageStep(50)
         self.slider.valueChanged.connect(partial(self.updateGraph, curveData))
         self.spinBox = QDoubleSpinBox(self)
-        self.spinBox.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+        self.spinBox.setAlignment(
+            Qt.AlignCenter | Qt.AlignVCenter)  # type: ignore
         self.spinBox.setMinimumWidth(80)
         self.spinBox.setRange(-max, max)
         self.spinBox.setSingleStep(.1)
@@ -276,12 +267,12 @@ class GraphWindow(QMdiSubWindow):
         self.layoutShift.addWidget(self.slider)
         self.layoutShift.addWidget(self.spinBox)
 
-    def updateGraph(self, curveData, value):
+    def updateGraph(self, curveData: dict, value: str) -> None:
         '''
         Метод перестроения графика после смещения данных.
         '''
         self.slider.setValue(int(value))
-        self.spinBox.setValue(value)
+        self.spinBox.setValue(float(value))
         curve = curveData['curve']
         category = curveData['category']
         adr = curveData['adr']
@@ -291,9 +282,13 @@ class GraphWindow(QMdiSubWindow):
         y = dataForGraph[item]
         curve.setData(x, y)
 
-    def applyShift(self, curveData):
+    def applyShift(self, curveData) -> None:
+        '''
+        Применить смещение
+        '''
         value = self.spinBox.value(),
         data = self.data[curveData['category']][curveData['adr']]
         data['time'] = data['time'] + value
         self.parent.setNotify(
-            'успех', 'Смещение задано. Не забудьте сохранить изменения')
+            'успех', 'Смещение задано. Не забудьте сохранить изменения'
+        )

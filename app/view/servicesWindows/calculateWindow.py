@@ -13,13 +13,13 @@ class CalcWindow(QWidget):
     controller - контроллер для получения данных.
     '''
 
-    def __init__(self, controller, parent=None):
+    def __init__(self, controller, parent) -> None:
         super().__init__()
         self.parent = parent
         self.controller = controller
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         '''
         Метод отрисовки основных элементов окна.
         '''
@@ -34,7 +34,7 @@ class CalcWindow(QWidget):
         dlgLayout.addWidget(self.btnBox)
         self.setLayout(dlgLayout)
 
-    def initInputBlock(self):
+    def initInputBlock(self) -> None:
         '''Метод инициализации элементов выбора пользователя'''
         self.formLayout = QFormLayout()
         self.formLayout.setVerticalSpacing(20)
@@ -57,7 +57,7 @@ class CalcWindow(QWidget):
         self.formLayout.addRow(self.categoryDissComboBox)
         self.formLayout.addRow(self.adrDissComboBox)
 
-    def initPnkBlock(self):
+    def initPnkBlock(self) -> None:
         '''Метод инициализации блока пнк'''
         self.calcPnkCheckBox = QCheckBox()
         self.calcPnkCheckBox.stateChanged.connect(self.hideUnhidePnk)
@@ -75,7 +75,7 @@ class CalcWindow(QWidget):
         self.categoryPnkComboBox.hide()
         self.adrPnkComboBox.hide()
 
-    def initDissBlock(self):
+    def initDissBlock(self) -> None:
         '''Метод инициализации блока дисс'''
         self.calcDissCheckBox = QCheckBox()
         self.calcDissCheckBox.stateChanged.connect(self.hideUnhideDiss)
@@ -93,16 +93,16 @@ class CalcWindow(QWidget):
         self.categoryDissComboBox.hide()
         self.adrDissComboBox.hide()
 
-    def initButtonBlock(self):
+    def initButtonBlock(self) -> None:
         '''Метод инициализации кнопок на форме'''
         self.btnBox = QDialogButtonBox()
         self.btnBox.setStandardButtons(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
-        self.btnBox.rejected.connect(self.close)
+        self.btnBox.rejected.connect(self.close) # type: ignore
         self.btnBox.accepted.connect(self.calculate)
 
-    def hideUnhidePnk(self):
+    def hideUnhidePnk(self) -> None:
         '''Метод скрытия/отображения выбора категории и адр пнк'''
         if self.calcPnkCheckBox.isChecked():
             self.categoryPnkComboBox.show()
@@ -112,7 +112,7 @@ class CalcWindow(QWidget):
             self.adrPnkComboBox.hide()
             self.calcDissCheckBox.setChecked(False)
 
-    def hideUnhideDiss(self):
+    def hideUnhideDiss(self) -> None:
         '''Метод скрытия/отображения выбора категории и адр дисс'''
         if self.calcDissCheckBox.isChecked():
             self.categoryPnkComboBox.show()
@@ -124,21 +124,21 @@ class CalcWindow(QWidget):
             self.categoryDissComboBox.hide()
             self.adrDissComboBox.hide()
 
-    def updateAdrPnkComboBox(self):
+    def updateAdrPnkComboBox(self) -> None:
         '''Метод обновления пнк адр комбобокса'''
         current_category = self.categoryPnkComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrPnkComboBox.clear()
         self.adrPnkComboBox.addItems(adrs)
 
-    def updateAdrDissComboBox(self):
+    def updateAdrDissComboBox(self) -> None:
         '''Метод обновления дисс адр комбобокса'''
         current_category = self.categoryDissComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrDissComboBox.clear()
         self.adrDissComboBox.addItems(adrs)
 
-    def saveComboBoxValue(self):
+    def saveComboBoxValue(self) -> None:
         '''
         Метод для сохранения в настройках самолета по умолчанию.
         '''
@@ -146,7 +146,7 @@ class CalcWindow(QWidget):
             'planeComboBox', self.planeComboBox.currentText()
         )
 
-    def calculate(self):
+    def calculate(self) -> None:
         '''
         Метод по нажатию кнопки ОК, который непосредственно запускает
         рассчет значений с их последующей передачей в главное окно
@@ -175,7 +175,7 @@ class CalcWindow(QWidget):
             self.parent.setNotify('предупреждение', str(e))
 
     def keyPressEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key_Escape:
+        if event.key() == Qt.Key_Escape: # type: ignore
             self.hide()
         else:
             super().keyPressEvent(event)

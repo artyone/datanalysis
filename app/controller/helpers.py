@@ -121,12 +121,12 @@ def defaultSettings(settings, appVersion):
                             "width": 50,
                             "fields": [
                                 {
-                                    "category": "Calc",
+                                    "category": "CALC",
                                     "adr": "PNK",
                                     "column": "Wp_KBTIi",
                                 },
                                 {
-                                    "category": "Calc",
+                                    "category": "CALC",
                                     "adr": "PNK",
                                     "column": "Wp_diss_pnki",
                                 }

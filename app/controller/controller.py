@@ -135,7 +135,7 @@ class Control(object):
         self.worker.calc_wg_kbti(plane_corr['k'], plane_corr['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
-        self.data['Calc'] = {
+        self.data['CALC'] = {
             'PNK': self.worker.get_only_calculated_data_pnk()
         }
         self.data_calculated = True
@@ -160,7 +160,7 @@ class Control(object):
         записываем по указанному пути.
         '''
         data_source = self.data[category][adr]
-        data_calc = self.data['Calc']['PNK']
+        data_calc = self.data['CALC']['PNK']
         self.worker = Mathematical(data_source.merge(data_calc, on='time'))
         if string == '':
             if 'JVD_H' in self.data[category][adr].columns:
