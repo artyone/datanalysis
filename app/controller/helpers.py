@@ -142,7 +142,8 @@ def defaultSettings(settings, appVersion):
     mainSettings = {
         'theme': 'black',
         'jsonDir': 'templates/',
-        'toolBar': 'left'
+        'toolBar': 'left', 
+        'openLastFile': True
     }
     settings.setValue('mainSettings', mainSettings)
 

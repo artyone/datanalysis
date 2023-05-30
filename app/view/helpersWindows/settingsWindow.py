@@ -71,6 +71,10 @@ class SettingsWindow(QWidget):
         self.toolbarComboBox.setCurrentText(self.listMainSettings['toolBar'])
         tabLayout.addRow('Позиция кнопок:', self.toolbarComboBox)
 
+        self.openLastCheckbox = QCheckBox()
+        self.openLastCheckbox.setChecked(self.listMainSettings['openLastFile'])
+        tabLayout.addRow('Открывать последний gzip:', self.openLastCheckbox)
+
         tabWidget.setLayout(tabLayout)
         return tabWidget
 
@@ -203,7 +207,8 @@ class SettingsWindow(QWidget):
         newValueMainSettings = {
             'theme': self.themeComboBox.currentText(),
             'jsonDir': self.browseLineEdit.text(),
-            'toolBar': self.toolbarComboBox.currentText()
+            'toolBar': self.toolbarComboBox.currentText(),
+            'openLastFile': self.openLastCheckbox.isChecked()
         }
         if self.settings.value('mainSettings') == newValueMainSettings:
             return False

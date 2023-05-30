@@ -52,7 +52,6 @@ class MainWindow(QMainWindow):
         self.appVersion = QCoreApplication.applicationVersion()
         self.appName = QCoreApplication.applicationName()
         self.notify: notificator = notificator()
-        # self.setWindowFlags(Qt.FramelessWindowHint)
         self.settings: QSettings = QSettings()
         if (self.settings.allKeys() == [] or
                 self.settings.value('version') != self.appVersion):
@@ -60,9 +59,9 @@ class MainWindow(QMainWindow):
         self.setTheme()
         self.initUI()
 
-        # TODO удалить на релизе
         lastFile = self.settings.value('lastFile')
-        if lastFile is not None:
+        openLastFile = self.settings.value('mainSettings')['openLastFile']
+        if lastFile is not None and openLastFile:
             self.openBinaryFile(lastFile['filePath'])
 
     def initUI(self) -> None:
@@ -71,7 +70,7 @@ class MainWindow(QMainWindow):
         Создание Экшенов, меню, тулбара, статус бара, связей.
         Для уведомлений используется сторонняя библиотека.
         '''
-        self.setGeometry(100, 100, 800, 600)
+        #self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle(f'{self.appName} {self.appVersion}')
         self.app.setWindowIcon(QIcon('icon.ico'))
         self._createActions()
@@ -96,7 +95,6 @@ class MainWindow(QMainWindow):
         self.splitter.addWidget(self.mdi)
 
         self.setCentralWidget(self.splitter)
-        # self.center()
         self.showMaximized()
 
     def setTheme(self) -> None:
@@ -446,8 +444,9 @@ class MainWindow(QMainWindow):
         # TODO передалть на ласт файл на filepath открыть последний открытый
         if filepath:
             check = True
+            file = filepath
         else:
-            filepath, check = QFileDialog.getOpenFileName(
+            file, check = QFileDialog.getOpenFileName(
                 None,
                 'Open file',
                 '',
@@ -455,7 +454,7 @@ class MainWindow(QMainWindow):
             )
         if check:
             try:
-                self.controller.load_gzip(filepath)
+                self.controller.load_gzip(file)
             except FileNotFoundError:
                 self.setNotify('ошибка', 'Файл не найден')
             except ValueError as e:
@@ -465,11 +464,12 @@ class MainWindow(QMainWindow):
                 self.destroyChildWindow()
                 self.settings.setValue(
                     'lastFile', {
-                        'filePath': filepath,
+                        'filePath': file,
                         'param': 'gzip'
                     }
                 )
-                self.setNotify('успех', f'Файл {filepath} открыт')
+                if not filepath:
+                    self.setNotify('успех', f'Файл {file} открыт')
 
     def getOpenFileWindow(self, filetype: str) -> None:
         if self.openFileWindow is None:
