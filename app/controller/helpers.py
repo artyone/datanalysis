@@ -137,24 +137,7 @@ def defaultSettings(settings, appVersion):
         ]
     }
     settings.setValue('graphs', graphs)
-    filters = {
-        'unknown': True,
-        'adrs': {
-            'ADR8': {
-                head: True
-                for head in [
-                    'time', 'latitude', 'longitude', 'JVD_H', 'JVD_VN', 'JVD_VE',
-                    'JVD_Vh', 'DIS_S266', 'DIS_Wx30', 'DIS_Wx31', 'DIS_S264', 'DIS_Wy30',
-                    'DIS_Wy31', 'DIS_S267', 'DIS_Wz30', 'DIS_Wz31', 'DIS_S206', 'DIS_US30',
-                    'DIS_US31', 'DIS_TIME', 'DIS_Wx', 'DIS_Wy', 'DIS_Wz', 'DIS_W', 'DIS_US',
-                    'I1_KursI', 'I1_Tang', 'I1_Kren', 'Wx_DISS_PNK', 'Wz_DISS_PNK',
-                    'Wy_DISS_PNK', 'Kren_sin', 'Kren_cos', 'Tang_sin', 'Tang_cos',
-                    'Kurs_sin', 'Kurs_cos', 'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
-                    'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi', 'Wp_KBTIi', 'Wp_diss_pnki'
-                ]
-            }
-        }
-    }
+    filters = ['time']
     settings.setValue('leftMenuFilters', filters)
     mainSettings = {
         'theme': 'black',

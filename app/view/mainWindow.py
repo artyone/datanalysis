@@ -620,11 +620,29 @@ class MainWindow(QMainWindow):
             self.reportWindow.hide()
         self.center(self.reportWindow)
         self.reportWindow.show()
-
-    def about(self) -> None:
+    
+    def about(self):
         '''
         Метод для открытия окна about
         '''
+        return
+
+    def bigWindow(self) -> None:
+        from PyQt5.QtWidgets import QWidget, QVBoxLayout
+
+        self.bigWindow = QWidget()
+        self.bigWindow.showMaximized()
+        self.bigLayer = QVBoxLayout()
+        self.bigMdi = QMdiArea()
+        for window in self.mdi.subWindowList():
+            print(window)
+            window.setParent(self.bigMdi)
+            print(window.frameGeometry())
+            window.show()
+        self.bigLayer.addWidget(self.bigMdi)
+        self.bigWindow.setLayout(self.bigLayer)
+        
+
         return
 
     def createGraph(self, customSelected=None) -> None:
@@ -704,14 +722,6 @@ class MainWindow(QMainWindow):
             window.setGeometry(0, 0, width, currentHeigth)
             window.move(pnt[0], pnt[1])
             pnt[1] += currentHeigth
-
-        # if self.settings.value('graphs')['default'] == []:
-        #     self.setNotify(
-        #         'предупреждение', 'Проверьте настройки графиков в настройках программы.')
-        #     return
-
-        # for graph in self.settings.value('graphs')['default']:
-        #     self.createGraph(graph)
 
     def pythonConsole(self) -> None:
         '''

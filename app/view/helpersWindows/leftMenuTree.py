@@ -36,21 +36,21 @@ class LeftMenuTree(QTreeWidget):
                 treeAdr.setText(0, nameAdr)
                 treeAdr.setExpanded(True)
                 filters = self.settings.value('leftMenuFilters')
-                adrFilters = filters['adrs'].get(nameAdr, {})
                 for nameItem in sorted(adrValues.columns):
-                    if adrFilters.get(nameItem, filters['unknown']):
-                        treeItem = QTreeWidgetItem(treeAdr)
-                        treeItem.setText(0, nameItem)
-                        count = len(adrValues[nameItem])
-                        treeItem.setText(1, str(count))
-                        treeItem.setFont(1, QFont('Arial', 8, 1, True))
-                        if count:
-                            treeItem.setForeground(1, QColor('gray'))
-                        else:
-                            treeItem.setForeground(1, QColor('red'))
-                        treeItem.setTextAlignment(1, Qt.AlignRight)
-                        treeItem.setFlags(treeItem.flags() | Qt.ItemIsUserCheckable)
-                        treeItem.setCheckState(0, Qt.Unchecked)
+                    if nameItem in filters:
+                        continue
+                    treeItem = QTreeWidgetItem(treeAdr)
+                    treeItem.setText(0, nameItem)
+                    count = len(adrValues[nameItem])
+                    treeItem.setText(1, str(count))
+                    treeItem.setFont(1, QFont('Arial', 8, 1, True))
+                    if count:
+                        treeItem.setForeground(1, QColor('gray'))
+                    else:
+                        treeItem.setForeground(1, QColor('red'))
+                    treeItem.setTextAlignment(1, Qt.AlignRight)
+                    treeItem.setFlags(treeItem.flags() | Qt.ItemIsUserCheckable)
+                    treeItem.setCheckState(0, Qt.Unchecked)
         self.show()
         self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)
@@ -129,3 +129,12 @@ class LeftMenuTree(QTreeWidget):
     def addToOtherCategory(self):
         #TODO необходимо реализовать идею переноса каких-то данных в другие категории
         pass
+
+    def getAllColumns(self) -> list:
+        data = self.mainWindow.controller.get_data()
+        result = []
+        for adr in data.values():
+            for df in adr.values():
+                result.extend(list(df.columns))
+        result = sorted(list(set(result)))
+        return result

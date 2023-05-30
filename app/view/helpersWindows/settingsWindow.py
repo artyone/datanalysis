@@ -28,7 +28,7 @@ class SettingsWindow(QWidget):
         self.listPlanes = self.settings.value('planes')
         self.listCorrections = self.settings.value('corrections')
         self.listGraphs = self.settings.value('graphs')
-        self.listMenuFilters = self.settings.value('leftMenuFilters')
+        self.listMenuFilters = []
         self.controller = controller
         self.initUI()
 
@@ -97,41 +97,19 @@ class SettingsWindow(QWidget):
         '''
         Вкладка настройки фильтра бокового чек-бокс меню.
         '''
-        tabWidget = QWidget()
-        tabLayout = QVBoxLayout()
-        self.filtersComboBox = QComboBox()
-        self.filtersComboBox.addItems(self.listMenuFilters['adrs'])
-
-        tabLayout.addWidget(self.filtersComboBox, alignment=Qt.AlignTop)
-        tabWidget.setLayout(tabLayout)
-        self.filtersStackedLayout = QStackedLayout()
-        for adr in self.listMenuFilters['adrs']:
-            self.filtersStackedLayout.addWidget(self.pageFilterStacked(adr))
-        self.filtersComboBox.activated.connect(
-            partial(self.switchPage, self.filtersStackedLayout, self.filtersComboBox))
-
-        self.unknownCheckBox = QCheckBox('Отображать неизвестные заголовки?')
-        self.unknownCheckBox.setChecked(self.listMenuFilters['unknown'])
-        tabLayout.addWidget(self.unknownCheckBox)
-
-        tabLayout.addLayout(self.filtersStackedLayout)
-        return tabWidget
-
-    def pageFilterStacked(self, adr: str) -> QScrollArea:
-        pageWidget = QWidget()
-        pageLayout = QFormLayout()
-        for elements in self.settings.value('leftMenuFilters')['adrs'][adr]:
-            checkBox = QCheckBox(str(elements))
-            checkBox.setChecked(self.settings.value(
-                'leftMenuFilters')['adrs'][adr][elements])
-            pageLayout.addWidget(checkBox)
-            self.listMenuFilters['adrs'][adr][elements] = checkBox
-        pageWidget.setLayout(pageLayout)
 
         scrollArea = QScrollArea()
+        widget = QWidget()
+        tabLayout = QVBoxLayout()
+        for column in self.parent.tree.getAllColumns():
+            checkBox = QCheckBox(column)
+            settings = self.settings.value('leftMenuFilters')
+            checkBox.setChecked(True if column in settings else False)
+            tabLayout.addWidget(checkBox)
+            self.listMenuFilters.append(checkBox)
         scrollArea.setWidgetResizable(True)
-        scrollArea.setWidget(pageWidget)
-
+        widget.setLayout(tabLayout)
+        scrollArea.setWidget(widget)
         return scrollArea
 
     def planeTab(self) -> QWidget:
@@ -201,27 +179,34 @@ class SettingsWindow(QWidget):
         '''
         # TODO придумать контроль ошибок при сохранении, особенно графиков
         try:
-            self.saveMainSettings()
-            self.savePlanesSettings()
-            self.saveCorrectionsSettings()
-            self.saveGraphSettings()
-            self.saveLeftMenuFilterSettings()
-            self.parent.setNotify(
+            if any((
+                self.saveMainSettings(),
+                self.savePlanesSettings(),
+                self.saveCorrectionsSettings(),
+                self.saveGraphSettings(),
+                self.saveLeftMenuFilterSettings()
+            )):
+                self.parent.setNotify(
                 'успех', 'Настройки сохранены.'
             )
-        except:
+            else:
+                self.parent.setNotify(
+                'информация', 'Вы не внесли изменения в настройки'
+            )
+        except Exception as e:
+            print(str(e))
             self.parent.setNotify(
                 'ошибка', 'Настройки не сохранены, проверьте правильность введенных данных!'
             )
 
-    def saveMainSettings(self) -> None:
+    def saveMainSettings(self) -> bool:
         newValueMainSettings = {
             'theme': self.themeComboBox.currentText(),
             'jsonDir': self.browseLineEdit.text(),
             'toolBar': self.toolbarComboBox.currentText()
         }
         if self.settings.value('mainSettings') == newValueMainSettings:
-            return
+            return False
         self.settings.setValue('mainSettings', newValueMainSettings)
         question = QMessageBox.question(
             None, "Вопрос", "Для применения настроек нужно перезапустить программу. Делаем?",
@@ -229,6 +214,7 @@ class SettingsWindow(QWidget):
         )
         if question == QMessageBox.Yes:
             self.parent.restartApp()
+        return True
 
     def savePlanesSettings(self) -> None:
         newValuePlanes = {
@@ -239,45 +225,39 @@ class SettingsWindow(QWidget):
             for plane, value in self.listPlanes.items()
         }
         if self.settings.value('planes') == newValuePlanes:
-            return
+            return False
         self.settings.setValue('planes', newValuePlanes)
+        return True
 
-    def saveCorrectionsSettings(self) -> None:
+    def saveCorrectionsSettings(self) -> bool:
         newValueCorrections = {
             correction: float(widget.text())
             for correction, widget in self.listCorrections.items()
         }
         if self.settings.value('corrections') == newValueCorrections:
-            return
+            return False
         self.settings.setValue('corrections', newValueCorrections)
         self.listCorrections = newValueCorrections
+        return True
 
-    def saveGraphSettings(self) -> None:
+    def saveGraphSettings(self) -> bool:
         newGraphSettings = self.graphTabWidget.get_data()
         if self.settings.value('graphs') == newGraphSettings:
-            return
+            return False
         self.settings.setValue('graphs', newGraphSettings)
         self.parent.updateInterfaceFromSettings('graphs')
         self.listGraphs = newGraphSettings
+        return True
 
-    def saveLeftMenuFilterSettings(self) -> None:
-        # TODO добавить заголовки и вообще продумать это всё
-        newValueAdr = {
-            adr: {
-                name: widget.isChecked()
-                for name, widget in data.items()
-            }
-            for adr, data in self.listMenuFilters['adrs'].items()
-        }
-        newValueFilters = {
-            'unknown': self.unknownCheckBox.isChecked(),
-            'adrs': newValueAdr
-        }
+    def saveLeftMenuFilterSettings(self) -> bool:
+        newValueFilters = [
+            item.text() for item in self.listMenuFilters
+            if item.isChecked()]
         if self.settings.value('leftMenuFilters') == newValueFilters:
-            return
+            return False
         self.settings.setValue('leftMenuFilters', newValueFilters)
-        self.listMenuFilters = newValueFilters
         self.parent.updateInterfaceFromSettings('leftMenuFilters')
+        return True
 
     def checkDigit(self, widget: QLineEdit):
         try:
@@ -288,21 +268,13 @@ class SettingsWindow(QWidget):
             widget.setStyleSheet("background:#FA8072;")
             self.saveButton.setDisabled(True)
 
-    def uncheckAllCheckBox(self) -> None:
-        '''
-        Метод снятия всех чек-боксов.
-        '''
-        if self.uncheckButton.text() == 'Снять все отметки':
-            for widget in self.listMenuFilters.values():
-                widget.setChecked(False)
-            self.uncheckButton.setText('Отметить всё')
-        else:
-            for widget in self.listMenuFilters.values():
-                widget.setChecked(True)
-            self.uncheckButton.setText('Снять все отметки')
+    def closeEvent(self, event):
+        self.parent.settingsWindow = None
+        self.deleteLater()
+        event.accept()
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key_Escape:
-            self.hide()
+            self.close()
         else:
             super().keyPressEvent(event)
