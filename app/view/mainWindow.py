@@ -635,14 +635,10 @@ class MainWindow(QMainWindow):
         self.bigLayer = QVBoxLayout()
         self.bigMdi = QMdiArea()
         for window in self.mdi.subWindowList():
-            print(window)
             window.setParent(self.bigMdi)
             print(window.frameGeometry())
-            window.show()
         self.bigLayer.addWidget(self.bigMdi)
         self.bigWindow.setLayout(self.bigLayer)
-        
-
         return
 
     def createGraph(self, customSelected=None) -> None:
@@ -760,9 +756,7 @@ class MainWindow(QMainWindow):
         heigth = self.mdi.height() // len(self.mdi.subWindowList())
         pnt = [0, 0]
         for window in self.mdi.subWindowList():
-            window.showNormal()
-            window.setGeometry(0, 0, width, heigth)
-            window.move(pnt[0], pnt[1])
+            window.setGeometry(pnt[0], pnt[1], width, heigth)
             pnt[1] += heigth
 
     def verticalWindows(self) -> None:
@@ -779,10 +773,24 @@ class MainWindow(QMainWindow):
 
         pnt = [0, 0]
         for window in self.mdi.subWindowList():
-            window.showNormal()
-            window.setGeometry(0, 0, width, heigth)
-            window.move(pnt[0], pnt[1])
+            window.setGeometry(pnt[0], pnt[1], width, heigth)
             pnt[0] += width
+    
+    def resizeHorizontalWindows(self):
+        '''
+        Растягиваем окна, если они растянуты хотя бы на 80 %
+        '''
+        width = self.mdi.width() - (self.tree.width() if self.tree.isHidden() else 0)
+        sizes = [
+            True if window.width() / width > 0.8 else False 
+                 for window in self.mdi.subWindowList()
+            ]
+        if all(sizes):
+            for window in self.mdi.subWindowList():
+                geometry = window.geometry()
+                geometry.setWidth(self.mdi.width())
+                window.setGeometry(geometry)
+        return
 
     def checkPositioningWindows(self) -> None:
         if not self.mdi.subWindowList():
@@ -795,6 +803,7 @@ class MainWindow(QMainWindow):
         if self.horizontalAction.isChecked():
             self.horizontalWindows()
             return
+        self.resizeHorizontalWindows()
 
     def hideLeftMenuOnClick(self) -> None:
         '''Метод скрытия левого меню'''

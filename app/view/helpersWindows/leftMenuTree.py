@@ -114,14 +114,12 @@ class LeftMenuTree(QTreeWidget):
         item = self.currentItem()
         if item is not None:
             try:
-                category, adr, name = self.getInfoItem(item)
+                _, _, name = self.getInfoItem(item)
                 newFilterValue = self.settings.value('leftMenuFilters')
-                if adr not in newFilterValue['adrs']:
-                    newFilterValue['adrs'][adr] = {}
-                newFilterValue['adrs'][adr][name] = False
+                newFilterValue.append(name)
                 self.settings.setValue('leftMenuFilters', newFilterValue)
                 self.updateCheckBox()
-                self.mainWindow.setNotify('успех', f'{name} скрыт из {adr}')
+                self.mainWindow.setNotify('успех', f'{name} скрыт.')
      
             except Exception as e:
                 self.mainWindow.setNotify('предупреждение', str(e))
