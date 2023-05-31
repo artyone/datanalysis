@@ -160,12 +160,12 @@ class Mathematical(object):
         data = []
         headers = [
             'length', 'JVD_H', 'start', 'stop',
-            'time', 'US', 'Wp', 'Wx', 'Wz', 'Wy'
+            'counts', 'US', 'Wp', 'Wx', 'Wz', 'Wy'
         ]
         for start, stop in start_stop:
             self._get_mean(start, stop)
             self._get_us()
-            time = stop - start
+            counts = stop - start
             length = round((stop - start) * self.Wp_kbti_acc / 3600, 3)
             height = self._get_height(start)
             US = round(self.USpnk - self.USkbti, 3)
@@ -180,7 +180,7 @@ class Mathematical(object):
                 self.Wyc_DISS_PNK_acc, self.Wyc_kbti_acc), 3)
 
             data.append((length, height, start,
-                              stop, time, US, Wp, Wx, Wz, Wy))
+                              stop, counts, US, Wp, Wx, Wz, Wy))
         result = pd.DataFrame(data, columns=headers)
         return result
 

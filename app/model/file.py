@@ -39,9 +39,29 @@ class Datas(object):
     @staticmethod
     def write_xlsx(data: pd.DataFrame, plane_koef: dict, filepath: str) -> None:
         #TODO продумать ошибку если темплейта нет
+        # сделать в шаблоне закладки для автоматической подстановки адресов
+
+        def find_bookmarks(search_value: str, sheet) -> str:
+            found_cell = None
+            for row in sheet.iter_rows():
+                for cell in row:
+                    if cell.value == search_value:
+                        found_cell = cell
+                        break
+                if found_cell:
+                    break
+            return found_cell
+
+        bookmarks_values = {
+
+        }
+        bookmarks_additional = {
+
+        }
+
         wb = openpyxl.load_workbook('templates/xls_template.xlsx')
         ws = wb.active
-        row = 7
+        row = 6
         start = 2
         for row_index, column in enumerate(data):
             for column_index, value in enumerate(data[column]):
@@ -50,10 +70,39 @@ class Datas(object):
                     column=start + column_index, 
                     value=value
                 )
-        ws['C1'] = plane_koef['name']
-        ws['H1'] = plane_koef['values']['kurs_DISS_grad']
-        ws['H2'] = plane_koef['values']['kren_DISS_grad']
-        ws['H3'] = plane_koef['values']['tang_DISS_grad']
+        ws['D1'] = plane_koef['name']
+        ws['I1'] = plane_koef['values']['kurs_DISS_grad']
+        ws['I2'] = plane_koef['values']['kren_DISS_grad']
+        ws['I3'] = plane_koef['values']['tang_DISS_grad']
+
+        mean_US = data.US.mean()
+        mean_Wp = data.Wp.mean()
+        average_US = np.average(data.US, weights=data.counts)
+        average_Wp = np.average(data.Wp, weights=data.counts)
+        std_US = data.US.std()
+        std_Wp = data.Wp.std()
+        skp_US = np.sqrt((data.US.sum() ** 2) / len(data.US))
+        skp_Wp = np.sqrt((data.Wp.sum() ** 2) / len(data.Wp))
+        skp_US2 = skp_US * 2
+        skp_Wp2 = skp_Wp * 2
+        abs_US = abs(average_US) + 2 * skp_US
+        abs_Wp = abs(average_Wp) + 2 * skp_Wp
+
+        #Можно сделать красиво, через обход 2 массивов
+
+        ws['D30'] = round(mean_US, 3)
+        ws['D31'] = round(mean_Wp, 3)
+        ws['F30'] = round(average_US, 3)
+        ws['F31'] = round(average_Wp, 3)
+        ws['H30'] = round(std_US, 3)
+        ws['H31'] = round(std_Wp, 3)
+        ws['J30'] = round(skp_US, 3)
+        ws['J31'] = round(skp_Wp, 3)
+        ws['L30'] = round(skp_US2, 3)
+        ws['L31'] = round(skp_Wp2, 3)
+        ws['N30'] = round(abs_US, 3)
+        ws['N31'] = round(abs_Wp, 3)
+
         wb.save(filepath)
         wb.close()
 
