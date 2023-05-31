@@ -1,6 +1,6 @@
 from typing import Any, Iterable
 import pandas as pd
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from math import pi, sin, cos, atan, radians
 
 
@@ -157,15 +157,14 @@ class Mathematical(object):
         '''
         Метод возврата данных после рассчёта.
         '''
-        res_dict = {}
-        res_dict['name'] = [
+        data = []
+        headers = [
             'length', 'JVD_H', 'start', 'stop',
             'time', 'US', 'Wp', 'Wx', 'Wz', 'Wy'
         ]
         for start, stop in start_stop:
             self._get_mean(start, stop)
             self._get_us()
-            name = f'{start}-{stop}'
             time = stop - start
             length = round((stop - start) * self.Wp_kbti_acc / 3600, 3)
             height = self._get_height(start)
@@ -180,12 +179,12 @@ class Mathematical(object):
             Wy = round(self._get_percent(
                 self.Wyc_DISS_PNK_acc, self.Wyc_kbti_acc), 3)
 
-            res_dict[name] = [length, height, start,
-                              stop, time, US, Wp, Wx, Wz, Wy]
-            result = pd.DataFrame(res_dict)
+            data.append((length, height, start,
+                              stop, time, US, Wp, Wx, Wz, Wy))
+        result = pd.DataFrame(data, columns=headers)
         return result
 
-    def _rolling_in_the_deep(self):
+    def _rolling_in_the_deep(self) -> Series:
         return self.d.DIS_Wx.rolling(50).mean()
 
     def get_intervals(self, koef):
@@ -228,7 +227,7 @@ class Mathematical(object):
             self.intervals_wx
         )
 
-    def _get_dataframe_for_intervals(self, k):
+    def _get_dataframe_for_intervals(self, k) -> DataFrame:
         '''
         Метод формирования датафрейма для получения интервалов 
         с разными смещениями среднего и коэффициентами.
@@ -247,7 +246,7 @@ class Mathematical(object):
         df['Wx_raz_b'] = abs(1 - df.Wx_mean_b / df.Wx_mean_i)
         return df
 
-    def _get_intervals_tang(self, time, raz, tang, h, k):
+    def _get_intervals_tang(self, time, raz, tang, h, k) -> None:
         '''
         Метод получения интервалов по тангажу.
         '''
@@ -256,7 +255,7 @@ class Mathematical(object):
         elif len(self.intervals_tang[-1]) > 0:
             self.intervals_tang.append(set())
 
-    def _get_intervals_kren(self, time, raz, kren, h, k):
+    def _get_intervals_kren(self, time, raz, kren, h, k) -> None:
         '''
         Метод получения интервалов по крену.
         '''
@@ -265,7 +264,7 @@ class Mathematical(object):
         elif len(self.intervals_kren[-1]) > 0:
             self.intervals_kren.append(set())
 
-    def _get_intervals_h(self, time, raz, h, k):
+    def _get_intervals_h(self, time, raz, h, k) -> None:
         '''
         Метод получения интервалов по высоте.
         '''
@@ -274,7 +273,7 @@ class Mathematical(object):
         elif len(self.intervals_kren[-1]) > 0:
             self.intervals_h.append(set())
 
-    def _get_intervals_wx(self, time, wx, raz_b, h, k):
+    def _get_intervals_wx(self, time, wx, raz_b, h, k) -> None:
         '''
         Метод получения интервалов по Wx.
         '''
@@ -283,7 +282,7 @@ class Mathematical(object):
         elif len(self.intervals_wx[-1]) > 0:
             self.intervals_wx.append(set())
 
-    def _calc_intervals(self, *args):
+    def _calc_intervals(self, *args) -> list :
         '''
         Метод получения интервалов всем параметрам.
         '''
@@ -299,7 +298,7 @@ class Mathematical(object):
         result = [(min(i) + 15, max(i) - 5) for i in arr]
         return result
 
-    def get_only_calculated_data_pnk(self):
+    def get_only_calculated_data_pnk(self) -> DataFrame:
         '''
         Метод получения даты.
         '''

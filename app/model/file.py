@@ -1,5 +1,5 @@
-from collections import defaultdict
 from typing import Any
+import openpyxl
 import struct
 import numpy as np
 import gzip
@@ -37,8 +37,25 @@ class Datas(object):
             return cd.detect(input.read(1000))['encoding']
 
     @staticmethod
-    def write_xlsx(data: pd.DataFrame, filepath: str) -> None:
-        data.to_excel(filepath, index=False)
+    def write_xlsx(data: pd.DataFrame, plane_koef: dict, filepath: str) -> None:
+        #TODO продумать ошибку если темплейта нет
+        wb = openpyxl.load_workbook('templates/xls_template.xlsx')
+        ws = wb.active
+        row = 7
+        start = 2
+        for row_index, column in enumerate(data):
+            for column_index, value in enumerate(data[column]):
+                ws.cell(
+                    row=row + row_index, 
+                    column=start + column_index, 
+                    value=value
+                )
+        ws['C1'] = plane_koef['name']
+        ws['H1'] = plane_koef['values']['kurs_DISS_grad']
+        ws['H2'] = plane_koef['values']['kren_DISS_grad']
+        ws['H3'] = plane_koef['values']['tang_DISS_grad']
+        wb.save(filepath)
+        wb.close()
 
     @staticmethod
     def write_gzip(data: dict, filepath: str) -> None:

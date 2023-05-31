@@ -145,6 +145,7 @@ class Control(object):
         filepath: str,
         category: str,
         adr: str,
+        plane_koef: dict, 
         koef_for_intervals: dict,
         string: str
     ) -> None:
@@ -163,10 +164,12 @@ class Control(object):
         data_calc = self.data['CALC']['PNK']
         self.worker = Mathematical(data_source.merge(data_calc, on='time'))
         if string == '':
-            if 'JVD_H' in self.data[category][adr].columns:
+            if 'JVD_H' in data_source.columns:
                 intervals = self.worker.get_intervals(koef_for_intervals)
             else:
-                raise ValueError('JVD_H not found in data')
+                raise ValueError(
+                    'JVD_H не найден в данных, автоматически подбор недоступен'
+                )
         else:
             intervals = re.sub(r'[^\d\-\n]', '', string)
             intervals = re.findall(r'(\d+\-\d+)\n?', intervals)
@@ -174,7 +177,7 @@ class Control(object):
             intervals = [(int(x), int(y)) for x, y in intervals]
         data_result = self.worker.get_calculated_data(intervals)
 
-        file_methods.write_xlsx(data_result, filepath)
+        file_methods.write_xlsx(data_result, plane_koef, filepath)
 
     def save_map(
         self,
@@ -235,7 +238,7 @@ class Control(object):
         '''
         Метод проверки были ли данные рассчитаны или нет.
         '''
-        if 'Calc' in self.data:
+        if 'CALC' in self.data:
             return True
         return False
 

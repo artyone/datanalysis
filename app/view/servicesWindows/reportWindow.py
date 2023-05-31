@@ -18,7 +18,7 @@ class ReportWindow(QWidget):
     intervalsTxt - текст пользовательских интервалов.
     '''
 
-    def __init__(self, controller, parent=None) -> None:
+    def __init__(self, controller, parent) -> None:
         super().__init__()
         self.parent = parent
         self.controller = controller
@@ -39,15 +39,16 @@ class ReportWindow(QWidget):
         inputBox = self.inputBox()
         btnBox = self.buttonBox()
 
-        formLayout.addRow(self.categoryComboBox)
-        formLayout.addRow(self.adrComboBox)
+        formLayout.addRow('Категория', self.categoryComboBox)
+        formLayout.addRow('АДР', self.adrComboBox)
+        formLayout.addRow('Самолёт', self.planeComboBox)
         formLayout.addRow(inputBox)
         formLayout.addRow(self.intervalsTxt)
 
         self.layout().addLayout(formLayout, 1)
         self.layout().addWidget(btnBox, 1)
 
-    def initCategoryBlock(self):
+    def initCategoryBlock(self) -> None:
         self.categoryComboBox = QComboBox()
         categories = self.controller.get_data().keys()
         self.categoryComboBox.addItems(categories)
@@ -58,7 +59,12 @@ class ReportWindow(QWidget):
         adrs = self.controller.get_data()[current_category].keys()
         self.adrComboBox.addItems(adrs)
 
-    def inputBox(self):
+        self.planeComboBox = QComboBox()
+        self.planeComboBox.addItems(
+            self.parent.settings.value('planes').keys()
+        )
+
+    def inputBox(self) -> QHBoxLayout:
         self.intervalsToggle = AnimatedToggle()
         self.intervalsToggle.setChecked(True)
         self.intervalsToggle.stateChanged.connect(self.addFormTxt)
@@ -75,7 +81,7 @@ class ReportWindow(QWidget):
         horizontalLayout.addWidget(QLabel('Ввести вручную'), 2)
         return horizontalLayout
 
-    def buttonBox(self):
+    def buttonBox(self) -> QDialogButtonBox:
         btnBox = QDialogButtonBox()
 
         btnBox.setStandardButtons(
@@ -93,7 +99,7 @@ class ReportWindow(QWidget):
         saveButton.clicked.connect(self.getReportEvent)
         return btnBox
 
-    def addFormTxt(self):
+    def addFormTxt(self) -> None:
         '''
         Метод для отображения окна ввода интервалов пользователем.
         '''
@@ -102,13 +108,13 @@ class ReportWindow(QWidget):
         else:
             self.intervalsTxt.hide()
 
-    def updateAdrComboBox(self):
+    def updateAdrComboBox(self) -> None:
         current_category = self.categoryComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrComboBox.clear()
         self.adrComboBox.addItems(adrs)
 
-    def getReportEvent(self):
+    def getReportEvent(self) -> None:
         '''
         Метод генерации отчёта по полету и сохранения его на диск.
         В зависимости от положения переключателя 
@@ -132,8 +138,13 @@ class ReportWindow(QWidget):
                 category = self.categoryComboBox.currentText()
                 adr = self.adrComboBox.currentText()
                 coef = self.parent.settings.value('koef_for_intervals')
+                plane = self.planeComboBox.currentText()
+                planeSettings = { 
+                    'name': plane,
+                    'values': self.parent.settings.value('planes')[plane]
+                }
                 self.controller.save_report(
-                    filePath, category, adr, coef, text
+                    filePath, category, adr, planeSettings, coef, text
                 )
                 self.filePath = filePath
                 self.openButton.show()
@@ -141,13 +152,10 @@ class ReportWindow(QWidget):
                     'успех', f'xlsx file saved to {filePath}')
             except PermissionError:
                 self.parent.setNotify(
-                    'ошибка', 'File opened in another program')
+                    'ошибка', 'Файл открыт в другой программе')
             except AttributeError:
                 self.parent.setNotify(
                     'предупреждение', 'check settings coefficient')
-            except ValueError:
-                self.parent.setNotify(
-                    'предупреждение', 'JVD_H not found in data')
             except Exception as e:
                 self.parent.setNotify('ошибка', str(e))
 
