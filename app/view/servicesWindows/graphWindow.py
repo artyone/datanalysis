@@ -49,7 +49,6 @@ class GraphWindow(QMdiSubWindow):
         self.mainLayout: QVBoxLayout = QVBoxLayout()
         self.mainWidget.setLayout(self.mainLayout)
         self.setWindowTitle(self.title)
-        self.setStyleSheet("color: gray;")
         self.setGeometry(0, 0, 500, 300)
         self.setAttribute(Qt.WA_DeleteOnClose, True)  # type: ignore
         self.createGraph()

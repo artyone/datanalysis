@@ -63,7 +63,7 @@ class SettingsWindow(QWidget):
         tabLayout.addRow('Путь к json папке:', lineEdit)
 
         self.themeComboBox = QComboBox()
-        self.themeComboBox.addItems(['black', 'white'])
+        self.themeComboBox.addItems(['dark', 'purple', 'light'])
         self.themeComboBox.setCurrentText(self.listMainSettings['theme'])
         tabLayout.addRow('Тема:', self.themeComboBox)
 
@@ -93,8 +93,9 @@ class SettingsWindow(QWidget):
         return horizontalLayer
 
     def openDirectoryDialog(self) -> None:
-        directoryPath = QFileDialog.getExistingDirectory(None,
-                                                         "Выберите папку")
+        directoryPath = QFileDialog.getExistingDirectory(
+            None,"Выберите папку"
+        )
         if directoryPath:
             self.browseLineEdit.setText(directoryPath)
 
@@ -185,6 +186,11 @@ class SettingsWindow(QWidget):
         }
         if self.settings.value('mainSettings') == newValueMainSettings:
             return False
+        #Устанавливаем фон для графиков под тему
+        if newValueMainSettings['theme'] != 'light':
+            self.graphTabWidget.backgroundCombo.setCurrentText('black')
+        else: 
+            self.graphTabWidget.backgroundCombo.setCurrentText('white')
         self.settings.setValue('mainSettings', newValueMainSettings)
         question = QMessageBox.question(
             None, "Вопрос", "Для применения настроек нужно перезапустить программу. Делаем?",

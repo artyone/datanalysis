@@ -48,13 +48,13 @@ class LeftMenuTree(QTreeWidget):
                         treeItem.setForeground(1, QColor('gray'))
                     else:
                         treeItem.setForeground(1, QColor('red'))
-                    treeItem.setTextAlignment(1, Qt.AlignRight)
+                    #treeItem.setTextAlignment(1, Qt.AlignRight)
                     treeItem.setFlags(treeItem.flags() | Qt.ItemIsUserCheckable)
                     treeItem.setCheckState(0, Qt.Unchecked)
         self.show()
         self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)
-        self.mainWindow.splitter.setSizes([120, 500])
+        self.mainWindow.splitter.setSizes([90, 500])
 
     @staticmethod
     def getInfoItem(item):

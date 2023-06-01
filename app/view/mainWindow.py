@@ -56,8 +56,8 @@ class MainWindow(QMainWindow):
         if (self.settings.allKeys() == [] or
                 self.settings.value('version') != self.appVersion):
             self.setDefaultSettings()
-        self.setTheme()
         self.initUI()
+        self.setTheme()
 
         lastFile = self.settings.value('lastFile')
         openLastFile = self.settings.value('mainSettings')['openLastFile']
@@ -80,8 +80,6 @@ class MainWindow(QMainWindow):
         self._connectActions()
 
         self.mdi = QMdiArea()
-        if self.settings.value('mainSettings')['theme'] == 'black':
-            self.mdi.setBackground(QColor(66, 66, 66))
         self.mdi.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.mdi.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
@@ -98,8 +96,30 @@ class MainWindow(QMainWindow):
         self.showMaximized()
 
     def setTheme(self) -> None:
-        pallete = getPalette(self.settings.value('mainSettings')['theme'])
+        theme = self.settings.value('mainSettings')['theme']
+        if theme == 'light':
+            return
+        if theme == 'dark':
+            self.mdi.setBackground(QColor(50, 50, 50))
+        if theme == 'purple':
+            self.mdi.setBackground(QColor(50, 50, 77))
+        pallete = getPalette(theme)
         self.app.setPalette(pallete)
+        self.setStyleSheet(
+            "QTreeView::indicator {"
+            "    border: 1px solid gray;"
+            "}"
+            "QTreeWidget::indicator:checked {"
+            "    background-color: gray;"
+            "    border: 1px solid gray;"
+            "}"
+            "QMdiSubWindow {"
+            "    color: black;"
+            "}"
+            "QMdiSubWindow:!active:title {"
+            "    color: white;"
+            "}"
+        )
 
     def _createMenuBar(self) -> None:
         '''
@@ -425,7 +445,7 @@ class MainWindow(QMainWindow):
 
     def getIcon(self, name) -> QIcon:
         icon = QIcon(name)
-        if self.settings.value('mainSettings')['theme'] == 'white':
+        if self.settings.value('mainSettings')['theme'] == 'light':
             return icon
         pixmap = icon.pixmap(50, 50)
         color = QColor(255, 255, 255)
