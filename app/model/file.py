@@ -38,70 +38,54 @@ class Datas(object):
 
     @staticmethod
     def write_xlsx(data: pd.DataFrame, plane_koef: dict, filepath: str) -> None:
-        #TODO продумать ошибку если темплейта нет
-        # сделать в шаблоне закладки для автоматической подстановки адресов
 
         def find_bookmarks(search_value: str, sheet) -> str:
+            search_value = '{' + search_value + '}'
             found_cell = None
             for row in sheet.iter_rows():
                 for cell in row:
                     if cell.value == search_value:
-                        found_cell = cell
-                        break
-                if found_cell:
-                    break
+                        return cell.row, cell.column
             return found_cell
-
-        bookmarks_values = {
-
-        }
-        bookmarks_additional = {
-
-        }
 
         wb = openpyxl.load_workbook('templates/xls_template.xlsx')
         ws = wb.active
-        row = 6
-        start = 2
-        for row_index, column in enumerate(data):
-            for column_index, value in enumerate(data[column]):
-                ws.cell(
-                    row=row + row_index, 
-                    column=start + column_index, 
-                    value=value
-                )
-        ws['D1'] = plane_koef['name']
-        ws['I1'] = plane_koef['values']['kurs_DISS_grad']
-        ws['I2'] = plane_koef['values']['kren_DISS_grad']
-        ws['I3'] = plane_koef['values']['tang_DISS_grad']
 
-        mean_US = data.US.mean()
-        mean_Wp = data.Wp.mean()
-        average_US = np.average(data.US, weights=data.counts)
-        average_Wp = np.average(data.Wp, weights=data.counts)
-        std_US = data.US.std()
-        std_Wp = data.Wp.std()
-        skp_US = np.sqrt((data.US.sum() ** 2) / len(data.US))
-        skp_Wp = np.sqrt((data.Wp.sum() ** 2) / len(data.Wp))
-        skp_US2 = skp_US * 2
-        skp_Wp2 = skp_Wp * 2
-        abs_US = abs(average_US) + 2 * skp_US
-        abs_Wp = abs(average_Wp) + 2 * skp_Wp
+        for name in data:
+            address = find_bookmarks(name, ws)
+            if not address:
+                continue
+            row, column = address
+            for i, value in enumerate(data[name]):
+                ws.cell(column=column + i, row=row, value=value)
 
-        #Можно сделать красиво, через обход 2 массивов
+        values = {}
 
-        ws['D30'] = round(mean_US, 3)
-        ws['D31'] = round(mean_Wp, 3)
-        ws['F30'] = round(average_US, 3)
-        ws['F31'] = round(average_Wp, 3)
-        ws['H30'] = round(std_US, 3)
-        ws['H31'] = round(std_Wp, 3)
-        ws['J30'] = round(skp_US, 3)
-        ws['J31'] = round(skp_Wp, 3)
-        ws['L30'] = round(skp_US2, 3)
-        ws['L31'] = round(skp_Wp2, 3)
-        ws['N30'] = round(abs_US, 3)
-        ws['N31'] = round(abs_Wp, 3)
+        values['plane'] = plane_koef['name']
+        values['pnk_kurs'] = plane_koef['values']['kurs_DISS_grad']
+        values['pnk_kren'] = plane_koef['values']['kren_DISS_grad']
+        values['pnk_tang'] = plane_koef['values']['tang_DISS_grad']
+
+        values['mean_US'] = data.US.mean()
+        values['mean_Wp'] = data.Wp.mean()
+        values['average_US'] = np.average(data.US, weights=data.counts)
+        values['average_Wp'] = np.average(data.Wp, weights=data.counts)
+        values['std_US'] = data.US.std()
+        values['std_Wp'] = data.Wp.std()
+        values['skp_US'] = np.sqrt((data.US.sum() ** 2) / len(data.US))
+        values['skp_Wp'] = np.sqrt((data.Wp.sum() ** 2) / len(data.Wp))
+        values['skp_US2'] = values['skp_US'] * 2
+        values['skp_Wp2'] = values['skp_Wp'] * 2
+        values['abs_US'] = values['average_US'] + 2 * values['skp_US']
+        values['abs_Wp'] = values['average_Wp'] + 2 * values['skp_Wp']
+
+        for name, value in values.items():
+            address = find_bookmarks(name, ws)
+            if not address:
+                continue
+            row, column = address
+            value = value if isinstance(value, str) else round(value, 3)
+            ws.cell(column=column, row=row, value=value)
 
         wb.save(filepath)
         wb.close()
@@ -159,7 +143,7 @@ class Datas(object):
         return [cls.load_json(filepath) for filepath in list_json]
 
     @staticmethod
-    def get_mask_shift_from_field(size):
+    def get_mask_shift_from_field(size: str) -> tuple:
         # получаем маску и смещение для побитового сравнения и получения данных
         start, stop = [int(i) for i in size.split(':')]
         number_mask = int('1' * (stop - start + 1), 2)
@@ -167,7 +151,7 @@ class Datas(object):
         return number_mask, shift
 
     @staticmethod
-    def get_unpacked_data_list(filepath):
+    def get_unpacked_data_list(filepath: str) -> np.array:
         with open(filepath, 'rb') as file:
             string = file.read()
             unpacked_data_list = [
@@ -176,7 +160,12 @@ class Datas(object):
         return unpacked_data_list
 
     @classmethod
-    def unpack_element(cls, byteswap, field_data, data_source: np.array):
+    def unpack_element(
+        cls, 
+        byteswap: bool, 
+        field_data: dict, 
+        data_source: np.array
+        ) -> np.array:
         position = field_data['position'] + 2
         koef = field_data['koef']
         size = field_data['size']
@@ -202,7 +191,12 @@ class Datas(object):
         return masked_data
 
     @classmethod
-    def unpack_group(cls, byteswap, group_info, data_source, result_data):
+    def unpack_group(
+        cls, 
+        byteswap: bool, 
+        group_info: dict, 
+        data_source: np.array, 
+        result_data: dict) -> None:
         if type(group_info['fields']) == list:
             for field in group_info['fields']:
                 column_name = field['name']
@@ -211,8 +205,10 @@ class Datas(object):
         else:
             mask_condition, shift_condition = cls.get_mask_shift_from_field(
                 group_info['condition_bit'])
-            condition_data = (data_source[:, group_info['condition_byte'] + 2]
-                              & (mask_condition << shift_condition)) >> shift_condition
+            condition_data = (
+                data_source[:, group_info['condition_byte'] + 2]
+                 & (mask_condition << shift_condition)
+                 ) >> shift_condition
             for condition, fields in group_info['fields'].items():
                 condition_mask = condition_data == int(condition)
                 for field in fields:
@@ -222,20 +218,23 @@ class Datas(object):
                     result_data[column_name] = column
 
     @staticmethod
-    def get_filtered_data_by_checksum(checksum, source_data):
+    def get_filtered_data_by_checksum(
+        checksum: str, 
+        source_data: np.array
+        ) -> np.array:
         control_sum = source_data[:, 1].astype(np.uint16).byteswap()
         control_sum_mask = control_sum == checksum
         data_list = source_data[control_sum_mask]
         return data_list
 
     @staticmethod
-    def get_time_list(koef, source):
+    def get_time_list(koef, source) -> np.array:
         time_list = source[:, 0].astype(np.uint32)
         time_list = time_list.byteswap() * koef
         return time_list
 
     @classmethod
-    def unpack_fields(cls, byteswap, fields, data_list, result_dict):
+    def unpack_fields(cls, byteswap, fields, data_list, result_dict) -> dict:
         for field in fields:
             if 'group' in field.keys() and field['group'] == True:
                 cls.unpack_group(byteswap, field, data_list, result_dict)
@@ -246,7 +245,7 @@ class Datas(object):
         return result_dict
 
     @classmethod
-    def unpack_adr(cls, adr, unpacked_data_list):
+    def unpack_adr(cls, adr, unpacked_data_list) -> dict:
         checksum = int(adr['checksum'], base=16)
         data_list = cls.get_filtered_data_by_checksum(
             checksum, unpacked_data_list)
@@ -257,7 +256,7 @@ class Datas(object):
         return df_dict
 
     @classmethod
-    def load_pdd(cls, filepath_pdd, json_data):
+    def load_pdd(cls, filepath_pdd, json_data) -> dict:
         unpacked_data_list = cls.get_unpacked_data_list(filepath_pdd)
         result_dict = {}
 

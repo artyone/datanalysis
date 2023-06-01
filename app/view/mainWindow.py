@@ -870,14 +870,22 @@ class MainWindow(QMainWindow):
         Метод отправки библиотеки
         '''
         notify = self.notify.info
+        duration = 10
         if type == 'предупреждение':
             notify = self.notify.warning
         if type == 'успех':
             notify = self.notify.sucess
+            duration = 5
         if type == 'ошибка':
             notify = self.notify.critical
-        notify(type.title(), txt, self, Align=BottomRight,
-               duracion=6, onclick=None)
+        notify(
+            Title=type.title(), 
+            Message=txt, 
+            Parent=self, 
+            Align=BottomRight,
+            duracion=duration, 
+            onclick=None
+        )
 
     def openSettings(self) -> None:
         '''

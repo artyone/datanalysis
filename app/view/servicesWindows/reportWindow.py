@@ -149,13 +149,16 @@ class ReportWindow(QWidget):
                 self.filePath = filePath
                 self.openButton.show()
                 self.parent.setNotify(
-                    'успех', f'xlsx file saved to {filePath}')
+                    'успех', f'Отчёт сохранён в {filePath}')
             except PermissionError:
                 self.parent.setNotify(
-                    'ошибка', 'Файл открыт в другой программе')
+                    'ошибка', 'Сохраняемый файл открыт в другой программе')
+            except FileNotFoundError:
+                self.parent.setNotify(
+                    'ошибка', 'Не найден шаблон xls_template.xlsx, проверьте его наличие')
             except AttributeError:
                 self.parent.setNotify(
-                    'предупреждение', 'check settings coefficient')
+                    'ошибка', 'Ошибка в данных или в коэффициентах')
             except Exception as e:
                 self.parent.setNotify('ошибка', str(e))
 
