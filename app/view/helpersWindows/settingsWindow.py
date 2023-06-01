@@ -9,7 +9,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
 from functools import partial
-from .settingsWindowGraph import GraphTab
+from .settingsWindowGraph import GraphTab, ValueErrorGraph
+from .settingsWindowPlane import PlaneTab, ValueErrorPlanes
 
 
 class SettingsWindow(QWidget):
@@ -37,7 +38,7 @@ class SettingsWindow(QWidget):
         Метод инициализации основных элементов окна.
         '''
         self.setGeometry(0, 0, 800, 600)
-        self.setWindowTitle("Settings menu")
+        self.setWindowTitle("Настройки")
         layout = QVBoxLayout()
         tabWidget = QTabWidget()
         tabWidget.addTab(self.mainTab(), 'Общие настройки')
@@ -101,7 +102,6 @@ class SettingsWindow(QWidget):
         '''
         Вкладка настройки фильтра бокового чек-бокс меню.
         '''
-
         scrollArea = QScrollArea()
         widget = QWidget()
         tabLayout = QVBoxLayout()
@@ -120,38 +120,8 @@ class SettingsWindow(QWidget):
         '''
         Вкладка настройки коэффициентов самолётов
         '''
-        tabWidget = QWidget()
-        tabLayout = QVBoxLayout()
-        self.planesComboBox = QComboBox()
-        self.planesComboBox.addItems(self.listPlanes)
-
-        tabLayout.addWidget(self.planesComboBox, alignment=Qt.AlignTop)
-        tabWidget.setLayout(tabLayout)
-        self.planesStackedLayout = QStackedLayout()
-        for plane in self.listPlanes:
-            self.planesStackedLayout.addWidget(self.pagePlaneStacked(plane))
-        self.planesComboBox.activated.connect(
-            partial(self.switchPage, self.planesStackedLayout,
-                    self.planesComboBox)
-        )
-        tabLayout.addLayout(self.planesStackedLayout)
-        return tabWidget
-
-    def pagePlaneStacked(self, plane: str) -> QWidget:
-        '''
-        Создает страницу настроек для вкладки самолета.
-        Значения берет из настроек и записывает объект в словарь listPlanes 
-        для последующего быстрого получения данных объекта.
-        '''
-        pageWidget = QWidget()
-        pageLayout = QFormLayout()
-        for param, value in self.settings.value('planes')[plane].items():
-            lineEdit = QLineEdit(str(value))
-            lineEdit.textChanged.connect(partial(self.checkDigit, lineEdit))
-            pageLayout.addRow(param, lineEdit)
-            self.listPlanes[plane][param] = lineEdit
-        pageWidget.setLayout(pageLayout)
-        return pageWidget
+        self.planeTabWidget = PlaneTab(self.listPlanes)
+        return self.planeTabWidget
 
     def correctionTab(self) -> QWidget:
         '''
@@ -191,14 +161,17 @@ class SettingsWindow(QWidget):
                 self.saveLeftMenuFilterSettings()
             )):
                 self.parent.setNotify(
-                'успех', 'Настройки сохранены.'
-            )
+                    'успех', 'Настройки сохранены.'
+                )
             else:
                 self.parent.setNotify(
-                'информация', 'Вы не внесли изменения в настройки'
+                    'информация', 'Вы не внесли изменения в настройки'
+                )
+        except (ValueErrorPlanes, ValueErrorGraph) as e:
+            self.parent.setNotify(
+                'ошибка', str(e)
             )
         except Exception as e:
-            print(str(e))
             self.parent.setNotify(
                 'ошибка', 'Настройки не сохранены, проверьте правильность введенных данных!'
             )
@@ -222,13 +195,7 @@ class SettingsWindow(QWidget):
         return True
 
     def savePlanesSettings(self) -> None:
-        newValuePlanes = {
-            plane: {
-                param: float(widget.text())
-                for param, widget in value.items()
-            }
-            for plane, value in self.listPlanes.items()
-        }
+        newValuePlanes = self.planeTabWidget.getValues()
         if self.settings.value('planes') == newValuePlanes:
             return False
         self.settings.setValue('planes', newValuePlanes)

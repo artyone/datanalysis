@@ -49,38 +49,11 @@ def defaultSettings(settings, appVersion):
         'background': 'black',
         'default': [
             {
-                "name": "Анализ Частот",
-                "rows": [
-                        {
-                            "row": 1,
-                            "width": 50,
-                            "fields": [
-                                {
-                                    "category": "D001 v1_11",
-                                    "adr": "ADR1",
-                                    "column": "Fd1",
-                                },
-                            ]
-                        },
-                    {
-                            "row": 2,
-                            "width": 50,
-                            "fields": [
-                                {
-                                    "category": "D001 v1_11",
-                                    "adr": "ADR1",
-                                    "column": "Fd2",
-                                }
-                            ]
-                        }
-                ],
-            },
-            {
                 "name": "Анализ Wp",
                 "rows": [
                         {
                             "row": 1,
-                            "width": 20,
+                            "width": 23,
                             "fields": [
                                 {
                                     "category": "PNK",
@@ -91,7 +64,7 @@ def defaultSettings(settings, appVersion):
                         },
                     {
                             "row": 2,
-                            "width": 20,
+                            "width": 25,
                             "fields": [
                                 {
                                     "category": "PNK",
@@ -107,7 +80,7 @@ def defaultSettings(settings, appVersion):
                         },
                     {
                             "row": 3,
-                            "width": 10,
+                            "width": 15,
                             "fields": [
                                 {
                                     "category": "D001 v1_11",
@@ -118,7 +91,7 @@ def defaultSettings(settings, appVersion):
                         },
                     {
                             "row": 4,
-                            "width": 50,
+                            "width": 37,
                             "fields": [
                                 {
                                     "category": "CALC",

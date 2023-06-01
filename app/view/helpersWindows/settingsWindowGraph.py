@@ -3,7 +3,10 @@ from PyQt5.QtWidgets import (
     QHBoxLayout, QLabel, QLineEdit, QPushButton,
     QFormLayout, QScrollArea, QComboBox, QFrame
 )
-import sys
+
+
+class ValueErrorGraph(Exception):
+    pass
 
 
 class FieldWidget(QWidget):
@@ -29,17 +32,19 @@ class FieldWidget(QWidget):
 
         self.setLayout(layout)
 
-    def get_field(self):
-        if (self.category_edit.text() == '' or
-            self.adr_edit.text() == '' or
-            self.column_edit.text() == ''
-        ):
-            raise ValueError
+    def get_field(self) -> dict:
+        category = self.category_edit.text()
+        adr = self.adr_edit.text()
+        column = self.column_edit.text()
+        if not (category and adr and column):
+            raise ValueErrorGraph(
+                'Заполнены не все поля на вкладке настройки графиков'
+            )
         try:
             field = {
-                'category': self.category_edit.text(),
-                'adr': self.adr_edit.text(),
-                'column': self.column_edit.text()
+                'category': category,
+                'adr': adr,
+                'column': column
             }
         except RuntimeError:
             field = None
@@ -48,7 +53,7 @@ class FieldWidget(QWidget):
 
 
 class RowWidget(QWidget):
-    def __init__(self, row):
+    def __init__(self, row) -> None:
         super().__init__()
         self.field_widgets = []
 
@@ -87,7 +92,7 @@ class RowWidget(QWidget):
 
         self.setLayout(self.layout)
 
-    def add_field(self):
+    def add_field(self) -> None:
         self.layout.removeWidget(self.add_field_btn)
         field = {'category': '', 'adr': '', 'column': ''}
         field_widget = FieldWidget(field)
@@ -95,9 +100,11 @@ class RowWidget(QWidget):
         self.layout.addRow(field_widget)
         self.layout.addRow(self.add_field_btn)
 
-    def get_row(self):
+    def get_row(self) -> dict:
         if self.rowEdit.text() == '' or self.widthEdit.text() == '':
-            raise ValueError
+            raise ValueErrorGraph(
+                'Не заполнено поле row или width на вкладке настройки графиков'
+            )
         try:
             row = {
                 'row': int(self.rowEdit.text()),
@@ -107,14 +114,13 @@ class RowWidget(QWidget):
                     for field_widget in self.field_widgets
                     if field_widget.get_field()]
             }
-        except RuntimeError:
-            row = None
-        finally:
             return row
+        except RuntimeError:
+            return None
 
 
 class CategoryGraphWidget(QWidget):
-    def __init__(self, name, rows):
+    def __init__(self, name, rows) -> None:
         super().__init__()
         self.rowWidgets = []
 
@@ -151,7 +157,7 @@ class CategoryGraphWidget(QWidget):
         self.layout.addWidget(lineWidget)
         self.setLayout(self.layout)
 
-    def addRow(self):
+    def addRow(self) -> None:
         self.layout.removeWidget(self.addRowBtn)
         row = {
             'row': '', 'width': '', 'fields': []
@@ -162,9 +168,11 @@ class CategoryGraphWidget(QWidget):
         self.layout.addWidget(row_widget)
         self.layout.addWidget(self.addRowBtn)
 
-    def getCategory(self):
+    def getCategory(self) -> dict:
         if self.categoryEdit.text() == '':
-            raise ValueError
+            raise ValueErrorGraph(
+                'Не заполнена категория на вкладке настройки графиков'
+            )
         try:
             analysisResult = {
                 'name': self.categoryEdit.text(),
@@ -173,9 +181,9 @@ class CategoryGraphWidget(QWidget):
                     for row_widget in self.rowWidgets
                     if row_widget.get_row()]
             }
+            return analysisResult
         except RuntimeError:
-            analysisResult = None
-        return analysisResult
+            return None
 
 
 class GraphTab(QWidget):
@@ -211,7 +219,6 @@ class GraphTab(QWidget):
         mainLayout.addRow(QLabel('Графики по умолчанию'), scrollArea)
 
         self.setLayout(mainLayout)
-        # self.setGeometry(0, 0, 500, 600)
 
     def add_analysis(self) -> None:
         self.scrollLayout.removeWidget(self.add_analysis_btn)
@@ -223,42 +230,45 @@ class GraphTab(QWidget):
 
     def get_data(self) -> list:
         if self.backgroundCombo.currentText() == '':
-            raise ValueError
+            raise ValueErrorGraph(
+                'Заполнены не все поля на вкладке настройки графиков'
+            )
         result = {
-                'background': self.backgroundCombo.currentText(),
-                'default': [category.getCategory() for category in self.widgets if category.getCategory()]
-            }
+            'background': self.backgroundCombo.currentText(),
+            'default': [category.getCategory() for category in self.widgets if category.getCategory()]
+        }
         return result
 
 
 if __name__ == '__main__':
+    import sys
     data = {
         'background': 'black',
         'default': [
             {
                 "name": "Анализ Частот",
                 "rows": [
-                        {
-                            "row": 1,
-                            "width": 50,
-                            "fields": [
-                                {
-                                    "category": "DIS D001",
-                                    "adr": "ADR1",
-                                    "column": "Fd1",
-                                },
-                            ]
-                        },
                     {
-                            "row": 2,
-                            "width": 50,
-                            "fields": [
-                                {
-                                    "category": "DIS D001",
-                                    "adr": "ADR1",
-                                    "column": "Fd2",
-                                }
-                            ]
+                        "row": 1,
+                        "width": 50,
+                        "fields": [
+                            {
+                                "category": "DIS D001",
+                                "adr": "ADR1",
+                                "column": "Fd1",
+                            },
+                        ]
+                    },
+                    {
+                        "row": 2,
+                        "width": 50,
+                        "fields": [
+                            {
+                                "category": "DIS D001",
+                                "adr": "ADR1",
+                                "column": "Fd2",
+                            }
+                        ]
                     }
                 ],
             }

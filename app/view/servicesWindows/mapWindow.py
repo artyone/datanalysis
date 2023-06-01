@@ -27,7 +27,7 @@ class MapWindow(QWidget):
         Метод отрисовки основных элементов окна.
         '''
         self.setGeometry(0, 0, 400, 200)
-        self.setWindowTitle("Create map")
+        self.setWindowTitle("Создание карты")
         dlgLayout = QVBoxLayout()
 
         self.initInputBlock()
