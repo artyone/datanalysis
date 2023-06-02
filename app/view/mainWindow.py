@@ -914,7 +914,7 @@ class MainWindow(QMainWindow):
         Метод открытия окна настроек.
         '''
         if self.settingsWindow is None:
-            self.settingsWindow = SettingsWindow(self.controller, self)
+            self.settingsWindow = SettingsWindow(self)
         else:
             self.settingsWindow.hide()
         self.center(self.settingsWindow)

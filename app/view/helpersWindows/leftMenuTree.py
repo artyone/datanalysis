@@ -15,14 +15,12 @@ class LeftMenuTree(QTreeWidget):
         self.customContextMenuRequested.connect(self.showContextMenu)
         self.itemDoubleClicked.connect(self.handleTreeItemDoubleClicked)
 
-
-        #TODO сделать райт клик, переименовать и скрыть. 
-
     def updateCheckBox(self):
         '''
         Создание бокового чек-бокс дерева для построения графиков
         '''
-        if not self.mainWindow.checkData():
+        if self.mainWindow.controller.get_data() == {}:
+            self.hide()
             return
 
         self.clear()
@@ -79,15 +77,18 @@ class LeftMenuTree(QTreeWidget):
 
     def showContextMenu(self, position) -> None:
         menu = QMenu(self)
-        renameAction = menu.addAction("Переименовать")
-        uncheckAllAction = menu.addAction("Снять все отметки")
+        uncheckAllAction = menu.addAction('Снять все отметки')
+        renameAction = menu.addAction('Переименовать')
         renameAction.triggered.connect(self.renameItem)
         uncheckAllAction.triggered.connect(self.updateCheckBox)
 
         item = self.currentItem()
         if len(self.getInfoItem(item)) == 3:
-            hideAction = menu.addAction("Скрыть")
+            hideAction = menu.addAction('Скрыть')
             hideAction.triggered.connect(self.hideItem)
+
+        delAction = menu.addAction('Удалить')
+        delAction.triggered.connect(self.deleteItem)
 
         menu.exec_(self.viewport().mapToGlobal(position))
 
@@ -96,8 +97,8 @@ class LeftMenuTree(QTreeWidget):
         if item is not None:
             newName, ok = QInputDialog.getText(
                 self, 
-                "Переименовать элемент", 
-                "Введите новое имя:", 
+                'Переименовать элемент', 
+                'Введите новое имя:', 
                 text=item.text(0)
             )
             if ok:
@@ -121,6 +122,18 @@ class LeftMenuTree(QTreeWidget):
                 self.updateCheckBox()
                 self.mainWindow.setNotify('успех', f'{name} скрыт.')
      
+            except Exception as e:
+                self.mainWindow.setNotify('предупреждение', str(e))
+
+    def deleteItem(self) -> None:
+        item = self.currentItem()
+        if item is not None:
+            try:
+                selectedItemTree = self.getInfoItem(item)
+                self.mainWindow.controller.delete_item(selectedItemTree)
+                self.updateCheckBox()
+            except KeyError:
+                self.mainWindow.setNotify('предупреждение', 'Элемент не найден в данных')
             except Exception as e:
                 self.mainWindow.setNotify('предупреждение', str(e))
 

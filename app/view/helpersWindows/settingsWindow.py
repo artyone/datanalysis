@@ -1,10 +1,8 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout,
     QCheckBox, QComboBox, QHBoxLayout,
-    QTabWidget, QFileDialog,
-    QLineEdit, QPushButton,
-    QStackedLayout, QScrollArea,
-    QMessageBox
+    QTabWidget, QFileDialog, QLineEdit, 
+    QPushButton, QScrollArea, QMessageBox
 )
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
@@ -18,10 +16,9 @@ class SettingsWindow(QWidget):
     Класс окна настроек.
     settings - настройки приложения.
     list* - словари для сохранения объектов настроек.
-    controller - контроллер.
     '''
 
-    def __init__(self, controller, parent=None) -> None:
+    def __init__(self, parent) -> None:
         super().__init__()
         self.parent = parent
         self.settings = self.parent.settings
@@ -30,7 +27,6 @@ class SettingsWindow(QWidget):
         self.listCorrections = self.settings.value('corrections')
         self.listGraphs = self.settings.value('graphs')
         self.listMenuFilters = []
-        self.controller = controller
         self.initUI()
 
     def initUI(self) -> None:

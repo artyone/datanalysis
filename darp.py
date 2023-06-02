@@ -9,8 +9,7 @@ from app.resource.constants import (
     APPLICATION_VERSION
 )
 #TODO
-#добавить в автоотчёт мин макс крен и высота
-#добавить добавление самолётов
+
 
 def main():
     '''Точка входа в программу.'''

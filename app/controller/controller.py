@@ -285,5 +285,18 @@ class Control(object):
         self.data[category][adr] = self.data[category][adr].rename(
             columns={column: new_name}
         )
-
+    
+    def delete_item(self, item_info: list) -> None:
+        if self.data_is_none():
+            raise ValueError('Нет данных')
+        if len(item_info) == 1:
+            category = item_info[0]
+            del self.data[category]
+            return
+        if len(item_info) == 2:
+            category, adr = item_info
+            del self.data[category][adr]
+            return
+        category, adr, column = item_info
+        self.data[category][adr].drop(column, axis=1, inplace=True)
 
