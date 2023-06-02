@@ -59,7 +59,7 @@ class InfoPlane(QStackedLayout):
                     raise ValueErrorPlanes(
                         f'Не задан коэффициент для самолёта {planeName} на вкладке настроек самолёта'
                     )
-                values[planeName][nameCoef] = widget.text()
+                values[planeName][nameCoef] = float(widget.text())
         return values
 
     def changeName(self, textWidget: QLineEdit) -> None:
