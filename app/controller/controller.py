@@ -268,16 +268,22 @@ class Control(object):
             return False
         return True
 
-    def change_column_name(
-        self,
-        category: str,
-        adr: str,
-        element: str,
-        new_name: str
-    ) -> None:
+    def change_column_name(self, item_info: list, new_name: str) -> None:
         if self.data_is_none():
-            raise ValueError('Wrong data')
-        if element not in self.data[category][adr].columns:
-            raise AttributeError('Такой заголовок не найден в данных')
+            raise ValueError('Нет данных')
+        if len(item_info) == 1:
+            category = item_info[0]
+            self.data[new_name] = self.data[category]
+            del self.data[category]
+            return
+        if len(item_info) == 2:
+            category, adr = item_info
+            self.data[category][new_name] = self.data[category][adr]
+            del self.data[category][adr]
+            return
+        category, adr, column = item_info
         self.data[category][adr] = self.data[category][adr].rename(
-            columns={element: new_name})
+            columns={column: new_name}
+        )
+
+

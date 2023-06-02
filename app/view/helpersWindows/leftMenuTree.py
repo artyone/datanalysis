@@ -57,42 +57,41 @@ class LeftMenuTree(QTreeWidget):
         self.mainWindow.splitter.setSizes([90, 500])
 
     @staticmethod
-    def getInfoItem(item):
+    def getInfoItem(item: QTreeWidgetItem) -> list:
         info = []
         for _ in range(3):
             if item:
                 info.append(item.text(0))
             else: break
             item = item.parent()
-        if len(info) != 3:
-            raise ValueError('Вы выбрали не элемент а категорию')
-        return reversed(info)
+        return info[::-1]
 
-    def handleTreeItemDoubleClicked(self, item, column):
+    def handleTreeItemDoubleClicked(self, item: QTreeWidgetItem, _) -> None:
         '''
         Обработка двойного клика на элементе дерева
         '''
         mouseEvent = QApplication.mouseButtons()
         if mouseEvent == Qt.LeftButton: 
-            selectedItemTree = None
-            try:
-                selectedItemTree = self.getInfoItem(item)
-            except Exception as e:
-                self.mainWindow.setNotify('предупреждение', str(e))
-            if selectedItemTree:
+            selectedItemTree = self.getInfoItem(item)
+            if len(selectedItemTree) == 3:
                 category, adr, element  = selectedItemTree
                 self.mainWindow.createGraph([(category, adr, element)])
 
-    def showContextMenu(self, position):
+    def showContextMenu(self, position) -> None:
         menu = QMenu(self)
-        rename_action = menu.addAction("Переименовать")
-        hide_action = menu.addAction("Скрыть")
-        rename_action.triggered.connect(self.renameItem)
-        hide_action.triggered.connect(self.hideItem)
+        renameAction = menu.addAction("Переименовать")
+        uncheckAllAction = menu.addAction("Снять все отметки")
+        renameAction.triggered.connect(self.renameItem)
+        uncheckAllAction.triggered.connect(self.updateCheckBox)
+
+        item = self.currentItem()
+        if len(self.getInfoItem(item)) == 3:
+            hideAction = menu.addAction("Скрыть")
+            hideAction.triggered.connect(self.hideItem)
 
         menu.exec_(self.viewport().mapToGlobal(position))
 
-    def renameItem(self):
+    def renameItem(self) -> None:
         item = self.currentItem()
         if item is not None:
             newName, ok = QInputDialog.getText(
@@ -104,13 +103,14 @@ class LeftMenuTree(QTreeWidget):
             if ok:
                 try:
                     selectedItemTree = self.getInfoItem(item)
-                    self.mainWindow.controller.change_column_name(*selectedItemTree, newName)
+                    self.mainWindow.controller.change_column_name(selectedItemTree, newName)
+                    self.updateCheckBox()
+                except KeyError:
+                    self.mainWindow.setNotify('предупреждение', 'Элемент не найден в данных')
                 except Exception as e:
                     self.mainWindow.setNotify('предупреждение', str(e))
-                self.updateCheckBox()
 
-
-    def hideItem(self):
+    def hideItem(self) -> None:
         item = self.currentItem()
         if item is not None:
             try:

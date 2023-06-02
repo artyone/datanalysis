@@ -46,7 +46,7 @@ class SettingsWindow(QWidget):
         tabWidget.addTab(self.planeTab(), 'Самолёты')
         tabWidget.addTab(self.correctionTab(), 'Коррекция')
         tabWidget.addTab(self.graphTab(), 'Графики')
-        self.saveButton = QPushButton('Save')
+        self.saveButton = QPushButton('Сохранить')
         self.saveButton.clicked.connect(self.saveSettings)
         layout.addWidget(tabWidget)
         layout.addWidget(self.saveButton)

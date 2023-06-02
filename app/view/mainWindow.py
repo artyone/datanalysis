@@ -110,8 +110,8 @@ class MainWindow(QMainWindow):
             "    border: 1px solid gray;"
             "}"
             "QTreeWidget::indicator:checked {"
-            "    background-color: gray;"
-            "    border: 1px solid gray;"
+            "    background-color: rgb(0, 191, 255);"
+            "    border: 2px solid gray;"
             "}"
             "QMdiSubWindow {"
             "    color: black;"
@@ -800,6 +800,8 @@ class MainWindow(QMainWindow):
         '''
         Растягиваем окна, если они растянуты хотя бы на 80 %
         '''
+        if self.mdi.width() == 0:
+            return
         width = self.mdi.width() - (self.tree.width() if self.tree.isHidden() else 0)
         sizes = [
             True if window.width() / width > 0.8 else False 
