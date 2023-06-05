@@ -29,12 +29,12 @@ class Control(object):
         category: str,
         adr: str,
         type: str,
+        category_info: dict,
         load_unknown: bool = True
     ) -> None:
         '''
         Загрузка данных из txt формата.
         '''
-        # TODO добавить проверку load_unknown
         if type == 'txt':
             data_from_file = file_methods.load_txt(filepath)
         else:
@@ -42,16 +42,21 @@ class Control(object):
         if 'name' in data_from_file.columns:
             data_from_file = data_from_file.rename(columns={'name': 'time'})
 
+        if not load_unknown:
+            category_headers = []
+            for elem in category_info:
+                if elem['adr_name'] == adr:
+                    category_headers = [field['name'] for field in elem['fields']]
+                    category_headers.extend(['time', 'latitude', 'longitude'])
+                    break
+            if not category_headers:
+                raise ValueError('Не найдены заголовки в json файле')
+            for column_name in data_from_file:
+                if column_name not in category_headers:
+                    del data_from_file[column_name]
+
         self.data[category] = {adr: data_from_file}
         self.data_calculated = self._check_calculated()
-
-    # def load_csv(self, filepath: str) -> None:
-    #     '''
-    #     Загрузка данных из csv формата.
-    #     '''
-    #     data_from_file = file_methods.load_csv(filepath)
-    #     self.data['PNK'] = {'ADR8': data_from_file}
-    #     self.data_calculated = self._check_calculated()
 
     def load_gzip(self, filepath: str) -> None:
         '''
@@ -122,8 +127,9 @@ class Control(object):
         }
         headers = self.data[category][adr].columns
         if self.data_is_none() or not need_headers.issubset(headers):
+            not_found_headers = set(need_headers) - set(headers)
             raise ValueError(
-                f'В данных не хватает: {", ".join(set(need_headers) - set(headers))}')
+                f'В данных не хватает: {", ".join(not_found_headers)}')
         self.worker = Mathematical(self.data[category][adr].copy())
         self.worker.apply_coefficient_w_diss(
             wx=corrections['koef_Wx_PNK'],
@@ -136,7 +142,10 @@ class Control(object):
         self.worker.calc_wg_kbti(plane_correct['k'], plane_correct['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
-        self.data['CALC'][target_adr] = self.worker.get_only_calculated_data_pnk()
+
+        self.data['CALC']= {
+            target_adr: self.worker.get_only_calculated_data_pnk()
+        }
         self.data_calculated = True
 
     def save_report(

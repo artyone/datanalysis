@@ -54,10 +54,12 @@ class OpenFileWindow(QWidget):
         self.formLayout.addRow('Категория', self.categoryComboBox)
         if self.filetype != 'pdd':
             self.formLayout.addRow('АДР', self.adrComboBox)
+        else:
+            self.loadUnknownCheckBox.hide()
         self.formLayout.addRow('Файл', self.initBrowseBlock())
         self.formLayout.addRow(self.loadUnknownCheckBox)
 
-    def initCategoryBlock(self):
+    def initCategoryBlock(self) -> None:
         self.categoryComboBox = QComboBox()
         self.categoryComboBox.addItems(self.categories.keys())
         self.adrComboBox = QComboBox()
@@ -107,11 +109,13 @@ class OpenFileWindow(QWidget):
 
     def openFileTxt(self):
         try:
+            currentCategory = self.categoryComboBox.currentText()
             self.controller.load_text(
                 self.browseLineEdit.text(),
-                self.categoryComboBox.currentText(),
+                currentCategory,
                 self.adrComboBox.currentText(),
                 self.filetype,
+                self.categories[currentCategory],
                 self.loadUnknownCheckBox.isChecked()
             )
             self.parent.tree.updateCheckBox()
@@ -119,7 +123,7 @@ class OpenFileWindow(QWidget):
                 'успех', f'Файл {self.browseLineEdit.text()} открыт'
             )
             self.parent.destroyChildWindow()
-        except ValueError as e:
+        except Exception as e:
             self.parent.setNotify('ошибка', str(e))
 
     def openFilePdd(self):
