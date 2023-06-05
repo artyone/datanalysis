@@ -104,8 +104,9 @@ class Control(object):
         self,
         category: str,
         adr: str,
-        plane_corr: dict,
-        corrections: dict
+        plane_correct: dict,
+        corrections: dict,
+        target_adr: str
     ) -> None:
         '''
         Метод расчета данных полёта.
@@ -132,19 +133,16 @@ class Control(object):
             kren=corrections['kren_correct'],
             tang=corrections['tang_correct'],
             kurs=corrections['kurs_correct'])
-        self.worker.calc_wg_kbti(plane_corr['k'], plane_corr['k1'])
+        self.worker.calc_wg_kbti(plane_correct['k'], plane_correct['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
-        self.data['CALC'] = {
-            'PNK': self.worker.get_only_calculated_data_pnk()
-        }
+        self.data['CALC'][target_adr] = self.worker.get_only_calculated_data_pnk()
         self.data_calculated = True
 
     def save_report(
         self,
         filepath: str,
-        category: str,
-        adr: str,
+        categories: dict,
         plane_koef: dict, 
         koef_for_intervals: dict,
         string: str
@@ -160,8 +158,12 @@ class Control(object):
         Расситываем данные с учетом коэффициентов, 
         записываем по указанному пути.
         '''
-        data_source = self.data[category][adr]
-        data_calc = self.data['CALC']['PNK']
+        category_source = categories['source']['category']
+        adr_source = categories['source']['adr']
+        data_source = self.data[category_source][adr_source]
+        category_calc = categories['calc']['category']
+        adr_calc = categories['calc']['adr']
+        data_calc = self.data[category_calc][adr_calc]
         self.worker = Mathematical(data_source.merge(data_calc, on='time'))
         if string == '':
             if 'JVD_H' in data_source.columns:

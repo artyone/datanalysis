@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout,
     QCheckBox, QComboBox,
-    QDialogButtonBox
+    QDialogButtonBox, QInputDialog
 )
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
@@ -155,18 +155,25 @@ class CalcWindow(QWidget):
         # дисс, пока только пнк 
         if not self.calcPnkCheckBox.isChecked():
             self.parent.setNotify('предупреждение', 'Необходимо установить хотя бы расчет ПНК')
+        
+        text, ok = QInputDialog.getText(
+            self, 'Ввод данных', 'Введите название адр:'
+        )
+        if not ok:
+            return
 
-        plane_corr = self.parent.settings.value(
+        planeCorr = self.parent.settings.value(
             'planes')[self.planeComboBox.currentText()]
         corrections = self.parent.settings.value('corrections')
         categoryPnk = self.categoryPnkComboBox.currentText()
         adrPnk = self.adrPnkComboBox.currentText()
         try:
             self.controller.set_calculate_data_pnk(
-                categoryPnk,
-                adrPnk,
-                plane_corr,
-                corrections
+                category=categoryPnk,
+                adr=adrPnk,
+                plane_correct=planeCorr,
+                corrections=corrections,
+                target_adr=text
             )
             self.parent.tree.updateCheckBox()
             self.parent.setNotify('успех', 'Данные подсчитаны.')

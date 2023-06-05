@@ -11,7 +11,7 @@ from app.resource.constants import (
 #TODO
 
 
-def main():
+def main() -> None:
     '''Точка входа в программу.'''
     QCoreApplication.setOrganizationName(ORGANIZATION_NAME)
     QCoreApplication.setOrganizationDomain(ORGANIZATION_DOMAIN)

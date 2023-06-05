@@ -2,12 +2,70 @@ from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout,
     QLabel, QComboBox, QHBoxLayout,
     QDialogButtonBox, QFileDialog,
-    QPlainTextEdit
+    QPlainTextEdit, QCheckBox
 )
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
 from qtwidgets import AnimatedToggle
 from os import startfile
+from functools import partial
+
+
+class LineChooseWidget(QWidget):
+    def __init__(self, text, categories, parent=None) -> None:
+        super().__init__()
+        self.parent = parent
+        self.categories = categories
+        layout = QHBoxLayout()
+        self.setLayout(layout)
+
+        textLabel = QLabel(text)
+        textLabel.setFixedWidth(115)
+        self.categoryComboBox = QComboBox()
+        self.categoryComboBox.addItems(self.categories.keys())
+        self.adrComboBox = QComboBox()
+        self.categoryComboBox.activated.connect(
+            self.updateAdrComboBox
+        )
+        self.updateAdrComboBox()
+        layout.addWidget(textLabel)
+        layout.addWidget(self.categoryComboBox)
+        layout.addWidget(self.adrComboBox)
+
+    def updateAdrComboBox(self) -> None:
+        currentCategory = self.categoryComboBox.currentText()
+        self.adrComboBox.clear()
+        self.adrComboBox.addItems(self.categories[currentCategory])
+
+    def getValues(self) -> tuple:
+        category = self.categoryComboBox.currentText()
+        adr = self.adrComboBox.currentText()
+        return {'category': category, 'adr': adr}
+
+
+class ChooseWidget(QWidget):
+    def __init__(self, categories, parent=None) -> None:
+        super().__init__()
+        self.parent = parent
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+        self.lineSourceWidget = LineChooseWidget(
+            'Исходные данные', categories
+        )
+        self.lineCalcWidget = LineChooseWidget(
+            'Посчитанные данные', categories
+        )
+
+        layout.addWidget(self.lineSourceWidget)
+        layout.addWidget(self.lineCalcWidget)
+
+        self.hide()
+
+    def getValues(self):
+        sourceValues = self.lineSourceWidget.getValues()
+        calcValues = self.lineCalcWidget.getValues()
+        return {'source': sourceValues, 'calc': calcValues}
 
 
 class ReportWindow(QWidget):
@@ -25,94 +83,93 @@ class ReportWindow(QWidget):
         self.intervalsTxt = None
         self.initUI()
 
-    def initUI(self):
-        '''
-        Метод инциализации главных элементов окна.
-        '''
-        self.setGeometry(0, 0, 500, 500)
+    def initUI(self) -> None:
         self.setWindowTitle("Создание отчёта")
-        self.setLayout(QVBoxLayout())
-
-        formLayout = QFormLayout()
-
-        self.initCategoryBlock()
-        inputBox = self.inputBox()
-        btnBox = self.buttonBox()
-
-        formLayout.addRow('Категория', self.categoryComboBox)
-        formLayout.addRow('АДР', self.adrComboBox)
-        formLayout.addRow('Самолёт', self.planeComboBox)
-        formLayout.addRow(inputBox)
-        formLayout.addRow(self.intervalsTxt)
-
-        self.layout().addLayout(formLayout, 1)
-        self.layout().addWidget(btnBox, 1)
-
-    def initCategoryBlock(self) -> None:
-        self.categoryComboBox = QComboBox()
-        categories = self.controller.get_data().keys()
-        self.categoryComboBox.addItems(categories)
-        self.categoryComboBox.activated.connect(self.updateAdrComboBox)
-
-        self.adrComboBox = QComboBox()
-        current_category = self.categoryComboBox.currentText()
-        adrs = self.controller.get_data()[current_category].keys()
-        self.adrComboBox.addItems(adrs)
+        layout = QFormLayout()
+        self.setLayout(layout)
 
         self.planeComboBox = QComboBox()
-        self.planeComboBox.addItems(
-            self.parent.settings.value('planes').keys()
+        planes = self.parent.settings.value('planes').keys()
+        self.planeComboBox.addItems(planes)
+        layout.addRow('Самолёт', self.planeComboBox)
+
+
+        categories = {
+            name: value.keys() 
+            for name, value in self.controller.get_data().items()
+        }
+
+        self.pnkCheckBox = QCheckBox('Добавить в отчёт даные ПНК')
+        self.pnkWidget = ChooseWidget(categories)
+        self.pnkCheckBox.stateChanged.connect(
+            partial(self.widgetStateChanged, self.pnkWidget)
         )
+        layout.addRow(self.pnkCheckBox)
+        layout.addRow(self.pnkWidget)
+
+        self.dissCheckBox = QCheckBox('Добавить в отчёт даные ДИСС')
+        self.dissWidget = ChooseWidget(categories)
+        self.dissCheckBox.stateChanged.connect(
+            partial(self.widgetStateChanged, self.dissWidget)
+        )
+        #убрать после реализации подсчёта дисс
+        self.dissCheckBox.hide()
+        layout.addRow(self.dissCheckBox)
+        layout.addRow(self.dissWidget)
+        layout.addRow(self.inputBox())
+        layout.addRow(self.intervalsTxt)
+        layout.addRow(self.buttonBox())
+
+    def widgetStateChanged(self, widget, state) -> None:
+        if state:
+            widget.show()
+        else:
+            widget.hide()
+            self.adjustSize()
+        if self.pnkCheckBox.isChecked() or self.dissCheckBox.isChecked():
+            self.saveButton.show()
+        else: self.saveButton.hide()
+
 
     def inputBox(self) -> QHBoxLayout:
-        self.intervalsToggle = AnimatedToggle()
-        self.intervalsToggle.setChecked(True)
-        self.intervalsToggle.stateChanged.connect(self.addFormTxt)
+        self.toggle = AnimatedToggle()
+        self.toggle.setChecked(True)
         self.intervalsTxt = QPlainTextEdit()
+        self.intervalsTxt.setFixedHeight(300)
+        self.toggle.stateChanged.connect(
+            partial(self.widgetStateChanged, self.intervalsTxt)
+        )
 
-        horizontalLayout = QHBoxLayout()
-        horizontalLayout.addWidget(QLabel('<b>Интервалы:</b>'), 2)
-        horizontalLayout.addWidget(
+        layout = QHBoxLayout()
+        layout.addWidget(
+            QLabel('<b>Интервалы:</b>'), 2
+        )
+        layout.addWidget(
             QLabel('Рассчитать автоматически'),
             1,
             alignment=Qt.AlignRight
         )
-        horizontalLayout.addWidget(self.intervalsToggle, 1)
-        horizontalLayout.addWidget(QLabel('Ввести вручную'), 2)
-        return horizontalLayout
+        layout.addWidget(self.toggle, 1)
+        layout.addWidget(QLabel('Ввести вручную'), 2)
+        return layout
 
     def buttonBox(self) -> QDialogButtonBox:
-        btnBox = QDialogButtonBox()
-
-        btnBox.setStandardButtons(
+        buttonBox = QDialogButtonBox()
+        buttonBox.setStandardButtons(
             QDialogButtonBox.Open |
             QDialogButtonBox.Save |
             QDialogButtonBox.Cancel
         )
-        btnBox.rejected.connect(self.close)
+        buttonBox.rejected.connect(self.close)
 
-        self.openButton = btnBox.button(QDialogButtonBox.Open)
-        self.openButton.clicked.connect(self.openFile)
+        self.openButton = buttonBox.button(QDialogButtonBox.Open)
+        self.openButton.clicked.connect(self.openFileEvent)
         self.openButton.hide()
 
-        saveButton = btnBox.button(QDialogButtonBox.Save)
-        saveButton.clicked.connect(self.getReportEvent)
-        return btnBox
-
-    def addFormTxt(self) -> None:
-        '''
-        Метод для отображения окна ввода интервалов пользователем.
-        '''
-        if self.intervalsToggle.isChecked():
-            self.intervalsTxt.show()
-        else:
-            self.intervalsTxt.hide()
-
-    def updateAdrComboBox(self) -> None:
-        current_category = self.categoryComboBox.currentText()
-        adrs = self.controller.get_data()[current_category].keys()
-        self.adrComboBox.clear()
-        self.adrComboBox.addItems(adrs)
+        self.saveButton = buttonBox.button(QDialogButtonBox.Save)
+        self.saveButton.clicked.connect(self.getReportEvent)
+        self.saveButton.hide()
+        return buttonBox
 
     def getReportEvent(self) -> None:
         '''
@@ -120,11 +177,12 @@ class ReportWindow(QWidget):
         В зависимости от положения переключателя 
         отчет генерируется автоматически или по данным пользователя.
         '''
+        #пока отчёт только по данным пнк
         text = self.intervalsTxt.toPlainText()
-        if self.intervalsToggle.isChecked() and not text:
-            self.parent.setNotify('предупреждение', "Need input intervals")
+        if self.toggle.isChecked() and not text:
+            self.parent.setNotify('предупреждение', "Введите интервалы.")
             return
-        if not self.intervalsToggle.isChecked():
+        if not self.toggle.isChecked():
             text = ''
         options = QFileDialog.Options()
         filePath, _ = QFileDialog.getSaveFileName(
@@ -135,8 +193,7 @@ class ReportWindow(QWidget):
             options=options)
         if filePath:
             try:
-                category = self.categoryComboBox.currentText()
-                adr = self.adrComboBox.currentText()
+                values = self.pnkWidget.getValues()
                 coef = self.parent.settings.value('koef_for_intervals')
                 plane = self.planeComboBox.currentText()
                 planeSettings = { 
@@ -144,7 +201,7 @@ class ReportWindow(QWidget):
                     'values': self.parent.settings.value('planes')[plane]
                 }
                 self.controller.save_report(
-                    filePath, category, adr, planeSettings, coef, text
+                    filePath, values, planeSettings, coef, text
                 )
                 self.filePath = filePath
                 self.openButton.show()
@@ -162,15 +219,24 @@ class ReportWindow(QWidget):
             except Exception as e:
                 self.parent.setNotify('ошибка', str(e))
 
-    def openFile(self):
+    def openFileEvent(self) -> None:
         '''
         Метод открытия файла отчёта, если он был создан.
         '''
         startfile(self.filePath)
         self.close()
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key_Escape:
             self.hide()
         else:
             super().keyPressEvent(event)
+
+
+if __name__ == '__main__':
+    import sys
+    from PyQt5.QtWidgets import QApplication
+    app = QApplication(sys.argv)
+    window = ReportWindow()
+    window.show()
+    sys.exit(app.exec_())

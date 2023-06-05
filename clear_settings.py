@@ -17,7 +17,6 @@ class MainWindow(QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
-
         self.initUI()
 
     def initUI(self):
@@ -63,6 +62,7 @@ class MainWindow(QMainWindow):
         self.qsettings.clear()
         self.plainText.clear()
         QMessageBox.information(self, "Уведомление", "Настройки удалены")
+
 
 if __name__ == "__main__":
     QCoreApplication.setOrganizationName(ORGANIZATION_NAME)
