@@ -112,7 +112,7 @@ class ReportWindow(QWidget):
         self.dissCheckBox.stateChanged.connect(
             partial(self.widgetStateChanged, self.dissWidget)
         )
-        #убрать после реализации подсчёта дисс
+        #TODO убрать после реализации подсчёта дисс
         self.dissCheckBox.hide()
         layout.addRow(self.dissCheckBox)
         layout.addRow(self.dissWidget)
@@ -177,7 +177,7 @@ class ReportWindow(QWidget):
         В зависимости от положения переключателя 
         отчет генерируется автоматически или по данным пользователя.
         '''
-        #пока отчёт только по данным пнк
+        #TODO пока отчёт только по данным пнк
         text = self.intervalsTxt.toPlainText()
         if self.toggle.isChecked() and not text:
             self.parent.setNotify('предупреждение', "Введите интервалы.")

@@ -52,11 +52,14 @@ class MainWindow(QMainWindow):
         return string
 
     def save(self) -> None:
-        string = self.plainText.toPlainText()
-        settings = json.loads(string)
-        for key, value in settings.items():
-            self.qsettings.setValue(key, value)
-        QMessageBox.information(self, "Уведомление", "Настройки сохранены")
+        try:
+            string = self.plainText.toPlainText()
+            settings = json.loads(string)
+            for key, value in settings.items():
+                self.qsettings.setValue(key, value)
+            QMessageBox.information(self, "Уведомление", "Настройки сохранены")
+        except:
+            QMessageBox.information(self, "Уведомление", "Ошибка в настройках")
 
     def delete(self) -> None:
         self.qsettings.clear()

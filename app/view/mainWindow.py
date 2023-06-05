@@ -70,7 +70,7 @@ class MainWindow(QMainWindow):
         Создание Экшенов, меню, тулбара, статус бара, связей.
         Для уведомлений используется сторонняя библиотека.
         '''
-        #self.setGeometry(100, 100, 800, 600)
+        # self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle(f'{self.appName} {self.appVersion}')
         self.app.setWindowIcon(QIcon('icon.ico'))
         self._createActions()
@@ -132,20 +132,20 @@ class MainWindow(QMainWindow):
         self._createSettingsMenu()
 
     def _createFileMenu(self) -> None:
-        fileMenu = self.menuBar.addMenu('&Файл')
+        fileMenu: QMenu = self.menuBar.addMenu('&Файл')
         fileMenu.addAction(self.clearAction)
 
-        openSourceMenu = fileMenu.addMenu('Открыть txt или csv')
+        openSourceMenu: QMenu = fileMenu.addMenu('Открыть txt или csv')
         openSourceMenu.setIcon(self.getIcon(':file-plus.svg'))
         openSourceMenu.addAction(self.openTxtAction)
         openSourceMenu.addAction(self.openCsvAction)
 
-        openDataMenu = fileMenu.addMenu('&Открыть gzip или pdd')
+        openDataMenu: QMenu = fileMenu.addMenu('&Открыть gzip или pdd')
         openDataMenu.setIcon(self.getIcon(':database.svg'))
         openDataMenu.addAction(self.openPddAction)
         openDataMenu.addAction(self.openGzipAction)
 
-        saveMenu = fileMenu.addMenu('&Сохранить как')
+        saveMenu: QMenu = fileMenu.addMenu('&Сохранить как')
         saveMenu.setIcon(self.getIcon(':save'))
         saveMenu.addAction(self.saveGzipAction)
         saveMenu.addAction(self.saveCsvAction)
@@ -154,7 +154,7 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(self.exitAction)
 
     def _createViewMenu(self) -> None:
-        viewMenu = self.menuBar.addMenu('&Просмотр')
+        viewMenu: QMenu = self.menuBar.addMenu('&Просмотр')
         viewMenu.addAction(self.hideLeftMenuAction)
         viewMenu.addAction(self.createGraphAction)
         viewMenu.addAction(self.menuDefaultGraphAction)
@@ -166,14 +166,14 @@ class MainWindow(QMainWindow):
         viewMenu.addAction(self.closeAllAction)
 
     def _createServiceMenu(self):
-        serviceMenu = self.menuBar.addMenu('&Сервисы')
+        serviceMenu: QMenu = self.menuBar.addMenu('&Сервисы')
         serviceMenu.addAction(self.calculateDataAction)
         serviceMenu.addAction(self.createMapAction)
         serviceMenu.addAction(self.createReportAction)
         serviceMenu.addAction(self.pythonConsoleAction)
 
     def _createSettingsMenu(self):
-        settingsMenu = self.menuBar.addMenu('&Настройки')
+        settingsMenu: QMenu = self.menuBar.addMenu('&Настройки')
         settingsMenu.addAction(self.openSettingsActions)
         settingsMenu.addAction(self.loadSettingsFromFileActions)
         settingsMenu.addAction(self.saveSettingsToFileActions)
@@ -193,7 +193,7 @@ class MainWindow(QMainWindow):
         self.addToolBar(position, self._viewToolBar())
 
     def _fileToolBar(self) -> QToolBar:
-        fileToolBar = QToolBar('File')
+        fileToolBar: QMenu = QToolBar('File')
         fileToolBar.addAction(self.openTxtAction)
         fileToolBar.addAction(self.openGzipAction)
         fileToolBar.addAction(self.saveGzipAction)
@@ -203,7 +203,7 @@ class MainWindow(QMainWindow):
         return fileToolBar
 
     def _serviceToolBar(self) -> QToolBar:
-        serviceToolBar = QToolBar('Service')
+        serviceToolBar: QMenu = QToolBar('Service')
         serviceToolBar.addAction(self.calculateDataAction)
         serviceToolBar.addAction(self.pythonConsoleAction)
         serviceToolBar.setMovable(False)
@@ -233,7 +233,8 @@ class MainWindow(QMainWindow):
         '''
         self.statusbar = self.statusBar()
         self.statusbar.showMessage(
-            'Привет, пользователь! Я за тобой слежу!', 30000)
+            'Привет, пользователь! Я за тобой слежу!', 30000
+        )
 
     def _createActions(self) -> None:
         '''
@@ -247,100 +248,135 @@ class MainWindow(QMainWindow):
     def _creteFileActions(self) -> None:
         self.clearAction = QAction('&Очистить окно', self)
         self.clearAction.setIcon(self.getIcon(':x.svg'))
-        self.clearAction.setStatusTip('Очистить все данные в программе.')
+        self.clearAction.setStatusTip(
+            'Очистить все данные в программе.'
+        )
 
         self.openTxtAction = QAction('Открыть *.&txt...', self)
         self.openTxtAction.setIcon(self.getIcon(':file-plus.svg'))
-        self.openTxtAction.setStatusTip('Открыть txt файл с данными.')
+        self.openTxtAction.setStatusTip(
+            'Открыть txt файл с данными.'
+        )
 
         self.openPddAction = QAction('Открыть *.&pdd...', self)
         self.openPddAction.setIcon(self.getIcon(':file.svg'))
-        self.openPddAction.setStatusTip('Открыть pdd файл с данными.')
+        self.openPddAction.setStatusTip(
+            'Открыть pdd файл с данными.'
+        )
 
         self.openCsvAction = QAction('Открыть *.&csv...', self)
         self.openCsvAction.setIcon(self.getIcon(':file-text.svg'))
-        self.openCsvAction.setStatusTip('Открыть csv файл с данными.')
+        self.openCsvAction.setStatusTip(
+            'Открыть csv файл с данными.'
+        )
 
         self.openGzipAction = QAction('Открыть *.&gzip...', self)
         self.openGzipAction.setIcon(self.getIcon(':file.svg'))
-        self.openGzipAction.setStatusTip('Открыть gzip файл с данными.')
+        self.openGzipAction.setStatusTip(
+            'Открыть gzip файл с данными.'
+        )
         self.openGzipAction.setShortcut('Ctrl+O')
 
         self.saveGzipAction = QAction('Сохранить как *.gzip...', self)
         self.saveGzipAction.setIcon(self.getIcon(':save.svg'))
-        self.saveGzipAction.setStatusTip('Сохранить данные в формате gzip')
+        self.saveGzipAction.setStatusTip(
+            'Сохранить данные в формате gzip'
+        )
         self.saveGzipAction.setShortcut('Ctrl+S')
 
         self.saveCsvAction = QAction('Сохранить как *.csv...', self)
         self.saveCsvAction.setIcon(self.getIcon(':file-text.svg'))
-        self.saveCsvAction.setStatusTip('Сохранить данные в формате csv')
+        self.saveCsvAction.setStatusTip(
+            'Сохранить данные в формате csv'
+        )
 
         self.exitAction = QAction('&Закрыть приложение', self)
         self.exitAction.setIcon(self.getIcon(':log-out.svg'))
-        self.exitAction.setStatusTip('Закрыть приложение навсегда')
+        self.exitAction.setStatusTip(
+            'Закрыть приложение навсегда'
+        )
         self.exitAction.setShortcut('Ctrl+Q')
 
     def _creteServiceActions(self) -> None:
         self.calculateDataAction = QAction('&Рассчитать данные')
         self.calculateDataAction.setIcon(self.getIcon(':percent.svg'))
         self.calculateDataAction.setStatusTip(
-            'Рассчитать данные для дальнейшего анализа')
+            'Рассчитать данные для дальнейшего анализа'
+        )
 
         self.createMapAction = QAction('Создать &карту', self)
         self.createMapAction.setIcon(self.getIcon(':map.svg'))
-        self.createMapAction.setStatusTip('Создать интерактивную карту полёта')
+        self.createMapAction.setStatusTip(
+            'Создать интерактивную карту полёта'
+        )
 
         self.createReportAction = QAction('Создать &отчёт', self)
         self.createReportAction.setIcon(self.getIcon(':mail.svg'))
         self.createReportAction.setStatusTip(
-            'Создать отчет по полету и сохранить его в xlsx')
+            'Создать отчет по полету и сохранить его в xlsx'
+        )
 
         self.pythonConsoleAction = QAction('&Python консоль', self)
         self.pythonConsoleAction.setIcon(self.getIcon(':terminal'))
-        self.pythonConsoleAction.setStatusTip('Открыть окно консоли')
+        self.pythonConsoleAction.setStatusTip(
+            'Открыть окно консоли'
+        )
 
     def _createViewActions(self) -> None:
         self.hideLeftMenuAction = QAction('&Скрыть левое меню')
         self.hideLeftMenuAction.setIcon(self.getIcon(':eye-off'))
-        self.hideLeftMenuAction.setStatusTip('Скрыть/показать левое меню')
+        self.hideLeftMenuAction.setStatusTip(
+            'Скрыть/показать левое меню'
+        )
         self.hideLeftMenuAction.setCheckable(True)
 
         self.createGraphAction = QAction('&Создать график')
         self.createGraphAction.setIcon(self.getIcon(':trending-up.svg'))
-        self.createGraphAction.setStatusTip('Создать график в новом окне')
+        self.createGraphAction.setStatusTip(
+            'Создать график в новом окне'
+        )
 
         self.menuDefaultGraphAction = QAction(
-            '&Создать графики по умолчанию')
+            '&Создать графики по умолчанию'
+        )
         self.menuDefaultGraphAction.setMenu(self.createDropdownDefaultGraph())
         self.menuDefaultGraphAction.setIcon(self.getIcon(':shuffle.svg'))
         self.menuDefaultGraphAction.setStatusTip(
-            'Создать графики по умолчанию в новых окнах')
+            'Создать графики по умолчанию в новых окнах'
+        )
 
         self.cascadeAction = QAction('&Каскадное расположение')
         self.cascadeAction.setIcon(self.getIcon(':bar-chart.svg'))
-        self.cascadeAction.setStatusTip('Каскадное расположение окон графиков')
+        self.cascadeAction.setStatusTip(
+            'Каскадное расположение окон графиков'
+        )
 
         self.horizontalAction = QAction('&Горизонтальное расположение')
         self.horizontalAction.setIcon(self.getIcon(':more-vertical.svg'))
         self.horizontalAction.setStatusTip(
-            'Горизонтальное расположение окон графиков')
+            'Горизонтальное расположение окон графиков'
+        )
         self.horizontalAction.setCheckable(True)
 
         self.verticalAction = QAction('&Вертикальное расположение')
         self.verticalAction.setIcon(self.getIcon(':more-horizontal.svg'))
         self.verticalAction.setStatusTip(
-            'Вертикальное расположение окон графиков')
+            'Вертикальное расположение окон графиков'
+        )
         self.verticalAction.setCheckable(True)
 
-        self.trackGraphAction = QAction('&Сихронизация графиков')
+        self.trackGraphAction = QAction('&Синхронизация графиков')
         self.trackGraphAction.setIcon(self.getIcon(':move.svg'))
         self.trackGraphAction.setStatusTip(
-            'Синхронизация всех графиков по оси Ох')
+            'Синхронизация всех графиков по оси Ох'
+        )
         self.trackGraphAction.setCheckable(True)
 
         self.closeAllAction = QAction('Закрыть &все окна')
         self.closeAllAction.setIcon(self.getIcon(':x-circle.svg'))
-        self.closeAllAction.setStatusTip('Закрыть все открытые окна')
+        self.closeAllAction.setStatusTip(
+            'Закрыть все открытые окна'
+        )
 
     def _createSettingsActions(self) -> None:
         self.openSettingsActions = QAction('&Настройки')
@@ -348,22 +384,28 @@ class MainWindow(QMainWindow):
         self.openSettingsActions.setStatusTip('Меню настроек')
 
         self.setDefaultSettingsActions = QAction(
-            '&Установить стандартные настройки')
+            '&Установить стандартные настройки'
+        )
         self.setDefaultSettingsActions.setIcon(self.getIcon(':sliders.svg'))
         self.setDefaultSettingsActions.setStatusTip(
-            'Установить стандартные настройки')
+            'Установить стандартные настройки'
+        )
 
         self.loadSettingsFromFileActions = QAction(
-            'Загрузить настройки из файла')
+            'Загрузить настройки из файла'
+        )
         self.loadSettingsFromFileActions.setIcon(self.getIcon(':download.svg'))
         self.loadSettingsFromFileActions.setStatusTip(
-            'Загрузить настройки из файла json')
+            'Загрузить настройки из файла json'
+        )
 
         self.saveSettingsToFileActions = QAction(
-            '&Сохранить настройки в файл')
+            '&Сохранить настройки в файл'
+        )
         self.saveSettingsToFileActions.setIcon(self.getIcon(':save.svg'))
         self.saveSettingsToFileActions.setStatusTip(
-            'Сохранить настройки в файл json')
+            'Сохранить настройки в файл json'
+        )
 
         self.aboutAction = QAction('&О программе')
         self.aboutAction.setIcon(self.getIcon(':help-circle.svg'))
@@ -414,9 +456,11 @@ class MainWindow(QMainWindow):
     def _connectSettingsActions(self) -> None:
         self.openSettingsActions.triggered.connect(self.openSettings)
         self.loadSettingsFromFileActions.triggered.connect(
-            self.loadSettingFromFile)
+            self.loadSettingFromFile
+        )
         self.saveSettingsToFileActions.triggered.connect(
-            self.saveSettingsToFile)
+            self.saveSettingsToFile
+        )
         self.setDefaultSettingsActions.triggered.connect(
             partial(self.setDefaultSettings, True))
         self.aboutAction.triggered.connect(self.about)
@@ -640,7 +684,7 @@ class MainWindow(QMainWindow):
             self.reportWindow.hide()
         self.center(self.reportWindow)
         self.reportWindow.show()
-    
+
     def about(self):
         '''
         Метод для открытия окна about
@@ -682,21 +726,31 @@ class MainWindow(QMainWindow):
                 self
             )
         except AttributeError:
-            self.setNotify('предупреждение', 'Данные не в нужном формате.')
+            self.setNotify(
+                'предупреждение', 'Данные не в нужном формате.'
+            )
         except KeyError:
             if customSelected:
-                self.setNotify('предупреждение',
-                               'Проверьте настройки графиков по умолчанию')
+                self.setNotify(
+                    'предупреждение',
+                    'Проверьте настройки графиков по умолчанию'
+                )
             else:
-                self.setNotify('предупреждение',
-                               'Указанный столбец не найден в данных')
+                self.setNotify(
+                    'предупреждение',
+                    'Указанный столбец не найден в данных'
+                )
         except ValueError:
             if customSelected:
-                self.setNotify('предупреждение',
-                               'Проверьте настройки графиков по умолчанию')
+                self.setNotify(
+                    'предупреждение',
+                    'Проверьте настройки графиков по умолчанию'
+                )
             else:
-                self.setNotify('предупреждение',
-                               'Выберите элементы для графика в левом меню.')
+                self.setNotify(
+                    'предупреждение',
+                    'Выберите элементы для графика в левом меню.'
+                )
         except Exception as e:
             self.setNotify('предупреждение', e)
         else:
@@ -795,7 +849,7 @@ class MainWindow(QMainWindow):
         for window in self.mdi.subWindowList():
             window.setGeometry(pnt[0], pnt[1], width, heigth)
             pnt[0] += width
-    
+
     def resizeHorizontalWindows(self):
         '''
         Растягиваем окна, если они растянуты хотя бы на 80 %
@@ -804,9 +858,9 @@ class MainWindow(QMainWindow):
             return
         width = self.mdi.width() - (self.tree.width() if self.tree.isHidden() else 0)
         sizes = [
-            True if window.width() / width > 0.8 else False 
-                 for window in self.mdi.subWindowList()
-            ]
+            True if window.width() / width > 0.8 else False
+            for window in self.mdi.subWindowList()
+        ]
         if all(sizes):
             for window in self.mdi.subWindowList():
                 geometry = window.geometry()
@@ -901,11 +955,11 @@ class MainWindow(QMainWindow):
         if type == 'ошибка':
             notify = self.notify.critical
         notify(
-            Title=type.title(), 
-            Message=txt, 
-            Parent=self, 
+            Title=type.title(),
+            Message=txt,
+            Parent=self,
             Align=BottomRight,
-            duracion=duration, 
+            duracion=duration,
             onclick=None
         )
 
@@ -923,7 +977,8 @@ class MainWindow(QMainWindow):
     def updateInterfaceFromSettings(self, param) -> None:
         if param == 'graphs':
             self.menuDefaultGraphAction.setMenu(
-                self.createDropdownDefaultGraph())
+                self.createDropdownDefaultGraph()
+            )
         if param == 'leftMenuFilters':
             self.tree.updateCheckBox()
 
@@ -964,9 +1019,12 @@ class MainWindow(QMainWindow):
         Метод сохранения настроек в файл.
         '''
         options = QFileDialog.Options()
-        filepath, _ = QFileDialog.getSaveFileName(self,
-                                                  "Save File", "", f"Json Files (*.json);;All Files(*)",
-                                                  options=options)
+        filepath, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save File", "",
+            f"Json Files (*.json);;All Files(*)",
+            options=options
+        )
         data = {
             name: self.settings.value(name)
             for name in self.settings.allKeys()
@@ -974,7 +1032,9 @@ class MainWindow(QMainWindow):
         if filepath:
             try:
                 self.controller.save_settings_json(filepath, data)
-                self.setNotify('успех', f'Настройки сохранены в {filepath}')
+                self.setNotify(
+                    'успех', f'Настройки сохранены в {filepath}'
+                    )
             except PermissionError:
                 self.setNotify('ошибка', 'Файл открыт в другой программе')
             except Exception as e:
@@ -1006,7 +1066,7 @@ class MainWindow(QMainWindow):
             self.setNotify('предупреждение', 'Нужно выбрать данные')
             return False
         return True
-    
+
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key_Escape:
             question = QMessageBox.question(

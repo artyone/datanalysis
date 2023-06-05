@@ -54,6 +54,8 @@ class CalcWindow(QWidget):
         self.formLayout.addRow(self.categoryPnkComboBox)
         self.formLayout.addRow(self.adrPnkComboBox)
         self.formLayout.addRow('Рассчитать ДИСС:', self.calcDissCheckBox)
+        #TODO вернуть отображение, при релизе подсчётов дисс
+        self.calcDissCheckBox.hide()
         self.formLayout.addRow(self.categoryDissComboBox)
         self.formLayout.addRow(self.adrDissComboBox)
 

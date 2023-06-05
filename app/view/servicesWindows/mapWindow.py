@@ -52,8 +52,8 @@ class MapWindow(QWidget):
         adrs = self.controller.get_data()[current_category].keys()
         self.adrComboBox.addItems(adrs)
 
-        self.formLayout.addRow('category', self.categoryComboBox)
-        self.formLayout.addRow('adr', self.adrComboBox)
+        self.formLayout.addRow('Категория', self.categoryComboBox)
+        self.formLayout.addRow('АДР', self.adrComboBox)
 
         self.jvdHMinLineEdit = QLineEdit(
             self.settings.value('map')['jvdHMin']
@@ -61,8 +61,8 @@ class MapWindow(QWidget):
         self.decimationLineEdit = QLineEdit(
             self.settings.value('map')['decimation']
         )
-        self.formLayout.addRow('JVD_H min:', self.jvdHMinLineEdit)
-        self.formLayout.addRow('decimation:', self.decimationLineEdit)
+        self.formLayout.addRow('JVD_H мин:', self.jvdHMinLineEdit)
+        self.formLayout.addRow('Прореживание:', self.decimationLineEdit)
 
     def initButtonBlock(self):
         '''Метод инициализации кнопок на форме'''
