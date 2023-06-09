@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
 
+
 class CalcWindow(QWidget):
     '''
     Класс окна рассчета данных.
@@ -33,6 +34,7 @@ class CalcWindow(QWidget):
         dlgLayout.addLayout(self.formLayout)
         dlgLayout.addWidget(self.btnBox)
         self.setLayout(dlgLayout)
+        self.checkAnyChoice()
 
     def initInputBlock(self) -> None:
         '''Метод инициализации элементов выбора пользователя'''
@@ -54,15 +56,19 @@ class CalcWindow(QWidget):
         self.formLayout.addRow(self.categoryPnkComboBox)
         self.formLayout.addRow(self.adrPnkComboBox)
         self.formLayout.addRow('Рассчитать ДИСС:', self.calcDissCheckBox)
-        #TODO вернуть отображение, при релизе подсчётов дисс
+        # TODO вернуть отображение, при релизе подсчётов дисс
         self.calcDissCheckBox.hide()
+
         self.formLayout.addRow(self.categoryDissComboBox)
         self.formLayout.addRow(self.adrDissComboBox)
+        self.unchCheckBox = QCheckBox()
+        self.unchCheckBox.stateChanged.connect(self.handlerUnch)
+        self.formLayout.addRow('Объединить UNCH: ', self.unchCheckBox)
 
     def initPnkBlock(self) -> None:
         '''Метод инициализации блока пнк'''
         self.calcPnkCheckBox = QCheckBox()
-        self.calcPnkCheckBox.stateChanged.connect(self.hideUnhidePnk)
+        self.calcPnkCheckBox.stateChanged.connect(self.handlerPnk)
 
         self.categoryPnkComboBox = QComboBox()
         categories = self.controller.get_data().keys()
@@ -80,7 +86,7 @@ class CalcWindow(QWidget):
     def initDissBlock(self) -> None:
         '''Метод инициализации блока дисс'''
         self.calcDissCheckBox = QCheckBox()
-        self.calcDissCheckBox.stateChanged.connect(self.hideUnhideDiss)
+        self.calcDissCheckBox.stateChanged.connect(self.handlerDiss)
 
         self.categoryDissComboBox = QComboBox()
         categories = self.controller.get_data().keys()
@@ -101,20 +107,34 @@ class CalcWindow(QWidget):
         self.btnBox.setStandardButtons(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
-        self.btnBox.rejected.connect(self.close) # type: ignore
-        self.btnBox.accepted.connect(self.calculate)
+        self.btnBox.rejected.connect(self.close)  # type: ignore
+        self.okButton = self.btnBox.button(QDialogButtonBox.Ok)
+        self.okButton.clicked.connect(self.calculateEvent)
+        self.okButton.setText('Рассчитать')
+        self.btnBox.button(QDialogButtonBox.Cancel).setText(
+            'Отмена'
+        )
 
-    def hideUnhidePnk(self) -> None:
+    def handlerUnch(self) -> None:
+        '''Метод скрытия/отображения выбора категории и адр'''
+        if self.unchCheckBox.isChecked():
+            self.checkAnyChoice()
+            self.calcPnkCheckBox.setChecked(False)
+            self.calcDissCheckBox.setChecked(False)
+
+    def handlerPnk(self) -> None:
         '''Метод скрытия/отображения выбора категории и адр пнк'''
         if self.calcPnkCheckBox.isChecked():
             self.categoryPnkComboBox.show()
             self.adrPnkComboBox.show()
+            self.unchCheckBox.setChecked(False)
         else:
             self.categoryPnkComboBox.hide()
             self.adrPnkComboBox.hide()
             self.calcDissCheckBox.setChecked(False)
+        self.checkAnyChoice()
 
-    def hideUnhideDiss(self) -> None:
+    def handlerDiss(self) -> None:
         '''Метод скрытия/отображения выбора категории и адр дисс'''
         if self.calcDissCheckBox.isChecked():
             self.categoryPnkComboBox.show()
@@ -122,9 +142,11 @@ class CalcWindow(QWidget):
             self.categoryDissComboBox.show()
             self.adrDissComboBox.show()
             self.calcPnkCheckBox.setChecked(True)
+            self.unchCheckBox.setChecked(False)
         else:
             self.categoryDissComboBox.hide()
             self.adrDissComboBox.hide()
+        self.checkAnyChoice()
 
     def updateAdrPnkComboBox(self) -> None:
         '''Метод обновления пнк адр комбобокса'''
@@ -148,22 +170,41 @@ class CalcWindow(QWidget):
             'planeComboBox', self.planeComboBox.currentText()
         )
 
-    def calculate(self) -> None:
+    def calculateEvent(self) -> None:
         '''
         Метод по нажатию кнопки ОК, который непосредственно запускает
         рассчет значений с их последующей передачей в главное окно
         '''
         # TODO в дальнейшейм необходимо будет добавить рассчеты
-        # дисс, пока только пнк 
-        if not self.calcPnkCheckBox.isChecked():
-            self.parent.setNotify('предупреждение', 'Необходимо установить хотя бы расчет ПНК')
-        
-        text, ok = QInputDialog.getText(
+        # дисс, пока только пнк
+
+        targetAdr, ok = QInputDialog.getText(
             self, 'Ввод данных', 'Введите название адр:'
         )
         if not ok:
             return
 
+        # TODO разделить подсчёты и унчи, так как перезапишутся в одну адр
+        if self.calcDissCheckBox.isChecked():
+            self.calculateDiss(targetAdr)
+
+        if self.calcPnkCheckBox.isChecked():
+            self.calculatePnk(targetAdr)
+
+        if self.unchCheckBox.isChecked():
+            self.calculateUnch(targetAdr)
+
+    def calculateUnch(self, target_adr):
+        # TODO Дообавить проверку ошибок
+        self.controller.concatenate_unch('D001 v1_11', 'ADR2', target_adr)
+        self.parent.tree.updateCheckBox()
+        self.parent.setNotify('успех', 'Данные подсчитаны.')
+        self.close()
+
+    def calculateDiss(self, target_adr):
+        pass
+
+    def calculatePnk(self, target_adr):
         planeCorr = self.parent.settings.value(
             'planes')[self.planeComboBox.currentText()]
         corrections = self.parent.settings.value('corrections')
@@ -175,7 +216,7 @@ class CalcWindow(QWidget):
                 adr=adrPnk,
                 plane_correct=planeCorr,
                 corrections=corrections,
-                target_adr=text
+                target_adr=target_adr
             )
             self.parent.tree.updateCheckBox()
             self.parent.setNotify('успех', 'Данные подсчитаны.')
@@ -184,7 +225,17 @@ class CalcWindow(QWidget):
             self.parent.setNotify('предупреждение', str(e))
 
     def keyPressEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key_Escape: # type: ignore
+        if event.key() == Qt.Key_Escape:  # type: ignore
             self.hide()
         else:
             super().keyPressEvent(event)
+
+    def checkAnyChoice(self):
+        if any([
+            self.calcPnkCheckBox.isChecked(),
+            self.calcDissCheckBox.isChecked(),
+            self.unchCheckBox.isChecked()
+        ]):
+            self.okButton.setEnabled(True)
+        else:
+            self.okButton.setEnabled(False)

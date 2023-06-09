@@ -12,6 +12,8 @@ from functools import partial
 
 
 class LineChooseWidget(QWidget):
+    '''Виджет выбора категории и адр'''
+
     def __init__(self, text, categories, parent=None) -> None:
         super().__init__()
         self.parent = parent
@@ -33,17 +35,21 @@ class LineChooseWidget(QWidget):
         layout.addWidget(self.adrComboBox)
 
     def updateAdrComboBox(self) -> None:
+        # обновляем адр при смене категории
         currentCategory = self.categoryComboBox.currentText()
         self.adrComboBox.clear()
         self.adrComboBox.addItems(self.categories[currentCategory])
 
     def getValues(self) -> tuple:
+        # получаем значения с виджета
         category = self.categoryComboBox.currentText()
         adr = self.adrComboBox.currentText()
         return {'category': category, 'adr': adr}
 
 
 class ChooseWidget(QWidget):
+    '''Виджет для выбора исходных и посчитаных данных'''
+
     def __init__(self, categories, parent=None) -> None:
         super().__init__()
         self.parent = parent
@@ -63,6 +69,7 @@ class ChooseWidget(QWidget):
         self.hide()
 
     def getValues(self):
+        # получаем словарь данных с всех виджетов выбора
         sourceValues = self.lineSourceWidget.getValues()
         calcValues = self.lineCalcWidget.getValues()
         return {'source': sourceValues, 'calc': calcValues}
@@ -88,14 +95,13 @@ class ReportWindow(QWidget):
         layout = QFormLayout()
         self.setLayout(layout)
 
-        self.planeComboBox = QComboBox()
+        self.planeComboBox = QComboBox()  # выбор самолёта
         planes = self.parent.settings.value('planes').keys()
         self.planeComboBox.addItems(planes)
         layout.addRow('Самолёт', self.planeComboBox)
 
-
         categories = {
-            name: value.keys() 
+            name: value.keys()
             for name, value in self.controller.get_data().items()
         }
 
@@ -112,7 +118,7 @@ class ReportWindow(QWidget):
         self.dissCheckBox.stateChanged.connect(
             partial(self.widgetStateChanged, self.dissWidget)
         )
-        #TODO убрать после реализации подсчёта дисс
+        # TODO убрать после реализации подсчёта дисс
         self.dissCheckBox.hide()
         layout.addRow(self.dissCheckBox)
         layout.addRow(self.dissWidget)
@@ -121,6 +127,7 @@ class ReportWindow(QWidget):
         layout.addRow(self.buttonBox())
 
     def widgetStateChanged(self, widget, state) -> None:
+        # скрыть отобразить виджет при смене чекбоксов или тумблера
         if state:
             widget.show()
         else:
@@ -128,10 +135,11 @@ class ReportWindow(QWidget):
             self.adjustSize()
         if self.pnkCheckBox.isChecked() or self.dissCheckBox.isChecked():
             self.saveButton.show()
-        else: self.saveButton.hide()
-
+        else:
+            self.saveButton.hide()
 
     def inputBox(self) -> QHBoxLayout:
+        # поле ввода интервалов
         self.toggle = AnimatedToggle()
         self.toggle.setChecked(True)
         self.intervalsTxt = QPlainTextEdit()
@@ -154,6 +162,7 @@ class ReportWindow(QWidget):
         return layout
 
     def buttonBox(self) -> QDialogButtonBox:
+        # блок кнопок снизу
         buttonBox = QDialogButtonBox()
         buttonBox.setStandardButtons(
             QDialogButtonBox.Open |
@@ -177,7 +186,7 @@ class ReportWindow(QWidget):
         В зависимости от положения переключателя 
         отчет генерируется автоматически или по данным пользователя.
         '''
-        #TODO пока отчёт только по данным пнк
+        # TODO пока отчёт только по данным пнк
         text = self.intervalsTxt.toPlainText()
         if self.toggle.isChecked() and not text:
             self.parent.setNotify('предупреждение', "Введите интервалы.")
@@ -193,10 +202,13 @@ class ReportWindow(QWidget):
             options=options)
         if filePath:
             try:
+                # получаем данные виджетов выбора
                 values = self.pnkWidget.getValues()
+                # получаем общие коэффициенты
                 coef = self.parent.settings.value('koef_for_intervals')
                 plane = self.planeComboBox.currentText()
-                planeSettings = { 
+                # формируем настройки самолёта
+                planeSettings = {
                     'name': plane,
                     'values': self.parent.settings.value('planes')[plane]
                 }
@@ -227,6 +239,7 @@ class ReportWindow(QWidget):
         self.close()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
+        # закрыть по esc
         if event.key() == Qt.Key_Escape:
             self.hide()
         else:

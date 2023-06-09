@@ -2,6 +2,9 @@ from app.model import Mathematical, Flight_map
 from app.model import file_methods
 from pandas import DataFrame
 import re
+import numpy as np
+import pandas as pd
+from itertools import zip_longest
 
 
 class NoneJsonError(Exception):
@@ -46,7 +49,8 @@ class Control(object):
             category_headers = []
             for elem in category_info:
                 if elem['adr_name'] == adr:
-                    category_headers = [field['name'] for field in elem['fields']]
+                    category_headers = [field['name']
+                                        for field in elem['fields']]
                     category_headers.extend(['time', 'latitude', 'longitude'])
                     break
             if not category_headers:
@@ -142,17 +146,19 @@ class Control(object):
         self.worker.calc_wg_kbti(plane_correct['k'], plane_correct['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
-
-        self.data['CALC']= {
-            target_adr: self.worker.get_only_calculated_data_pnk()
-        }
+        if 'CALC' in self.data:
+            self.data['CALC'][target_adr] = self.worker.get_only_calculated_data_pnk()
+        else:
+            self.data['CALC'] = {
+                target_adr: self.worker.get_only_calculated_data_pnk()
+            }
         self.data_calculated = True
 
     def save_report(
         self,
         filepath: str,
         categories: dict,
-        plane_koef: dict, 
+        plane_koef: dict,
         koef_for_intervals: dict,
         string: str
     ) -> None:
@@ -296,7 +302,7 @@ class Control(object):
         self.data[category][adr] = self.data[category][adr].rename(
             columns={column: new_name}
         )
-    
+
     def delete_item(self, item_info: list) -> None:
         if self.data_is_none():
             raise ValueError('Нет данных')
@@ -311,3 +317,43 @@ class Control(object):
         category, adr, column = item_info
         self.data[category][adr].drop(column, axis=1, inplace=True)
 
+    def concatenate_unch(self, input_category: str, input_adr: str, target_adr: str):
+        # TODO убрать это в модель
+        if self.data_is_none():
+            raise ValueError('Нет данных')
+        data = self.data[input_category][input_adr]
+
+        result = {
+            'Ch1_UNCH1': [],
+            'Ch1_UNCH2': [],
+            'Ch2_UNCH1': [],
+            'Ch2_UNCH2': [],
+            'Ch3_UNCH1': [],
+            'Ch3_UNCH2': [],
+        }
+        for i in data:
+            if i == 'time':
+                continue
+            channel, unch, number = i.split('_')
+            result[f'{channel}_{unch}'].append(data[i].dropna().values)
+
+        for name in result:
+            result[name] = np.column_stack(result[name]).ravel()
+
+        min_length = min(
+            len(result['Ch1_UNCH1']),
+            len(result['Ch1_UNCH2']),
+            len(result['Ch2_UNCH1']),
+            len(result['Ch2_UNCH2']),
+            len(result['Ch3_UNCH1']),
+            len(result['Ch3_UNCH2'])
+        )
+        for name in result:
+            result[name] = result[name][:min_length]
+        result['time'] = np.arange(min_length)
+
+        result = pd.DataFrame(result)
+        if 'CALC' in self.data:
+            self.data['CALC'][target_adr] = result
+        else:
+            self.data['CALC'] = {target_adr: result}

@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
+from functools import partial
+
 
 class MapWindow(QWidget):
     '''
@@ -58,8 +60,15 @@ class MapWindow(QWidget):
         self.jvdHMinLineEdit = QLineEdit(
             self.settings.value('map')['jvdHMin']
         )
+        self.jvdHMinLineEdit.textChanged.connect(
+            self.validateLineEdit
+        )
+
         self.decimationLineEdit = QLineEdit(
             self.settings.value('map')['decimation']
+        )
+        self.decimationLineEdit.textChanged.connect(
+            self.validateLineEdit
         )
         self.formLayout.addRow('JVD_H мин:', self.jvdHMinLineEdit)
         self.formLayout.addRow('Прореживание:', self.decimationLineEdit)
@@ -78,10 +87,11 @@ class MapWindow(QWidget):
         self.openButton.clicked.connect(self.openFile)
         self.openButton.hide()
 
-        saveButton = self.btnBox.button(QDialogButtonBox.Save)
-        saveButton.clicked.connect(self.getMap)
+        self.saveButton = self.btnBox.button(QDialogButtonBox.Save)
+        self.saveButton.clicked.connect(self.getMap)
 
     def updateAdrComboBox(self):
+        '''Метод обновления адр при выборе категории'''
         current_category = self.categoryComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrComboBox.clear()
@@ -99,7 +109,7 @@ class MapWindow(QWidget):
             "html Files (*.html);;All Files(*)",
             options=options
         )
-        if filePath:
+        if filePath:  # если выбран путь
             try:
                 self.controller.save_map(
                     filePath,
@@ -114,15 +124,15 @@ class MapWindow(QWidget):
                         'jvdHMin': self.jvdHMinLineEdit.text(),
                         'decimation': self.decimationLineEdit.text()
                     }
-                )
+                )  # сохраняем в настройках последний выбор
                 self.parent.setNotify(
-                    'успех', f'html file saved to {filePath}')
+                    'успех', f'Карта сохранена в: {filePath}')
                 self.filePath = filePath
                 self.openButton.show()
 
             except PermissionError:
                 self.parent.setNotify(
-                    'ошибка', 'File opened in another program')
+                    'ошибка', 'Файл открыт в другой программе')
             except ValueError as e:
                 self.parent.setNotify('ошибка', str(e))
             except Exception as e:
@@ -135,8 +145,29 @@ class MapWindow(QWidget):
         startfile(self.filePath)
         self.close()
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        # закрыть по esc
         if event.key() == Qt.Key_Escape:
             self.hide()
         else:
             super().keyPressEvent(event)
+
+    # too nested code
+    def validateLineEdit(self) -> None:
+        # проверка что введены цифры
+        first = self.jvdHMinLineEdit.text().isdigit()
+        second = self.decimationLineEdit.text().isdigit()
+        if first and second:
+            self.saveButton.setEnabled(True)
+        else:
+            self.saveButton.setEnabled(False)
+        if not first:
+            self.jvdHMinLineEdit.setStyleSheet("background-color: red")
+        else:
+            self.jvdHMinLineEdit.setStyleSheet("")
+        if not second:
+            self.decimationLineEdit.setStyleSheet("background-color: red")
+        else:
+            self.decimationLineEdit.setStyleSheet("")
+
+    # refactored validateLineEdit() function with less nesting:
