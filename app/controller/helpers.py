@@ -111,7 +111,7 @@ def defaultSettings(settings, appVersion):
     }
     settings.setValue('graphs', graphs)
     filters = ['time']
-    settings.setValue('leftMenuFilters', filters)
+    settings.setValue('left_menu_filters', filters)
     mainSettings = {
         'theme': 'dark',
         'jsonDir': 'templates/',

@@ -233,7 +233,7 @@ class ConsoleWindow(QMainWindow):
 
 
         
-        self.parent.tree.updateCheckBox()
+        self.parent.tree_widget.update_check_box()
         print(f'Столбец: {columnName} успешно добавлен в: {category}/{adr}')
         
 

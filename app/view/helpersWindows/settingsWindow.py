@@ -102,9 +102,9 @@ class SettingsWindow(QWidget):
         scrollArea = QScrollArea()
         widget = QWidget()
         tabLayout = QVBoxLayout()
-        for column in self.parent.tree.getAllColumns():
+        for column in self.parent.tree_widget.get_all_columns():
             checkBox = QCheckBox(column)
-            settings = self.settings.value('leftMenuFilters')
+            settings = self.settings.value('left_menu_filters')
             checkBox.setChecked(True if column in settings else False)
             tabLayout.addWidget(checkBox)
             self.listMenuFilters.append(checkBox)
@@ -227,10 +227,10 @@ class SettingsWindow(QWidget):
         newValueFilters = [
             item.text() for item in self.listMenuFilters
             if item.isChecked()]
-        if self.settings.value('leftMenuFilters') == newValueFilters:
+        if self.settings.value('left_menu_filters') == newValueFilters:
             return False
-        self.settings.setValue('leftMenuFilters', newValueFilters)
-        self.parent.updateInterfaceFromSettings('leftMenuFilters')
+        self.settings.setValue('left_menu_filters', newValueFilters)
+        self.parent.updateInterfaceFromSettings('left_menu_filters')
         return True
 
     def checkDigit(self, widget: QLineEdit):

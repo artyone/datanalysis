@@ -197,7 +197,7 @@ class CalcWindow(QWidget):
     def calculateUnch(self, target_adr):
         # TODO Дообавить проверку ошибок
         self.controller.concatenate_unch('D001 v1_11', 'ADR2', target_adr)
-        self.parent.tree.updateCheckBox()
+        self.parent.tree_widget.update_check_box()
         self.parent.setNotify('успех', 'Данные подсчитаны.')
         self.close()
 
@@ -218,7 +218,7 @@ class CalcWindow(QWidget):
                 corrections=corrections,
                 target_adr=target_adr
             )
-            self.parent.tree.updateCheckBox()
+            self.parent.tree_widget.update_check_box()
             self.parent.setNotify('успех', 'Данные подсчитаны.')
             self.close()
         except Exception as e:

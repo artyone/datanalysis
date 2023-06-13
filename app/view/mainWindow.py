@@ -8,7 +8,7 @@ from app.view.servicesWindows import (
 )
 from app.view.helpersWindows import (
     SettingsWindow, SaveCsvWindow,
-    OpenFileWindow, LeftMenuTree
+    OpenFileWindow, Left_Menu_Tree
 )
 from PyQt5.QtGui import (
     QIcon, QColor, QPainter, QKeyEvent
@@ -85,11 +85,11 @@ class MainWindow(QMainWindow):
 
         self.splitter = QSplitter(Qt.Horizontal)
 
-        self.tree = LeftMenuTree(self, self.splitter)
+        self.tree_widget = Left_Menu_Tree(self, self.splitter)
 
-        self.tree.hide()
+        self.tree_widget.hide()
 
-        self.splitter.addWidget(self.tree)
+        self.splitter.addWidget(self.tree_widget)
         self.splitter.addWidget(self.mdi)
 
         self.setCentralWidget(self.splitter)
@@ -479,8 +479,8 @@ class MainWindow(QMainWindow):
     def clearMainWindow(self) -> None:
         del self.controller
         self.controller = Control()
-        self.tree.clear()
-        self.tree.hide()
+        self.tree_widget.clear()
+        self.tree_widget.hide()
         self.mdi.closeAllSubWindows()
         self.destroyChildWindow()
         self.checkPositioningWindows()
@@ -524,7 +524,7 @@ class MainWindow(QMainWindow):
             except ValueError as e:
                 self.setNotify('ошибка', str(e))
             else:
-                self.tree.updateCheckBox()
+                self.tree_widget.update_check_box()
                 self.destroyChildWindow()
                 self.settings.setValue(
                     'lastFile', {
@@ -856,7 +856,7 @@ class MainWindow(QMainWindow):
         '''
         if self.mdi.width() == 0:
             return
-        width = self.mdi.width() - (self.tree.width() if self.tree.isHidden() else 0)
+        width = self.mdi.width() - (self.tree_widget.width() if self.tree_widget.isHidden() else 0)
         sizes = [
             True if window.width() / width > 0.8 else False
             for window in self.mdi.subWindowList()
@@ -885,15 +885,15 @@ class MainWindow(QMainWindow):
         '''Метод скрытия левого меню'''
         if self.hideLeftMenuAction.isChecked():
             self.hideLeftMenuAction.setIcon(self.getIcon(':eye'))
-            self.tree.hide()
+            self.tree_widget.hide()
             QCoreApplication.processEvents()
             self.mdi.resize(self.splitter.width(), self.splitter.height())
         else:
             self.hideLeftMenuAction.setIcon(self.getIcon(':eye-off'))
-            self.tree.show()
+            self.tree_widget.show()
             QCoreApplication.processEvents()
             self.mdi.resize(
-                self.splitter.width() - self.tree.width() - 5,
+                self.splitter.width() - self.tree_widget.width() - 5,
                 self.splitter.height()
             )
         self.checkPositioningWindows()
@@ -931,7 +931,7 @@ class MainWindow(QMainWindow):
         '''
         treeSelected = []
         iterator = QTreeWidgetItemIterator(
-            self.tree, QTreeWidgetItemIterator.Checked)
+            self.tree_widget, QTreeWidgetItemIterator.Checked)
         while iterator.value():
             item = iterator.value()
             itemName = item.text(0)
@@ -979,8 +979,8 @@ class MainWindow(QMainWindow):
             self.menuDefaultGraphAction.setMenu(
                 self.createDropdownDefaultGraph()
             )
-        if param == 'leftMenuFilters':
-            self.tree.updateCheckBox()
+        if param == 'left_menu_filters':
+            self.tree_widget.update_check_box()
 
     def loadSettingFromFile(self) -> None:
         '''
@@ -1034,7 +1034,7 @@ class MainWindow(QMainWindow):
                 self.controller.save_settings_json(filepath, data)
                 self.setNotify(
                     'успех', f'Настройки сохранены в {filepath}'
-                    )
+                )
             except PermissionError:
                 self.setNotify('ошибка', 'Файл открыт в другой программе')
             except Exception as e:

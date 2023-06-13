@@ -118,7 +118,7 @@ class OpenFileWindow(QWidget):
                 self.categories[currentCategory],
                 self.loadUnknownCheckBox.isChecked()
             )
-            self.parent.tree.updateCheckBox()
+            self.parent.tree_widget.update_check_box()
             self.parent.setNotify(
                 'успех', f'Файл {self.browseLineEdit.text()} открыт'
             )
@@ -136,7 +136,7 @@ class OpenFileWindow(QWidget):
                 currentCategory, 
                 json_data
             )
-            self.parent.tree.updateCheckBox()
+            self.parent.tree_widget.update_check_box()
             self.parent.setNotify(
                 'успех', f'Файл {self.browseLineEdit.text()} открыт'
             )
