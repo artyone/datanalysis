@@ -98,8 +98,7 @@ class Mathematical(object):
         Метод рассчёта путевой скорости.
         '''
         self.d['Wp_KBTIi'] = (self.d.Wxc_KBTIi**2 + self.d.Wzc_KBTIi**2)**0.5
-        self.d['Wp_diss_pnki'] = (
-            self.d.Wx_DISS_PNK**2 + self.d.DIS_Wz**2)**0.5
+        self.d['Wp_diss_pnki'] = (self.d.Wx_DISS_PNK**2 + self.d.Wz_DISS_PNK**2)**0.5
 
     def _get_interval(self, start: float, stop: float) -> DataFrame:
         '''

@@ -182,11 +182,14 @@ class Datas(object):
             data_column = data_column.byteswap()
         if mask != 65535 or shift != 0:
             masked_data = np.bitwise_and(data_column, (mask << shift))
-            masked_data = np.right_shift(masked_data, shift) * koef
+            masked_data = np.right_shift(masked_data, shift) 
         else:
             masked_data = data_column
         if type == 'int8':
             masked_data = masked_data.astype(np.int8)
+
+
+        masked_data = masked_data.astype(np.float64) * koef
 
         return masked_data
 
