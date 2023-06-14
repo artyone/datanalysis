@@ -14,14 +14,14 @@ class Mathematical(object):
 
     def __init__(self, object: DataFrame) -> None:
         self.d = object
-        self.Wxc_kbti_acc = 0
-        self.Wzc_kbti_acc = 0
-        self.Wyc_kbti_acc = 0
-        self.Wp_kbti_acc = 0
-        self.Wxc_DISS_PNK_acc = 0
-        self.Wzc_DISS_PNK_acc = 0
-        self.Wyc_DISS_PNK_acc = 0
-        self.Wp_DISS_PNK_acc = 0
+        self.Wxc_KBTIi_acc = 0
+        self.Wzc_KBTIi_acc = 0
+        self.Wyc_KBTIi_acc = 0
+        self.Wp_KBTIi_acc = 0
+        self.Wx_DISS_PNK_acc = 0
+        self.Wz_DISS_PNK_acc = 0
+        self.Wy_DISS_PNK_acc = 0
+        self.Wp_diss_pnki_acc = 0
         self.USkbti = 0
         self.USpnk = 0
         self.intervals_tang = [set()]
@@ -78,19 +78,17 @@ class Mathematical(object):
         '''
         Метод рассчёта данных КБТИ.
         '''
-        self.d['Wxc_KBTIi'] = (
-            self.d.Wxg_KBTIi * self.d.Tang_cos
-            + self.d.Wyg_KBTIi * self.d.Tang_sin
+        wxg, wyg, wzg = self.d.Wxg_KBTIi, self.d.Wyg_KBTIi, self.d.Wzg_KBTIi
+        tang_cos, tang_sin, kren_cos, kren_sin = (
+            self.d.Tang_cos, self.d.Tang_sin, self.d.Kren_cos, self.d.Kren_sin
         )
+        
+        self.d['Wxc_KBTIi'] = wxg * tang_cos + wyg * tang_sin
         self.d['Wyc_KBTIi'] = (
-            - self.d.Wxg_KBTIi * self.d.Tang_sin * self.d.Kren_cos
-            + self.d.Wyg_KBTIi * self.d.Tang_cos * self.d.Kren_cos
-            + self.d.Wzg_KBTIi * self.d.Kren_sin
+            -wxg * tang_sin * kren_cos + wyg * tang_cos * kren_cos + wzg * kren_sin
         )
         self.d['Wzc_KBTIi'] = (
-            self.d.Wxg_KBTIi * self.d.Kren_sin * self.d.Tang_sin
-            - self.d.Wyg_KBTIi * self.d.Tang_cos * self.d.Kren_sin
-            + self.d.Wzg_KBTIi * self.d.Kren_cos
+            wxg * kren_sin * tang_sin - wyg * tang_cos * kren_sin + wzg * kren_cos
         )
 
     def calc_wp(self) -> None:
@@ -126,29 +124,29 @@ class Mathematical(object):
             return (x - y) / x * 100
         return 0
 
+
     def _get_mean(self, start: int, stop: int) -> None:
         '''
         Метод получения средних данных для отчёта.
         '''
         interval = self._get_interval(start, stop)
-        self.Wxc_kbti_acc = interval.Wxc_KBTIi.mean()
-        self.Wzc_kbti_acc = interval.Wzc_KBTIi.mean()
-        self.Wyc_kbti_acc = interval.Wyc_KBTIi.mean()
-        self.Wp_kbti_acc = interval.Wp_KBTIi.mean()
-        self.Wxc_DISS_PNK_acc = interval.Wx_DISS_PNK.mean()
-        self.Wzc_DISS_PNK_acc = interval.Wz_DISS_PNK.mean()
-        self.Wyc_DISS_PNK_acc = interval.Wy_DISS_PNK.mean()
-        self.Wp_DISS_PNK_acc = interval.Wp_diss_pnki.mean()
+        
+        mean_columns = ['Wxc_KBTIi', 'Wzc_KBTIi', 'Wyc_KBTIi', 'Wp_KBTIi',
+                        'Wx_DISS_PNK', 'Wz_DISS_PNK', 'Wy_DISS_PNK', 'Wp_diss_pnki']
+        
+        for column in mean_columns:
+            mean_value = interval[column].mean()
+            setattr(self, f'{column}_acc', mean_value)
 
     def _get_us(self) -> None:
         '''
         Метод рассчёта US.
         '''
         self.USkbti = (
-            atan(self.Wzc_kbti_acc / self.Wxc_kbti_acc) / pi
+            atan(self.Wzc_KBTIi_acc / self.Wxc_KBTIi_acc) / pi
         ) * 180
         self.USpnk = (
-            atan(self.Wzc_DISS_PNK_acc / self.Wxc_DISS_PNK_acc) / pi
+            atan(self.Wz_DISS_PNK_acc / self.Wx_DISS_PNK_acc) / pi
         ) * 180
         # USdiss=(math.atan(Wzc_DISS_r_acc/Wxc_DISS_r_acc)/math.pi)*180
 
@@ -165,18 +163,18 @@ class Mathematical(object):
             self._get_mean(start, stop)
             self._get_us()
             counts = stop - start
-            length = round((stop - start) * self.Wp_kbti_acc / 3600, 3)
+            length = round((stop - start) * self.Wp_KBTIi_acc / 3600, 3)
             height = self._get_height(start)
             US = round(self.USpnk - self.USkbti, 3)
             # USdissms=(USdiss-USkbti)
             Wp = round(self._get_percent(
-                self.Wp_DISS_PNK_acc, self.Wp_kbti_acc), 3)
+                self.Wp_diss_pnki_acc, self.Wp_KBTIi_acc), 3)
             Wx = round(self._get_percent(
-                self.Wxc_DISS_PNK_acc, self.Wxc_kbti_acc), 3)
+                self.Wx_DISS_PNK_acc, self.Wxc_KBTIi_acc), 3)
             Wz = round(self._get_percent(
-                self.Wzc_DISS_PNK_acc, self.Wzc_kbti_acc), 3)
+                self.Wz_DISS_PNK_acc, self.Wzc_KBTIi_acc), 3)
             Wy = round(self._get_percent(
-                self.Wyc_DISS_PNK_acc, self.Wyc_kbti_acc), 3)
+                self.Wy_DISS_PNK_acc, self.Wyc_KBTIi_acc), 3)
 
             data.append((length, height, start,
                               stop, counts, US, Wp, Wx, Wz, Wy))
@@ -308,4 +306,4 @@ class Mathematical(object):
             'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi',
             'Wp_KBTIi', 'Wp_diss_pnki'
         ]
-        return self.d.loc[:, headers]
+        return self.d[headers]

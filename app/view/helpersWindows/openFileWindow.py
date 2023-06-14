@@ -69,12 +69,12 @@ class OpenFileWindow(QWidget):
 
     def initBrowseBlock(self):
         horizontalLayer = QHBoxLayout()
-        self.browseLineEdit = QLineEdit()
+        self.filepathLineEdit = QLineEdit()
         browseButton = QPushButton()
         browseButton.setText('...')
         browseButton.setFixedSize(40, 22)
         browseButton.clicked.connect(self.openFileDialog)
-        horizontalLayer.addWidget(self.browseLineEdit)
+        horizontalLayer.addWidget(self.filepathLineEdit)
         horizontalLayer.addWidget(browseButton)
         horizontalLayer.setSpacing(15)
         return horizontalLayer
@@ -105,40 +105,43 @@ class OpenFileWindow(QWidget):
             f'Open File (*.{self.filetype})'
         )
         if check:
-            self.browseLineEdit.setText(filePath)
+            self.filepathLineEdit.setText(filePath)
 
     def openFileTxt(self):
+        category = self.categoryComboBox.currentText()
+        adr = self.adrComboBox.currentText()
+        filepath = self.filepathLineEdit.text()
+        
         try:
-            currentCategory = self.categoryComboBox.currentText()
             self.controller.load_text(
-                self.browseLineEdit.text(),
-                currentCategory,
-                self.adrComboBox.currentText(),
+                filepath,
+                category,
+                adr,
                 self.filetype,
-                self.categories[currentCategory],
+                self.categories[category],
                 self.loadUnknownCheckBox.isChecked()
             )
             self.parent.tree_widget.update_check_box()
             self.parent.setNotify(
-                'успех', f'Файл {self.browseLineEdit.text()} открыт'
+                'успех', f'Файл {filepath} открыт'
             )
             self.parent.destroyChildWindow()
         except Exception as e:
             self.parent.setNotify('ошибка', str(e))
 
     def openFilePdd(self):
-        currentCategory = self.categoryComboBox.currentText()
-        json_data = self.categories[currentCategory]
-        filepath = self.browseLineEdit.text()
+        category = self.categoryComboBox.currentText()
+        json_data = self.categories[category]
+        filepath = self.filepathLineEdit.text()
         try:
             self.controller.load_pdd(
                 filepath,
-                currentCategory, 
+                category, 
                 json_data
             )
             self.parent.tree_widget.update_check_box()
             self.parent.setNotify(
-                'успех', f'Файл {self.browseLineEdit.text()} открыт'
+                'успех', f'Файл {filepath} открыт'
             )
             self.parent.destroyChildWindow()
         except Exception as e:
