@@ -18,7 +18,7 @@ class Left_Menu_Tree(QTreeWidget):
 
     def update_check_box(self) -> None:
         """
-        Обвноляет виджет дерева с помощью данных полученных от контроллера.
+        Обновляет виджет дерева с помощью данных полученных от контроллера.
 
         Returns:
             None
@@ -45,6 +45,8 @@ class Left_Menu_Tree(QTreeWidget):
         self.show()
         self.resize_columns_to_contents()
         self.mainWindow.splitter.setSizes([90, 500])
+        if self.mainWindow.calcWindow:
+            self.mainWindow.calcWindow.updateCategories()
 
     def get_filters(self) -> list:
         return self.settings.value('left_menu_filters')

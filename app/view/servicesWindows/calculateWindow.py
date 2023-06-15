@@ -50,6 +50,7 @@ class CalcWindow(QWidget):
 
         self.initPnkBlock()
         self.initDissBlock()
+        self.initUnchBlock()
 
         self.formLayout.addRow('Самолёт:', self.planeComboBox)
         self.formLayout.addRow('Рассчитать ПНК:', self.calcPnkCheckBox)
@@ -61,9 +62,10 @@ class CalcWindow(QWidget):
 
         self.formLayout.addRow(self.categoryDissComboBox)
         self.formLayout.addRow(self.adrDissComboBox)
-        self.unchCheckBox = QCheckBox()
-        self.unchCheckBox.stateChanged.connect(self.handlerUnch)
+
+        
         self.formLayout.addRow('Объединить UNCH: ', self.unchCheckBox)
+        self.formLayout.addRow(self.categoryUnchComboBox)
 
     def initPnkBlock(self) -> None:
         '''Метод инициализации блока пнк'''
@@ -101,6 +103,15 @@ class CalcWindow(QWidget):
         self.categoryDissComboBox.hide()
         self.adrDissComboBox.hide()
 
+    def initUnchBlock(self) -> None:
+        '''Метод инициализации блока UNCH'''
+        self.unchCheckBox = QCheckBox()
+        self.unchCheckBox.stateChanged.connect(self.handlerUnch)
+        self.categoryUnchComboBox = QComboBox()
+        categories = self.controller.get_data().keys()
+        self.categoryUnchComboBox.addItems(categories)
+        self.categoryUnchComboBox.hide()
+
     def initButtonBlock(self) -> None:
         '''Метод инициализации кнопок на форме'''
         self.btnBox = QDialogButtonBox()
@@ -121,7 +132,9 @@ class CalcWindow(QWidget):
             self.checkAnyChoice()
             self.calcPnkCheckBox.setChecked(False)
             self.calcDissCheckBox.setChecked(False)
-
+            self.categoryUnchComboBox.show()
+        else: 
+            self.categoryUnchComboBox.hide()
     def handlerPnk(self) -> None:
         '''Метод скрытия/отображения выбора категории и адр пнк'''
         if self.calcPnkCheckBox.isChecked():
@@ -176,7 +189,10 @@ class CalcWindow(QWidget):
         рассчет значений с их последующей передачей в главное окно
         '''
         # TODO в дальнейшейм необходимо будет добавить рассчеты
-        # дисс, пока только пнк
+        # дисс, пока только пнк, продумать решение красивее
+        if self.unchCheckBox.isChecked():
+            self.calculateUnch('UNCH')
+            return
 
         targetAdr, ok = QInputDialog.getText(
             self, 'Ввод данных', 'Введите название адр:'
@@ -184,22 +200,28 @@ class CalcWindow(QWidget):
         if not ok:
             return
 
-        # TODO разделить подсчёты и унчи, так как перезапишутся в одну адр
         if self.calcDissCheckBox.isChecked():
             self.calculateDiss(targetAdr)
 
         if self.calcPnkCheckBox.isChecked():
             self.calculatePnk(targetAdr)
 
-        if self.unchCheckBox.isChecked():
-            self.calculateUnch(targetAdr)
+
 
     def calculateUnch(self, target_adr):
-        # TODO Дообавить проверку ошибок
-        self.controller.concatenate_unch('D001 v1_11', 'ADR2', target_adr)
-        self.parent.tree_widget.update_check_box()
-        self.parent.setNotify('успех', 'Данные подсчитаны.')
-        self.close()
+        try:
+            category = self.categoryUnchComboBox.currentText()
+            self.controller.concatenate_unch(category, 'ADR2', target_adr)
+            self.parent.tree_widget.update_check_box()
+            self.parent.setNotify('успех', 'Данные подсчитаны.')
+            self.close()
+        except ValueError:
+            self.parent.setNotify('предупреждение', 'Нет данных в adr2')
+        except KeyError:
+            self.parent.setNotify('предупреждение', 'Нет указанной категории, возможно вы её переименовали')
+        except Exception as e:
+            self.parent.setNotify('предупреждение', str(e))
+
 
     def calculateDiss(self, target_adr):
         pass
@@ -239,3 +261,13 @@ class CalcWindow(QWidget):
             self.okButton.setEnabled(True)
         else:
             self.okButton.setEnabled(False)
+
+    def updateCategories(self):
+        '''Метод обновления списка категорий'''
+        categories = self.controller.get_data().keys()
+        self.categoryUnchComboBox.clear()
+        self.categoryUnchComboBox.addItems(categories)
+        self.categoryDissComboBox.clear()
+        self.categoryDissComboBox.addItems(categories)
+        self.categoryPnkComboBox.clear()
+        self.categoryPnkComboBox.addItems(categories)
