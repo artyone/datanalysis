@@ -152,7 +152,6 @@ class MapWindow(QWidget):
         else:
             super().keyPressEvent(event)
 
-    # too nested code
     def validateLineEdit(self) -> None:
         # проверка что введены цифры
         first = self.jvdHMinLineEdit.text().isdigit()
@@ -170,4 +169,8 @@ class MapWindow(QWidget):
         else:
             self.decimationLineEdit.setStyleSheet("")
 
-    # refactored validateLineEdit() function with less nesting:
+    def updateWidget(self) -> None:
+        categories = self.controller.get_data().keys()
+        self.categoryComboBox.clear()
+        self.categoryComboBox.addItems(categories)
+        self.updateAdrComboBox()

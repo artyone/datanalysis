@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout,
     QCheckBox, QComboBox, QHBoxLayout,
-    QTabWidget, QFileDialog, QLineEdit, 
+    QTabWidget, QFileDialog, QLineEdit,
     QPushButton, QScrollArea, QMessageBox
 )
 from PyQt5.QtGui import QKeyEvent
@@ -37,11 +37,21 @@ class SettingsWindow(QWidget):
         self.setWindowTitle("Настройки")
         layout = QVBoxLayout()
         tabWidget = QTabWidget()
-        tabWidget.addTab(self.mainTab(), 'Общие настройки')
-        tabWidget.addTab(self.filterMenuTab(), 'Фильтр бокового меню')
-        tabWidget.addTab(self.planeTab(), 'Самолёты')
-        tabWidget.addTab(self.correctionTab(), 'Коррекция')
-        tabWidget.addTab(self.graphTab(), 'Графики')
+        tabWidget.addTab(
+            self.mainTab(), 'Общие настройки'
+        )
+        tabWidget.addTab(
+            self.filterMenuTab(), 'Фильтр бокового меню'
+        )
+        tabWidget.addTab(
+            self.planeTab(), 'Самолёты'
+        )
+        tabWidget.addTab(
+            self.correctionTab(), 'Коррекция'
+        )
+        tabWidget.addTab(
+            self.graphTab(), 'Графики'
+        )
         self.saveButton = QPushButton('Сохранить')
         self.saveButton.clicked.connect(self.saveSettings)
         layout.addWidget(tabWidget)
@@ -56,21 +66,29 @@ class SettingsWindow(QWidget):
         tabLayout = QFormLayout()
 
         lineEdit = self.initBrowseBlock()
-        tabLayout.addRow('Путь к json папке:', lineEdit)
+        tabLayout.addRow(
+            'Путь к json папке:', lineEdit
+        )
 
         self.themeComboBox = QComboBox()
         self.themeComboBox.addItems(['dark', 'purple', 'light'])
         self.themeComboBox.setCurrentText(self.listMainSettings['theme'])
-        tabLayout.addRow('Тема:', self.themeComboBox)
+        tabLayout.addRow(
+            'Тема:', self.themeComboBox
+        )
 
         self.toolbarComboBox = QComboBox()
         self.toolbarComboBox.addItems(['left', 'top'])
         self.toolbarComboBox.setCurrentText(self.listMainSettings['toolBar'])
-        tabLayout.addRow('Позиция кнопок:', self.toolbarComboBox)
+        tabLayout.addRow(
+            'Позиция кнопок:', self.toolbarComboBox
+        )
 
         self.openLastCheckbox = QCheckBox()
         self.openLastCheckbox.setChecked(self.listMainSettings['openLastFile'])
-        tabLayout.addRow('Открывать последний gzip:', self.openLastCheckbox)
+        tabLayout.addRow(
+            'Открывать последний gzip:', self.openLastCheckbox
+        )
 
         tabWidget.setLayout(tabLayout)
         return tabWidget
@@ -90,7 +108,7 @@ class SettingsWindow(QWidget):
 
     def openDirectoryDialog(self) -> None:
         directoryPath = QFileDialog.getExistingDirectory(
-            None,"Выберите папку"
+            None, "Выберите папку"
         )
         if directoryPath:
             self.browseLineEdit.setText(directoryPath)
@@ -101,17 +119,22 @@ class SettingsWindow(QWidget):
         '''
         scrollArea = QScrollArea()
         widget = QWidget()
-        tabLayout = QVBoxLayout()
+        self.filterTabLayout = QVBoxLayout()
+        self.addFilterCheckBox(self.filterTabLayout)
+        scrollArea.setWidgetResizable(True)
+        widget.setLayout(self.filterTabLayout)
+        scrollArea.setWidget(widget)
+        return scrollArea
+
+    def addFilterCheckBox(self, layout: QVBoxLayout):
+        self.listMenuFilters = []
         for column in self.parent.tree_widget.get_all_columns():
             checkBox = QCheckBox(column)
             settings = self.settings.value('left_menu_filters')
             checkBox.setChecked(True if column in settings else False)
-            tabLayout.addWidget(checkBox)
+            layout.addWidget(checkBox)
+
             self.listMenuFilters.append(checkBox)
-        scrollArea.setWidgetResizable(True)
-        widget.setLayout(tabLayout)
-        scrollArea.setWidget(widget)
-        return scrollArea
 
     def planeTab(self) -> QWidget:
         '''
@@ -182,10 +205,10 @@ class SettingsWindow(QWidget):
         }
         if self.settings.value('mainSettings') == newValueMainSettings:
             return False
-        #Устанавливаем фон для графиков под тему
+        # Устанавливаем фон для графиков под тему
         if newValueMainSettings['theme'] != 'light':
             self.graphTabWidget.backgroundCombo.setCurrentText('black')
-        else: 
+        else:
             self.graphTabWidget.backgroundCombo.setCurrentText('white')
         self.settings.setValue('mainSettings', newValueMainSettings)
         question = QMessageBox.question(
@@ -201,6 +224,7 @@ class SettingsWindow(QWidget):
         if self.settings.value('planes') == newValuePlanes:
             return False
         self.settings.setValue('planes', newValuePlanes)
+        self.parent.updateChildWindows()
         return True
 
     def saveCorrectionsSettings(self) -> bool:
@@ -237,10 +261,10 @@ class SettingsWindow(QWidget):
         try:
             float(widget.text())
             widget.setStyleSheet("background:#1E1E1E;")
-            self.saveButton.setDisabled(False)
+            self.saveButton.setEnabled(True)
         except ValueError:
             widget.setStyleSheet("background:#FA8072;")
-            self.saveButton.setDisabled(True)
+            self.saveButton.setEnabled(False)
 
     def closeEvent(self, event):
         self.parent.settingsWindow = None
@@ -252,3 +276,11 @@ class SettingsWindow(QWidget):
             self.close()
         else:
             super().keyPressEvent(event)
+
+    def updateWidget(self):
+        layout = self.filterTabLayout
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+        self.addFilterCheckBox(layout)

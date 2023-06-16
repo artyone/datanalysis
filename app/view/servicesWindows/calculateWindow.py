@@ -42,7 +42,8 @@ class CalcWindow(QWidget):
         self.formLayout.setVerticalSpacing(20)
 
         self.planeComboBox = QComboBox()
-        self.planeComboBox.addItems(self.parent.settings.value('planes'))
+        planes = self.parent.settings.value('planes')
+        self.planeComboBox.addItems(planes)
         self.planeComboBox.setCurrentText(
             self.parent.settings.value('planeComboBox')
         )
@@ -262,7 +263,7 @@ class CalcWindow(QWidget):
         else:
             self.okButton.setEnabled(False)
 
-    def updateCategories(self):
+    def updateWidget(self):
         '''Метод обновления списка категорий'''
         categories = self.controller.get_data().keys()
         self.categoryUnchComboBox.clear()
@@ -271,3 +272,11 @@ class CalcWindow(QWidget):
         self.categoryDissComboBox.addItems(categories)
         self.categoryPnkComboBox.clear()
         self.categoryPnkComboBox.addItems(categories)
+        self.updateAdrDissComboBox()
+        self.updateAdrPnkComboBox()
+        planes = self.parent.settings.value('planes')
+        self.planeComboBox.clear()
+        self.planeComboBox.addItems(planes)
+        self.planeComboBox.setCurrentText(
+            self.parent.settings.value('planeComboBox')
+        )

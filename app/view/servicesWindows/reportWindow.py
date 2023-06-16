@@ -45,6 +45,12 @@ class LineChooseWidget(QWidget):
         category = self.categoryComboBox.currentText()
         adr = self.adrComboBox.currentText()
         return {'category': category, 'adr': adr}
+    
+    def updateCategories(self, categories):
+        self.categories = categories
+        self.categoryComboBox.clear()
+        self.categoryComboBox.addItems(categories.keys())
+        self.updateAdrComboBox()
 
 
 class ChooseWidget(QWidget):
@@ -73,6 +79,10 @@ class ChooseWidget(QWidget):
         sourceValues = self.lineSourceWidget.getValues()
         calcValues = self.lineCalcWidget.getValues()
         return {'source': sourceValues, 'calc': calcValues}
+    
+    def updateCategories(self, categories):
+        self.lineSourceWidget.updateCategories(categories)
+        self.lineCalcWidget.updateCategories(categories)
 
 
 class ReportWindow(QWidget):
@@ -244,6 +254,17 @@ class ReportWindow(QWidget):
             self.hide()
         else:
             super().keyPressEvent(event)
+
+    def updateWidget(self):
+        newCategories = {
+            name: value.keys()
+            for name, value in self.controller.get_data().items()
+        }
+        self.pnkWidget.updateCategories(newCategories)
+        self.dissWidget.updateCategories(newCategories)
+        planes = self.parent.settings.value('planes').keys()
+        self.planeComboBox.clear()
+        self.planeComboBox.addItems(planes)
 
 
 if __name__ == '__main__':

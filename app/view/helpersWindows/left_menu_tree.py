@@ -25,6 +25,7 @@ class Left_Menu_Tree(QTreeWidget):
         """
         if not self.mainWindow.controller.get_data():
             self.hide()
+            self.mainWindow.destroyChildWindow()
             return
         self.clear()
         data = self.mainWindow.controller.get_data()
@@ -45,8 +46,8 @@ class Left_Menu_Tree(QTreeWidget):
         self.show()
         self.resize_columns_to_contents()
         self.mainWindow.splitter.setSizes([90, 500])
-        if self.mainWindow.calcWindow:
-            self.mainWindow.calcWindow.updateCategories()
+        self.mainWindow.updateChildWindows()
+
 
     def get_filters(self) -> list:
         return self.settings.value('left_menu_filters')

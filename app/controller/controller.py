@@ -67,7 +67,8 @@ class Control(object):
         Загрузка данных из pickle gzip формата.
         '''
         data_from_file = file_methods.load_gzip(filepath)
-        self.data = data_from_file
+        for category in data_from_file:
+            self.data[category] = data_from_file[category]
         self.data_calculated = self._check_calculated()
 
     @staticmethod

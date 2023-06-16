@@ -525,7 +525,6 @@ class MainWindow(QMainWindow):
                 self.setNotify('ошибка', str(e))
             else:
                 self.tree_widget.update_check_box()
-                self.destroyChildWindow()
                 self.settings.setValue(
                     'lastFile', {
                         'filePath': file,
@@ -572,25 +571,19 @@ class MainWindow(QMainWindow):
     def destroyChildWindow(self) -> None:
         '''
         Метод удаления дочерних окон.
-        Необходим для обновления информации в них. Временное решение.
         '''
-        # TODO на подумать, можно в этих окнах реализовать апдейт
-        # при открытии нового файла
-        if self.reportWindow:
-            delete(self.reportWindow)
-            self.reportWindow = None
-        if self.mapWindow:
-            delete(self.mapWindow)
-            self.mapWindow = None
-        if self.calcWindow:
-            delete(self.calcWindow)
-            self.calcWindow = None
-        if self.openFileWindow:
-            delete(self.openFileWindow)
-            self.openFileWindow = None
-        if self.settingsWindow:
-            delete(self.settingsWindow)
-            self.settingsWindow = None
+        windows = [
+            'settingsWindow',
+            'reportWindow',
+            'mapWindow',
+            'calcWindow',
+            'openFileWindow',
+        ]
+        for window in windows:
+            if getattr(self, window):
+                delete(getattr(self, window))
+                setattr(self, window, None)
+
 
     def saveCsvData(self) -> None:
         '''
@@ -1079,3 +1072,12 @@ class MainWindow(QMainWindow):
                 self.close()
         else:
             super().keyPressEvent(event)
+
+    def updateChildWindows(self):
+        attr = [
+            'calcWindow', 'mapWindow', 
+            'reportWindow', 'settingsWindow'
+        ]
+        for attr_name in attr:
+            if getattr(self, attr_name) is not None:
+                getattr(self, attr_name).updateWidget()
