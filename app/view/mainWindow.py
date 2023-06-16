@@ -8,7 +8,7 @@ from app.view.servicesWindows import (
 )
 from app.view.helpersWindows import (
     SettingsWindow, SaveCsvWindow,
-    OpenFileWindow, Left_Menu_Tree
+    Open_file_window, Left_Menu_Tree
 )
 from PyQt5.QtGui import (
     QIcon, QColor, QPainter, QKeyEvent
@@ -47,7 +47,7 @@ class MainWindow(QMainWindow):
         self.settingsWindow: SettingsWindow = None
         self.calcWindow: CalcWindow = None
         self.saveCsvWindow: SaveCsvWindow = None
-        self.openFileWindow: OpenFileWindow = None
+        self.openFileWindow: Open_file_window = None
         self.controller: Control = Control()
         self.appVersion = QCoreApplication.applicationVersion()
         self.appName = QCoreApplication.applicationName()
@@ -560,7 +560,7 @@ class MainWindow(QMainWindow):
                 categories = self.controller.get_json_categories(
                     self.settings.value('mainSettings')['jsonDir']
                 )
-                self.openFileWindow = OpenFileWindow(
+                self.openFileWindow = Open_file_window(
                     self.controller, filetype, categories, self
                 )
             except KeyError:
