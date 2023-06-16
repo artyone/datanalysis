@@ -3,7 +3,7 @@ from app.controller import (
     getPalette
 )
 from app.view.servicesWindows import (
-    GraphWindow, MapWindow, ReportWindow,
+    GraphWindow, MapWindow, Report_window,
     ConsoleWindow, CalcWindow
 )
 from app.view.helpersWindows import (
@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.app = app
         self.mapWindow: MapWindow = None
-        self.reportWindow: ReportWindow = None
+        self.reportWindow: Report_window = None
         self.consoleWindow: ConsoleWindow = None
         self.settingsWindow: SettingsWindow = None
         self.calcWindow: CalcWindow = None
@@ -135,12 +135,16 @@ class MainWindow(QMainWindow):
         fileMenu: QMenu = self.menuBar.addMenu('&Файл')
         fileMenu.addAction(self.clearAction)
 
-        openSourceMenu: QMenu = fileMenu.addMenu('Открыть txt или csv')
+        openSourceMenu: QMenu = fileMenu.addMenu(
+            'Открыть txt или csv'
+        )
         openSourceMenu.setIcon(self.getIcon(':file-plus.svg'))
         openSourceMenu.addAction(self.openTxtAction)
         openSourceMenu.addAction(self.openCsvAction)
 
-        openDataMenu: QMenu = fileMenu.addMenu('&Открыть gzip или pdd')
+        openDataMenu: QMenu = fileMenu.addMenu(
+            '&Открыть gzip или pdd'
+        )
         openDataMenu.setIcon(self.getIcon(':database.svg'))
         openDataMenu.addAction(self.openPddAction)
         openDataMenu.addAction(self.openGzipAction)
@@ -277,14 +281,18 @@ class MainWindow(QMainWindow):
         )
         self.openGzipAction.setShortcut('Ctrl+O')
 
-        self.saveGzipAction = QAction('Сохранить как *.gzip...', self)
+        self.saveGzipAction = QAction(
+            'Сохранить как *.gzip...', self
+        )
         self.saveGzipAction.setIcon(self.getIcon(':save.svg'))
         self.saveGzipAction.setStatusTip(
             'Сохранить данные в формате gzip'
         )
         self.saveGzipAction.setShortcut('Ctrl+S')
 
-        self.saveCsvAction = QAction('Сохранить как *.csv...', self)
+        self.saveCsvAction = QAction(
+            'Сохранить как *.csv...', self
+        )
         self.saveCsvAction.setIcon(self.getIcon(':file-text.svg'))
         self.saveCsvAction.setStatusTip(
             'Сохранить данные в формате csv'
@@ -298,7 +306,8 @@ class MainWindow(QMainWindow):
         self.exitAction.setShortcut('Ctrl+Q')
 
     def _creteServiceActions(self) -> None:
-        self.calculateDataAction = QAction('&Рассчитать данные')
+        self.calculateDataAction = QAction(
+            '&Рассчитать данные')
         self.calculateDataAction.setIcon(self.getIcon(':percent.svg'))
         self.calculateDataAction.setStatusTip(
             'Рассчитать данные для дальнейшего анализа'
@@ -345,27 +354,35 @@ class MainWindow(QMainWindow):
             'Создать графики по умолчанию в новых окнах'
         )
 
-        self.cascadeAction = QAction('&Каскадное расположение')
+        self.cascadeAction = QAction(
+            '&Каскадное расположение'
+        )
         self.cascadeAction.setIcon(self.getIcon(':bar-chart.svg'))
         self.cascadeAction.setStatusTip(
             'Каскадное расположение окон графиков'
         )
 
-        self.horizontalAction = QAction('&Горизонтальное расположение')
+        self.horizontalAction = QAction(
+            '&Горизонтальное расположение'
+        )
         self.horizontalAction.setIcon(self.getIcon(':more-vertical.svg'))
         self.horizontalAction.setStatusTip(
             'Горизонтальное расположение окон графиков'
         )
         self.horizontalAction.setCheckable(True)
 
-        self.verticalAction = QAction('&Вертикальное расположение')
+        self.verticalAction = QAction(
+            '&Вертикальное расположение'
+        )
         self.verticalAction.setIcon(self.getIcon(':more-horizontal.svg'))
         self.verticalAction.setStatusTip(
             'Вертикальное расположение окон графиков'
         )
         self.verticalAction.setCheckable(True)
 
-        self.trackGraphAction = QAction('&Синхронизация графиков')
+        self.trackGraphAction = QAction(
+            '&Синхронизация графиков'
+        )
         self.trackGraphAction.setIcon(self.getIcon(':move.svg'))
         self.trackGraphAction.setStatusTip(
             'Синхронизация всех графиков по оси Ох'
@@ -521,7 +538,9 @@ class MainWindow(QMainWindow):
                 self.controller.load_gzip(file)
             except FileNotFoundError:
                 self.setNotify('ошибка', 'Файл не найден')
-            except ValueError as e:
+            except TypeError as e:
+                self.setNotify('ошибка', str(e))
+            except Exception as e:
                 self.setNotify('ошибка', str(e))
             else:
                 self.tree_widget.update_check_box()
@@ -532,7 +551,8 @@ class MainWindow(QMainWindow):
                     }
                 )
                 if not filepath:
-                    self.setNotify('успех', f'Файл {file} открыт')
+                    self.setNotify(
+                        'успех', f'Файл {file} открыт')
 
     def getOpenFileWindow(self, filetype: str) -> None:
         if self.openFileWindow is None:
@@ -583,7 +603,6 @@ class MainWindow(QMainWindow):
             if getattr(self, window):
                 delete(getattr(self, window))
                 setattr(self, window, None)
-
 
     def saveCsvData(self) -> None:
         '''
@@ -672,7 +691,7 @@ class MainWindow(QMainWindow):
             )
             return
         if self.reportWindow is None:
-            self.reportWindow = ReportWindow(self.controller, self)
+            self.reportWindow = Report_window(self.controller, self)
         else:
             self.reportWindow.hide()
         self.center(self.reportWindow)
@@ -849,7 +868,9 @@ class MainWindow(QMainWindow):
         '''
         if self.mdi.width() == 0:
             return
-        width = self.mdi.width() - (self.tree_widget.width() if self.tree_widget.isHidden() else 0)
+        width = self.mdi.width() - (
+            self.tree_widget.width() if self.tree_widget.isHidden() else 0
+        )
         sizes = [
             True if window.width() / width > 0.8 else False
             for window in self.mdi.subWindowList()
@@ -1029,7 +1050,9 @@ class MainWindow(QMainWindow):
                     'успех', f'Настройки сохранены в {filepath}'
                 )
             except PermissionError:
-                self.setNotify('ошибка', 'Файл открыт в другой программе')
+                self.setNotify(
+                    'ошибка', 'Файл открыт в другой программе'
+                )
             except Exception as e:
                 self.setNotify('ошибка', str(e))
 
@@ -1056,11 +1079,13 @@ class MainWindow(QMainWindow):
 
     def checkData(self) -> bool:
         if self.controller.data_is_none():
-            self.setNotify('предупреждение', 'Нужно выбрать данные')
+            self.setNotify(
+                'предупреждение', 'Нужно выбрать данные'
+            )
             return False
         return True
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key_Escape:
             question = QMessageBox.question(
                 None,
@@ -1073,9 +1098,9 @@ class MainWindow(QMainWindow):
         else:
             super().keyPressEvent(event)
 
-    def updateChildWindows(self):
+    def updateChildWindows(self) -> None:
         attr = [
-            'calcWindow', 'mapWindow', 
+            'calcWindow', 'mapWindow',
             'reportWindow', 'settingsWindow'
         ]
         for attr_name in attr:

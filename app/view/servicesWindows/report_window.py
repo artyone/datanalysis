@@ -11,81 +11,77 @@ from os import startfile
 from functools import partial
 
 
-class LineChooseWidget(QWidget):
+class Line_choose_widget(QWidget):
     '''Виджет выбора категории и адр'''
 
-    def __init__(self, text, categories, parent=None) -> None:
+    def __init__(self, text, categories) -> None:
         super().__init__()
-        self.parent = parent
         self.categories = categories
-        layout = QHBoxLayout()
-        self.setLayout(layout)
+        layout = QHBoxLayout(self)
 
-        textLabel = QLabel(text)
-        textLabel.setFixedWidth(115)
-        self.categoryComboBox = QComboBox()
-        self.categoryComboBox.addItems(self.categories.keys())
-        self.adrComboBox = QComboBox()
-        self.categoryComboBox.activated.connect(
-            self.updateAdrComboBox
+        text_label = QLabel(text, self)
+        text_label.setFixedWidth(115)
+        self.category_combo_box = QComboBox(self)
+        self.category_combo_box.addItems(self.categories)
+        self.adr_combo_box = QComboBox()
+        self.category_combo_box.activated.connect(
+            self.update_adr_combo_box
         )
-        self.updateAdrComboBox()
-        layout.addWidget(textLabel)
-        layout.addWidget(self.categoryComboBox)
-        layout.addWidget(self.adrComboBox)
+        self.update_adr_combo_box()
+        layout.addWidget(text_label)
+        layout.addWidget(self.category_combo_box)
+        layout.addWidget(self.adr_combo_box)
 
-    def updateAdrComboBox(self) -> None:
+    def update_adr_combo_box(self) -> None:
         # обновляем адр при смене категории
-        currentCategory = self.categoryComboBox.currentText()
-        self.adrComboBox.clear()
-        self.adrComboBox.addItems(self.categories[currentCategory])
+        current_category = self.category_combo_box.currentText()
+        self.adr_combo_box.clear()
+        self.adr_combo_box.addItems(self.categories[current_category])
 
-    def getValues(self) -> tuple:
+    def get_values(self) -> tuple:
         # получаем значения с виджета
-        category = self.categoryComboBox.currentText()
-        adr = self.adrComboBox.currentText()
+        category = self.category_combo_box.currentText()
+        adr = self.adr_combo_box.currentText()
         return {'category': category, 'adr': adr}
     
-    def updateCategories(self, categories):
-        self.categories = categories
-        self.categoryComboBox.clear()
-        self.categoryComboBox.addItems(categories.keys())
-        self.updateAdrComboBox()
+    def update_categories(self, new_categories: dict) -> None:
+        self.categories = new_categories
+        self.category_combo_box.clear()
+        self.category_combo_box.addItems(self.categories)
+        self.update_adr_combo_box()
 
 
-class ChooseWidget(QWidget):
+class Choose_widget(QWidget):
     '''Виджет для выбора исходных и посчитаных данных'''
 
-    def __init__(self, categories, parent=None) -> None:
+    def __init__(self, categories) -> None:
         super().__init__()
-        self.parent = parent
-        layout = QVBoxLayout()
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
-        self.lineSourceWidget = LineChooseWidget(
+        self.line_source_widget = Line_choose_widget(
             'Исходные данные', categories
         )
-        self.lineCalcWidget = LineChooseWidget(
+        self.line_calc_widget = Line_choose_widget(
             'Посчитанные данные', categories
         )
 
-        layout.addWidget(self.lineSourceWidget)
-        layout.addWidget(self.lineCalcWidget)
+        layout.addWidget(self.line_source_widget)
+        layout.addWidget(self.line_calc_widget)
 
         self.hide()
 
-    def getValues(self):
+    def get_values(self) -> dict:
         # получаем словарь данных с всех виджетов выбора
-        sourceValues = self.lineSourceWidget.getValues()
-        calcValues = self.lineCalcWidget.getValues()
-        return {'source': sourceValues, 'calc': calcValues}
+        source_values = self.line_source_widget.get_values()
+        calc_values = self.line_calc_widget.get_values()
+        return {'source': source_values, 'calc': calc_values}
     
-    def updateCategories(self, categories):
-        self.lineSourceWidget.updateCategories(categories)
-        self.lineCalcWidget.updateCategories(categories)
+    def update_categories(self, categories) -> None:
+        self.line_source_widget.update_categories(categories)
+        self.line_calc_widget.update_categories(categories)
 
 
-class ReportWindow(QWidget):
+class Report_window(QWidget):
     '''
     Класс окна получения отчета по полету.
     parent - родительское окно.
@@ -97,65 +93,64 @@ class ReportWindow(QWidget):
         super().__init__()
         self.parent = parent
         self.controller = controller
-        self.intervalsTxt = None
+        self.intervals_from_txt = None
         self.initUI()
 
     def initUI(self) -> None:
         self.setWindowTitle("Создание отчёта")
-        layout = QFormLayout()
-        self.setLayout(layout)
+        layout = QFormLayout(self)
 
-        self.planeComboBox = QComboBox()  # выбор самолёта
+        self.plane_combo_box = QComboBox()  # выбор самолёта
         planes = self.parent.settings.value('planes').keys()
-        self.planeComboBox.addItems(planes)
-        layout.addRow('Самолёт', self.planeComboBox)
+        self.plane_combo_box.addItems(planes)
+        layout.addRow('Самолёт', self.plane_combo_box)
 
         categories = {
             name: value.keys()
             for name, value in self.controller.get_data().items()
         }
 
-        self.pnkCheckBox = QCheckBox('Добавить в отчёт даные ПНК')
-        self.pnkWidget = ChooseWidget(categories)
-        self.pnkCheckBox.stateChanged.connect(
-            partial(self.widgetStateChanged, self.pnkWidget)
+        self.pnk_check_box = QCheckBox('Добавить в отчёт даные ПНК')
+        self.pnk_widget = Choose_widget(categories)
+        self.pnk_check_box.stateChanged.connect(
+            partial(self.widget_state_changed, self.pnk_widget)
         )
-        layout.addRow(self.pnkCheckBox)
-        layout.addRow(self.pnkWidget)
+        layout.addRow(self.pnk_check_box)
+        layout.addRow(self.pnk_widget)
 
-        self.dissCheckBox = QCheckBox('Добавить в отчёт даные ДИСС')
-        self.dissWidget = ChooseWidget(categories)
-        self.dissCheckBox.stateChanged.connect(
-            partial(self.widgetStateChanged, self.dissWidget)
+        self.diss_check_box = QCheckBox('Добавить в отчёт даные ДИСС')
+        self.diss_widget = Choose_widget(categories)
+        self.diss_check_box.stateChanged.connect(
+            partial(self.widget_state_changed, self.diss_widget)
         )
         # TODO убрать после реализации подсчёта дисс
-        self.dissCheckBox.hide()
-        layout.addRow(self.dissCheckBox)
-        layout.addRow(self.dissWidget)
-        layout.addRow(self.inputBox())
-        layout.addRow(self.intervalsTxt)
-        layout.addRow(self.buttonBox())
+        self.diss_check_box.hide()
+        layout.addRow(self.diss_check_box)
+        layout.addRow(self.diss_widget)
+        layout.addRow(self.get_input_box())
+        layout.addRow(self.intervals_from_txt)
+        layout.addRow(self.get_button_box())
 
-    def widgetStateChanged(self, widget, state) -> None:
+    def widget_state_changed(self, widget, state) -> None:
         # скрыть отобразить виджет при смене чекбоксов или тумблера
         if state:
             widget.show()
         else:
             widget.hide()
             self.adjustSize()
-        if self.pnkCheckBox.isChecked() or self.dissCheckBox.isChecked():
-            self.saveButton.show()
+        if self.pnk_check_box.isChecked() or self.diss_check_box.isChecked():
+            self.save_button.show()
         else:
-            self.saveButton.hide()
+            self.save_button.hide()
 
-    def inputBox(self) -> QHBoxLayout:
+    def get_input_box(self) -> QHBoxLayout:
         # поле ввода интервалов
         self.toggle = AnimatedToggle()
         self.toggle.setChecked(True)
-        self.intervalsTxt = QPlainTextEdit()
-        self.intervalsTxt.setFixedHeight(300)
+        self.intervals_from_txt = QPlainTextEdit()
+        self.intervals_from_txt.setFixedHeight(300)
         self.toggle.stateChanged.connect(
-            partial(self.widgetStateChanged, self.intervalsTxt)
+            partial(self.widget_state_changed, self.intervals_from_txt)
         )
 
         layout = QHBoxLayout()
@@ -171,64 +166,64 @@ class ReportWindow(QWidget):
         layout.addWidget(QLabel('Ввести вручную'), 2)
         return layout
 
-    def buttonBox(self) -> QDialogButtonBox:
+    def get_button_box(self) -> QDialogButtonBox:
         # блок кнопок снизу
-        buttonBox = QDialogButtonBox()
-        buttonBox.setStandardButtons(
+        button_box = QDialogButtonBox()
+        button_box.setStandardButtons(
             QDialogButtonBox.Open |
             QDialogButtonBox.Save |
             QDialogButtonBox.Cancel
         )
-        buttonBox.rejected.connect(self.close)
+        button_box.rejected.connect(self.close)
 
-        self.openButton = buttonBox.button(QDialogButtonBox.Open)
-        self.openButton.clicked.connect(self.openFileEvent)
-        self.openButton.hide()
+        self.open_button = button_box.button(QDialogButtonBox.Open)
+        self.open_button.clicked.connect(self.open_file_event)
+        self.open_button.hide()
 
-        self.saveButton = buttonBox.button(QDialogButtonBox.Save)
-        self.saveButton.clicked.connect(self.getReportEvent)
-        self.saveButton.hide()
-        return buttonBox
+        self.save_button = button_box.button(QDialogButtonBox.Save)
+        self.save_button.clicked.connect(self.get_report_event)
+        self.save_button.hide()
+        return button_box
 
-    def getReportEvent(self) -> None:
+    def get_report_event(self) -> None:
         '''
         Метод генерации отчёта по полету и сохранения его на диск.
         В зависимости от положения переключателя 
         отчет генерируется автоматически или по данным пользователя.
         '''
         # TODO пока отчёт только по данным пнк
-        text = self.intervalsTxt.toPlainText()
+        text = self.intervals_from_txt.toPlainText()
         if self.toggle.isChecked() and not text:
             self.parent.setNotify('предупреждение', "Введите интервалы.")
             return
         if not self.toggle.isChecked():
             text = ''
         options = QFileDialog.Options()
-        filePath, _ = QFileDialog.getSaveFileName(
+        file_path, _ = QFileDialog.getSaveFileName(
             self,
             "Save File",
             "",
             "xlsx Files (*.xlsx);;All Files(*)",
             options=options)
-        if filePath:
+        if file_path:
             try:
                 # получаем данные виджетов выбора
-                values = self.pnkWidget.getValues()
+                values = self.pnk_widget.get_values()
                 # получаем общие коэффициенты
                 coef = self.parent.settings.value('koef_for_intervals')
-                plane = self.planeComboBox.currentText()
+                plane = self.plane_combo_box.currentText()
                 # формируем настройки самолёта
-                planeSettings = {
+                plane_settings = {
                     'name': plane,
                     'values': self.parent.settings.value('planes')[plane]
                 }
                 self.controller.save_report(
-                    filePath, values, planeSettings, coef, text
+                    file_path, values, plane_settings, coef, text
                 )
-                self.filePath = filePath
-                self.openButton.show()
+                self.file_path = file_path
+                self.open_button.show()
                 self.parent.setNotify(
-                    'успех', f'Отчёт сохранён в {filePath}')
+                    'успех', f'Отчёт сохранён в {self.file_path}')
             except PermissionError:
                 self.parent.setNotify(
                     'ошибка', 'Сохраняемый файл открыт в другой программе')
@@ -241,11 +236,11 @@ class ReportWindow(QWidget):
             except Exception as e:
                 self.parent.setNotify('ошибка', str(e))
 
-    def openFileEvent(self) -> None:
+    def open_file_event(self) -> None:
         '''
         Метод открытия файла отчёта, если он был создан.
         '''
-        startfile(self.filePath)
+        startfile(self.file_path)
         self.close()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
@@ -256,21 +251,21 @@ class ReportWindow(QWidget):
             super().keyPressEvent(event)
 
     def updateWidget(self):
-        newCategories = {
+        new_categories = {
             name: value.keys()
             for name, value in self.controller.get_data().items()
         }
-        self.pnkWidget.updateCategories(newCategories)
-        self.dissWidget.updateCategories(newCategories)
+        self.pnk_widget.update_categories(new_categories)
+        self.diss_widget.update_categories(new_categories)
         planes = self.parent.settings.value('planes').keys()
-        self.planeComboBox.clear()
-        self.planeComboBox.addItems(planes)
+        self.plane_combo_box.clear()
+        self.plane_combo_box.addItems(planes)
 
 
 if __name__ == '__main__':
     import sys
     from PyQt5.QtWidgets import QApplication
     app = QApplication(sys.argv)
-    window = ReportWindow()
+    window = Report_window()
     window.show()
     sys.exit(app.exec_())

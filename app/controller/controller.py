@@ -67,6 +67,8 @@ class Control(object):
         Загрузка данных из pickle gzip формата.
         '''
         data_from_file = file_methods.load_gzip(filepath)
+        if not isinstance(data_from_file, dict):
+            raise TypeError('Неверный тип данных в gzip файле')
         for category in data_from_file:
             self.data[category] = data_from_file[category]
         self.data_calculated = self._check_calculated()

@@ -2,4 +2,4 @@ from .calculateWindow import CalcWindow
 from .consoleWindow import ConsoleWindow
 from .graphWindow import GraphWindow
 from .mapWindow import MapWindow
-from .reportWindow import ReportWindow
+from .report_window import Report_window
