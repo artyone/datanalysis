@@ -1,19 +1,86 @@
 from PyQt5.QtWidgets import (
-    QTreeWidget, QTreeWidgetItem, QApplication, QMenu, QInputDialog
+    QTreeWidget, QTreeWidgetItem, QApplication, QMenu, QInputDialog,
+    QVBoxLayout, QTableWidget, QTableWidgetItem, QWidget,
+    QTreeWidgetItemIterator, QHeaderView
 )
 from PyQt5.QtGui import QColor, QFont
 from PyQt5.QtCore import Qt, QPoint
+from collections import defaultdict
+import pandas as pd
+
+
+class View_data_widget(QWidget):
+    def __init__(self, data: pd.DataFrame) -> None:
+        super().__init__()
+        self.data = data.round(3)
+        self.columns = list(data.columns)
+        self.items_per_page = 2000
+        self.current_page = 1
+
+
+        layout = QVBoxLayout(self)
+
+        self.table_widget = QTableWidget(self)
+        layout.addWidget(self.table_widget)
+
+        self.setup_table_widget()
+        self.load_page(1)
+
+        self.showMaximized()
+
+    def setup_table_widget(self) -> None:
+        """
+        Инициализация таблицы
+        """
+        # Устанавливаем количество столбцов и их имена
+        self.table_widget.setColumnCount(len(self.columns))
+        self.table_widget.setHorizontalHeaderLabels(self.columns)
+
+        header = self.table_widget.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
+
+        scroll_bar = self.table_widget.verticalScrollBar()
+        scroll_bar.valueChanged.connect(self.scroll_bar_value_changed)
+
+    def load_page(self, page_number: int) -> None:
+        """
+        Загрузка страницы просмотра.
+
+        Args:
+            page_number (int): Номер страницы для загрузки
+        """
+        start_index = (page_number - 1) * self.items_per_page
+        end_index = start_index + self.items_per_page
+        data_page = self.data.iloc[start_index:end_index]
+        self.table_widget.setRowCount(end_index)
+        for row_index, row in data_page.iterrows():
+            for column_index, column_name in enumerate(self.columns):
+                column_item = QTableWidgetItem(str(row[column_name]))
+                self.table_widget.setItem(row_index, column_index, column_item)
+
+    def scroll_bar_value_changed(self) -> None:
+        """
+        Обработчик достижения конца таблицы
+        """
+        scroll_bar = self.table_widget.verticalScrollBar()
+
+        if scroll_bar.sliderPosition() == scroll_bar.maximum():
+            self.current_page += 1
+            self.load_page(self.current_page)
+
+    def closeEvent(self, event) -> None:
+        event.accept()
 
 
 class Left_Menu_Tree(QTreeWidget):
-    def __init__(self, mainWindow, parent=None) -> None:
+    def __init__(self, parent) -> None:
         super().__init__()
-        self.mainWindow = mainWindow
-        self.settings = mainWindow.settings
+        self.parent = parent
+        self.settings = self.parent.settings
         self.setColumnCount(2)
         self.setHeaderLabels(['Название', 'Количество'])
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.showContextMenu)
+        self.customContextMenuRequested.connect(self.show_context_menu)
         self.itemDoubleClicked.connect(self.handle_item_click)
 
     def update_check_box(self) -> None:
@@ -23,12 +90,12 @@ class Left_Menu_Tree(QTreeWidget):
         Returns:
             None
         """
-        if not self.mainWindow.controller.get_data():
+        if not self.parent.controller.get_data():
             self.hide()
-            self.mainWindow.destroyChildWindow()
+            self.parent.destroyChildWindow()
             return
         self.clear()
-        data = self.mainWindow.controller.get_data()
+        data = self.parent.controller.get_data()
         for category, adrs in sorted(data.items()):
             tree_category = QTreeWidgetItem(self)
             tree_category.setText(0, category)
@@ -45,8 +112,8 @@ class Left_Menu_Tree(QTreeWidget):
                     )
         self.show()
         self.resize_columns_to_contents()
-        self.mainWindow.splitter.setSizes([90, 500])
-        self.mainWindow.updateChildWindows()
+        self.parent.splitter.setSizes([90, 500])
+        self.parent.updateChildWindows()
 
 
     def get_filters(self) -> list:
@@ -104,9 +171,9 @@ class Left_Menu_Tree(QTreeWidget):
             selected_item = self.get_info_item(item)
             if len(selected_item) == 3:
                 category, adr, element = selected_item
-                self.mainWindow.createGraph([(category, adr, element)])
+                self.parent.createGraph([(category, adr, element)])
 
-    def showContextMenu(self, position: QPoint) -> None:
+    def show_context_menu(self, position: QPoint) -> None:
         """
         Отображает контекстное меню с различными действиями на основе текущего выбранного элемента.
 
@@ -125,7 +192,9 @@ class Left_Menu_Tree(QTreeWidget):
         item = self.currentItem()
         if len(self.get_info_item(item)) == 3:
             hide_action = menu.addAction('Скрыть')
-            hide_action.triggered.connect(self.hide_item)
+            hide_action.triggered.connect(self.hide_item_event)
+            view_data_action = menu.addAction('Посмотреть данные')
+            view_data_action.triggered.connect(self.view_data_event)
 
         delete_action = menu.addAction('Удалить')
         delete_action.triggered.connect(self.delete_item)
@@ -152,20 +221,20 @@ class Left_Menu_Tree(QTreeWidget):
 
         try:
             info_item = self.get_info_item(selected_element)
-            self.mainWindow.controller.change_column_name(
+            self.parent.controller.change_column_name(
                 info_item, new_name
             )
             self.update_check_box()
         except KeyError:
-            self.mainWindow.setNotify(
+            self.parent.setNotify(
                 'предупреждение', 'Элемент не найден в данных'
             )
         except Exception as e:
-            self.mainWindow.setNotify(
+            self.parent.setNotify(
                 'предупреждение', str(e)
             )
 
-    def hide_item(self) -> None:
+    def hide_item_event(self) -> None:
         """
         Скрывает элемент из отображения, добавляет его в настройки.
         """
@@ -180,10 +249,49 @@ class Left_Menu_Tree(QTreeWidget):
             new_filter_value.append(name)
             self.settings.setValue('left_menu_filters', new_filter_value)
             self.update_check_box()
-            self.mainWindow.setNotify('успех', f'{name} скрыт.')
+            self.parent.setNotify('успех', f'{name} скрыт.')
 
         except Exception as e:
-            self.mainWindow.setNotify('предупреждение', str(e))
+            self.parent.setNotify('предупреждение', str(e))
+
+    def view_data_event(self) -> None:
+        """
+        Посмотреть данные выбранного элемента
+        """
+        # Проверяем выбраны ли какие чек-боксы
+        
+        if self.get_selected_elements() != []:
+            selected_elements = self.get_selected_elements()
+            
+        elif self.currentItem():
+            # Проверяем правый клик был по элементу или категории
+            current_item = self.currentItem()
+            item_info = self.get_info_item(current_item)
+            if len(item_info) != 3:  
+                return
+            else:
+                selected_elements = [item_info]
+        else: 
+            return
+        
+        data = self.parent.controller.get_data()
+
+        selected_categories = defaultdict(list)
+        for element in selected_elements:
+            selected_categories[(element[0], element[1])].append(element[2])
+
+        self.child_window = []
+        for key, columns in selected_categories.items():
+            columns.insert(0, 'time')
+            category, adr = key[0], key[1]
+            data_for_view = data[category][adr].filter(
+                items=columns
+            )
+            self.child_window.append(View_data_widget(data_for_view))
+        
+
+
+
 
     def delete_item(self) -> None:
         """
@@ -195,14 +303,14 @@ class Left_Menu_Tree(QTreeWidget):
 
         try:
             item_info = self.get_info_item(selected_item)
-            self.mainWindow.controller.delete_item(item_info)
+            self.parent.controller.delete_item(item_info)
             self.update_check_box()
         except KeyError:
-            self.mainWindow.setNotify(
+            self.parent.setNotify(
                 'предупреждение', 'Элемент не найден в данных'
             )
         except Exception as e:
-            self.mainWindow.setNotify('предупреждение', str(e))
+            self.parent.setNotify('предупреждение', str(e))
 
     def addToOtherCategory(self):
         # TODO необходимо реализовать идею переноса каких-то данных в другие категории
@@ -212,7 +320,7 @@ class Left_Menu_Tree(QTreeWidget):
         """
         Позволяет получить список уникальных имен всех элементов дерева.
         """
-        data = self.mainWindow.controller.get_data()
+        data = self.parent.controller.get_data()
         columns = []
         for address in data.values():
             for dataframe in address.values():
@@ -220,3 +328,20 @@ class Left_Menu_Tree(QTreeWidget):
         unique_columns = list(set(columns))
         sorted_columns = sorted(unique_columns)
         return sorted_columns
+    
+    def get_selected_elements(self) -> list:
+        '''
+        Фукнция для получения всех отмеченных чек-боксов.
+        '''
+        selected_elements = []
+        iterator = QTreeWidgetItemIterator(
+            self, QTreeWidgetItemIterator.Checked
+        )
+        while iterator.value():
+            item = iterator.value()
+            item_name = item.text(0)
+            adr_name = item.parent().text(0)
+            category_name = item.parent().parent().text(0)
+            selected_elements.append((category_name, adr_name, item_name))
+            iterator += 1
+        return selected_elements

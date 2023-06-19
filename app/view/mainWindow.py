@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
 
         self.splitter = QSplitter(Qt.Horizontal)
 
-        self.tree_widget = Left_Menu_Tree(self, self.splitter)
+        self.tree_widget = Left_Menu_Tree(self)
 
         self.tree_widget.hide()
 
@@ -724,7 +724,7 @@ class MainWindow(QMainWindow):
         if customSelected:
             treeSelected = customSelected
         else:
-            treeSelected = self._getTreeSelected()
+            treeSelected = self.tree_widget.get_selected_elements()
 
         if self.spinBox.text() != '0':
             decimation = int(self.spinBox.text())
@@ -939,21 +939,21 @@ class MainWindow(QMainWindow):
         QApplication.closeAllWindows()
         event.accept()
 
-    def _getTreeSelected(self) -> list:
-        '''
-        Фукнция для получения всех отмеченных чек-боксов левого меню.
-        '''
-        treeSelected = []
-        iterator = QTreeWidgetItemIterator(
-            self.tree_widget, QTreeWidgetItemIterator.Checked)
-        while iterator.value():
-            item = iterator.value()
-            itemName = item.text(0)
-            adrName = item.parent().text(0)
-            categoryName = item.parent().parent().text(0)
-            treeSelected.append((categoryName, adrName, itemName))
-            iterator += 1
-        return treeSelected
+    # def getTreeSelected(self) -> list:
+    #     '''
+    #     Фукнция для получения всех отмеченных чек-боксов левого меню.
+    #     '''
+    #     treeSelected = []
+    #     iterator = QTreeWidgetItemIterator(
+    #         self.tree_widget, QTreeWidgetItemIterator.Checked)
+    #     while iterator.value():
+    #         item = iterator.value()
+    #         itemName = item.text(0)
+    #         adrName = item.parent().text(0)
+    #         categoryName = item.parent().parent().text(0)
+    #         treeSelected.append((categoryName, adrName, itemName))
+    #         iterator += 1
+    #     return treeSelected
 
     def setNotify(self, type: str, txt: str) -> None:
         '''

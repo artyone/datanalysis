@@ -137,6 +137,7 @@ class GraphWindow(QMdiSubWindow):
             event.accept()
         if event.button() == Qt.MouseButton.MiddleButton:
             self.close()
+            self.parent.checkPositioningWindows()
 
     def contextMenu(self, event) -> None:
         '''
