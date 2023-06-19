@@ -1107,3 +1107,14 @@ class MainWindow(QMainWindow):
         for attr_name in attr:
             if getattr(self, attr_name) is not None:
                 getattr(self, attr_name).updateWidget()
+
+    def hide_unhide_border_window(self) -> None:
+        if not self.mdi.subWindowList():
+            return
+        for window in self.mdi.subWindowList():
+            if window.windowFlags() & Qt.FramelessWindowHint:
+                window.setWindowFlags(
+                    Qt.Window
+                )
+            else:
+                window.setWindowFlags(Qt.FramelessWindowHint)

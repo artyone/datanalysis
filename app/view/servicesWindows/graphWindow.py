@@ -144,9 +144,18 @@ class GraphWindow(QMdiSubWindow):
         Метод создания кастомного контекстного меню.
         '''
         menu = QMenu()
-        self.setBackgrounMenu(menu)
+        self.setBackgroundMenu(menu)
         self.setLineTypeMenu(menu)
         self.setTimeShiftMenu(menu)
+
+        hide_border_window_action = QAction(
+            '&Скрыть/показать границы окна'
+        )
+        menu.addAction(hide_border_window_action)
+        hide_border_window_action.triggered.connect(
+            self.parent.hide_unhide_border_window
+        )
+
         menu.addSeparator()
 
         closeAction = QAction('&Закрыть')
@@ -155,7 +164,7 @@ class GraphWindow(QMdiSubWindow):
 
         menu.exec(event.screenPos().toPoint())
 
-    def setBackgrounMenu(self, parent: QMenu) -> None:
+    def setBackgroundMenu(self, parent: QMenu) -> None:
         menu = parent.addMenu('&Фон')
 
         colors = {'white': 'Белый', 'black': 'Черный'}
@@ -260,7 +269,9 @@ class GraphWindow(QMdiSubWindow):
         self.spinBox.setSingleStep(.1)
         self.spinBox.valueChanged.connect(
             partial(self.updateGraph, curveData))
-        self.applyShiftButton = QPushButton('Применить смещение')
+        self.applyShiftButton = QPushButton(
+            'Применить смещение'
+        )
         self.applyShiftButton.clicked.connect(
             partial(self.applyShift, curveData))
         self.layoutShift.addWidget(self.applyShiftButton)
