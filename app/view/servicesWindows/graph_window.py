@@ -248,7 +248,7 @@ class Graph_window(QMdiSubWindow):
         else:
             data['curve'].setSymbol(None)
 
-    def time_shift_event(self, curveData: dict) -> None:
+    def time_shift_event(self, curve_data: dict) -> None:
         '''
         Метод смещения графика по оси Ox.
         '''
@@ -258,13 +258,13 @@ class Graph_window(QMdiSubWindow):
         self.main_layout.addWidget(self.shift_widget)
         self.shift_layout = QHBoxLayout()
         self.shift_widget.setLayout(self.shift_layout)
-        max = int(curveData['curve'].getData()[0].max()) * 2
+        max = int(curve_data['curve'].getData()[0].max()) * 2
         self.slider = QSlider(Qt.Orientation.Horizontal, self)
         self.slider.setRange(-max, max)
         self.slider.setSingleStep(50)
         self.slider.setPageStep(50)
         self.slider.valueChanged.connect(
-            partial(self.update_graph_event, curveData))
+            partial(self.update_graph_event, curve_data))
         self.spin_box = QDoubleSpinBox(self)
         self.spin_box.setAlignment(
             Qt.AlignCenter | Qt.AlignVCenter
@@ -273,39 +273,39 @@ class Graph_window(QMdiSubWindow):
         self.spin_box.setRange(-max, max)
         self.spin_box.setSingleStep(.1)
         self.spin_box.valueChanged.connect(
-            partial(self.update_graph_event, curveData)
+            partial(self.update_graph_event, curve_data)
         )
         self.apply_shift_button = QPushButton(
             'Применить смещение'
         )
         self.apply_shift_button.clicked.connect(
-            partial(self.apply_shift, curveData)
+            partial(self.apply_shift, curve_data)
         )
         self.shift_layout.addWidget(self.apply_shift_button)
         self.shift_layout.addWidget(self.slider)
         self.shift_layout.addWidget(self.spin_box)
 
-    def update_graph_event(self, curveData: dict, value: str) -> None:
+    def update_graph_event(self, curve_data: dict, value: str) -> None:
         '''
         Метод перестроения графика после смещения данных.
         '''
         self.slider.setValue(int(value))
         self.spin_box.setValue(float(value))
-        curve = curveData['curve']
-        category = curveData['category']
-        adr = curveData['adr']
+        curve = curve_data['curve']
+        category = curve_data['category']
+        adr = curve_data['adr']
         item = curve.name()
         data_for_graph = self.data[category][adr].iloc[::self.decimation]
         x = [i + value for i in data_for_graph.time]
         y = data_for_graph[item]
         curve.setData(x, y)
 
-    def apply_shift(self, curveData) -> None:
+    def apply_shift(self, curve_data) -> None:
         '''
         Применить смещение
         '''
         value = self.spin_box.value(),
-        data = self.data[curveData['category']][curveData['adr']]
+        data = self.data[curve_data['category']][curve_data['adr']]
         data['time'] = data['time'] + value
         self.parent.setNotify(
             'успех', 'Смещение задано. Не забудьте сохранить изменения'
