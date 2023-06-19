@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 from app.model import file_methods
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
-from app.view.servicesWindows.graphWindow import GraphWindow
+from app.view.servicesWindows.graph_window import Graph_window
 from pprint import pprint
 import copy
 import app.resource.qrc_resources
@@ -183,7 +183,7 @@ class ConsoleWindow(QMainWindow):
         treeSelected = [('console', 'ADR0', arg) for arg in args]
 
         try:
-            graphWindow = GraphWindow(
+            graphWindow = Graph_window(
                 dataForGraph, treeSelected, 1, self.parent)
             self.parent.mdi.addSubWindow(graphWindow)
             graphWindow.show()

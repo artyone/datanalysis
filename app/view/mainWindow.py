@@ -3,7 +3,7 @@ from app.controller import (
     getPalette
 )
 from app.view.servicesWindows import (
-    GraphWindow, MapWindow, Report_window,
+    Graph_window, MapWindow, Report_window,
     ConsoleWindow, CalcWindow
 )
 from app.view.helpersWindows import (
@@ -731,7 +731,7 @@ class MainWindow(QMainWindow):
         else:
             decimation = 1
         try:
-            graphWindow = GraphWindow(
+            graph_window = Graph_window(
                 self.controller.get_data(),
                 treeSelected,
                 decimation,
@@ -766,8 +766,8 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.setNotify('предупреждение', e)
         else:
-            self.mdi.addSubWindow(graphWindow)
-            graphWindow.show()
+            self.mdi.addSubWindow(graph_window)
+            graph_window.show()
             self.trackGraph()
             self.checkPositioningWindows()
 
