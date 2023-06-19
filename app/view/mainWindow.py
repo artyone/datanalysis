@@ -7,7 +7,7 @@ from app.view.servicesWindows import (
     ConsoleWindow, CalcWindow
 )
 from app.view.helpersWindows import (
-    SettingsWindow, SaveCsvWindow,
+    SettingsWindow, Save_csv_window,
     Open_file_window, Left_Menu_Tree
 )
 from PyQt5.QtGui import (
@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         self.consoleWindow: ConsoleWindow = None
         self.settingsWindow: SettingsWindow = None
         self.calcWindow: CalcWindow = None
-        self.saveCsvWindow: SaveCsvWindow = None
+        self.saveCsvWindow: Save_csv_window = None
         self.openFileWindow: Open_file_window = None
         self.controller: Control = Control()
         self.appVersion = QCoreApplication.applicationVersion()
@@ -612,7 +612,7 @@ class MainWindow(QMainWindow):
             return
 
         if self.saveCsvWindow is None:
-            self.saveCsvWindow = SaveCsvWindow(self.controller, self)
+            self.saveCsvWindow = Save_csv_window(self.controller, self)
         else:
             self.saveCsvWindow.hide()
         self.center(self.saveCsvWindow)
@@ -1101,7 +1101,8 @@ class MainWindow(QMainWindow):
     def updateChildWindows(self) -> None:
         attr = [
             'calcWindow', 'mapWindow',
-            'reportWindow', 'settingsWindow'
+            'reportWindow', 'settingsWindow',
+            'saveCsvWindow'
         ]
         for attr_name in attr:
             if getattr(self, attr_name) is not None:
