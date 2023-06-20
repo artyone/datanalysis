@@ -113,7 +113,7 @@ class Left_Menu_Tree(QTreeWidget):
         self.show()
         self.resize_columns_to_contents()
         self.parent.splitter.setSizes([90, 500])
-        self.parent.updateChildWindows()
+        self.parent.update_child_windows()
 
 
     def get_filters(self) -> list:
@@ -171,7 +171,7 @@ class Left_Menu_Tree(QTreeWidget):
             selected_item = self.get_info_item(item)
             if len(selected_item) == 3:
                 category, adr, element = selected_item
-                self.parent.createGraph([(category, adr, element)])
+                self.parent.create_graph([(category, adr, element)])
 
     def show_context_menu(self, position: QPoint) -> None:
         """
