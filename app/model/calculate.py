@@ -150,7 +150,7 @@ class Mathematical(object):
         ) * 180
         # USdiss=(math.atan(Wzc_DISS_r_acc/Wxc_DISS_r_acc)/math.pi)*180
 
-    def get_calculated_data(self, start_stop: Iterable) -> dict:
+    def get_calculated_data(self, start_stop: Iterable) -> pd.DataFrame:
         '''
         Метод возврата данных после рассчёта.
         '''

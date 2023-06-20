@@ -32,32 +32,34 @@ class Datas(object):
         return '\t' if '.txt' in filepath else ','
 
     @staticmethod
-    def _get_enc(filepath: str) -> str:
+    def _get_enc(filepath: str) -> str | None:
         with open(filepath, 'br') as input:
             return cd.detect(input.read(1000))['encoding']
 
     @staticmethod
     def write_xlsx(data: pd.DataFrame, plane_koef: dict, filepath: str) -> None:
 
-        def find_bookmarks(search_value: str, sheet) -> str:
+        def find_bookmarks(search_value: str, sheet) -> tuple | None:
             search_value = '{' + search_value + '}'
-            found_cell = None
             for row in sheet.iter_rows():
                 for cell in row:
                     if cell.value == search_value:
                         return cell.row, cell.column
-            return found_cell
+            return
 
         wb = openpyxl.load_workbook('templates/xls_template.xlsx')
         ws = wb.active
 
-        for name in data:
+        if ws is None:
+            raise ValueError('Неверный шаблон xlsx')
+
+        for name in data.columns:
             address = find_bookmarks(name, ws)
             if not address:
                 continue
             row, column = address
             for i, value in enumerate(data[name]):
-                ws.cell(column=column + i, row=row, value=value)
+                ws.cell(column=column + i, row=row, value=value) # type: ignore
 
         values = {}
 
@@ -85,7 +87,7 @@ class Datas(object):
                 continue
             row, column = address
             value = value if isinstance(value, str) else round(value, 3)
-            ws.cell(column=column, row=row, value=value)
+            ws.cell(column=column, row=row, value=value) # type: ignore
 
         wb.save(filepath)
         wb.close()
@@ -151,7 +153,7 @@ class Datas(object):
         return number_mask, shift
 
     @staticmethod
-    def get_unpacked_data_list(filepath: str) -> np.array:
+    def get_unpacked_data_list(filepath: str) -> np.ndarray:
         with open(filepath, 'rb') as file:
             string = file.read()
             unpacked_data_list = [
@@ -164,8 +166,8 @@ class Datas(object):
         cls, 
         byteswap: bool, 
         field_data: dict, 
-        data_source: np.array
-        ) -> np.array:
+        data_source: np.ndarray
+        ) -> np.ndarray:
         position = field_data['position'] + 2
         koef = field_data['koef']
         size = field_data['size']
@@ -198,7 +200,7 @@ class Datas(object):
         cls, 
         byteswap: bool, 
         group_info: dict, 
-        data_source: np.array, 
+        data_source: np.ndarray, 
         result_data: dict) -> None:
         if type(group_info['fields']) == list:
             for field in group_info['fields']:
@@ -222,16 +224,16 @@ class Datas(object):
 
     @staticmethod
     def get_filtered_data_by_checksum(
-        checksum: str, 
-        source_data: np.array
-        ) -> np.array:
+        checksum: int, 
+        source_data: np.ndarray
+        ) -> np.ndarray:
         control_sum = source_data[:, 1].astype(np.uint16).byteswap()
         control_sum_mask = control_sum == checksum
         data_list = source_data[control_sum_mask]
         return data_list
 
     @staticmethod
-    def get_time_list(koef, source) -> np.array:
+    def get_time_list(koef: float, source: np.ndarray) -> np.ndarray:
         time_list = source[:, 0].astype(np.uint32)
         time_list = time_list.byteswap() * koef
         return time_list
@@ -251,7 +253,8 @@ class Datas(object):
     def unpack_adr(cls, adr, unpacked_data_list) -> dict:
         checksum = int(adr['checksum'], base=16)
         data_list = cls.get_filtered_data_by_checksum(
-            checksum, unpacked_data_list)
+            checksum, unpacked_data_list
+        )
         df_dict = {}
         df_dict['time'] = cls.get_time_list(adr['time_koef'], data_list)
         df_dict = cls.unpack_fields(
@@ -259,7 +262,7 @@ class Datas(object):
         return df_dict
 
     @classmethod
-    def load_pdd(cls, filepath_pdd, json_data) -> dict:
+    def load_pdd(cls, filepath_pdd: str, json_data: list) -> dict:
         unpacked_data_list = cls.get_unpacked_data_list(filepath_pdd)
         result_dict = {}
 

@@ -4,7 +4,7 @@ from pandas import DataFrame
 import re
 import numpy as np
 import pandas as pd
-from itertools import zip_longest
+from collections import defaultdict
 
 
 class NoneJsonError(Exception):
@@ -326,14 +326,7 @@ class Control(object):
             raise ValueError('Нет данных')
         data = self.data[input_category][input_adr]
 
-        result = {
-            'Ch1_UNCH1': [],
-            'Ch1_UNCH2': [],
-            'Ch2_UNCH1': [],
-            'Ch2_UNCH2': [],
-            'Ch3_UNCH1': [],
-            'Ch3_UNCH2': [],
-        }
+        result = defaultdict(list)
         for i in data:
             if i == 'time':
                 continue
@@ -343,14 +336,8 @@ class Control(object):
         for name in result:
             result[name] = np.column_stack(result[name]).ravel()
 
-        min_length = min(
-            len(result['Ch1_UNCH1']),
-            len(result['Ch1_UNCH2']),
-            len(result['Ch2_UNCH1']),
-            len(result['Ch2_UNCH2']),
-            len(result['Ch3_UNCH1']),
-            len(result['Ch3_UNCH2'])
-        )
+        min_length = min(len(value) for value in result.values())
+
         for name in result:
             result[name] = result[name][:min_length]
         result['time'] = np.arange(min_length)
