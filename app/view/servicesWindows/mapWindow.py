@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
-from functools import partial
 
 
 class MapWindow(QWidget):
@@ -17,14 +16,14 @@ class MapWindow(QWidget):
     settings - настройки приложения.
     '''
 
-    def __init__(self, controller, parent=None):
+    def __init__(self, controller, parent) -> None:
         super().__init__()
         self.parent = parent
         self.controller = controller
         self.settings = self.parent.settings
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         '''
         Метод отрисовки основных элементов окна.
         '''
@@ -39,7 +38,7 @@ class MapWindow(QWidget):
         dlgLayout.addWidget(self.btnBox)
         self.setLayout(dlgLayout)
 
-    def initInputBlock(self):
+    def initInputBlock(self) -> None:
         '''Метод инициализации элементов ввода и выбора пользователя'''
         self.formLayout = QFormLayout()
         self.formLayout.setVerticalSpacing(20)
@@ -71,9 +70,11 @@ class MapWindow(QWidget):
             self.validateLineEdit
         )
         self.formLayout.addRow('JVD_H мин:', self.jvdHMinLineEdit)
-        self.formLayout.addRow('Прореживание:', self.decimationLineEdit)
+        self.formLayout.addRow(
+            'Прореживание:', self.decimationLineEdit
+        )
 
-    def initButtonBlock(self):
+    def initButtonBlock(self) -> None:
         '''Метод инициализации кнопок на форме'''
         self.btnBox = QDialogButtonBox()
         self.btnBox.setStandardButtons(
@@ -90,14 +91,14 @@ class MapWindow(QWidget):
         self.saveButton = self.btnBox.button(QDialogButtonBox.Save)
         self.saveButton.clicked.connect(self.getMap)
 
-    def updateAdrComboBox(self):
+    def updateAdrComboBox(self) -> None:
         '''Метод обновления адр при выборе категории'''
         current_category = self.categoryComboBox.currentText()
         adrs = self.controller.get_data()[current_category].keys()
         self.adrComboBox.clear()
         self.adrComboBox.addItems(adrs)
 
-    def getMap(self):
+    def getMap(self) -> None:
         '''
         Метод получения и сохранения карты по указанному пользователем пути.
         '''
@@ -125,20 +126,22 @@ class MapWindow(QWidget):
                         'decimation': self.decimationLineEdit.text()
                     }
                 )  # сохраняем в настройках последний выбор
-                self.parent.setNotify(
-                    'успех', f'Карта сохранена в: {filePath}')
+                self.parent.send_notify(
+                    'успех', f'Карта сохранена в: {filePath}'
+                )
                 self.filePath = filePath
                 self.openButton.show()
 
             except PermissionError:
-                self.parent.setNotify(
-                    'ошибка', 'Файл открыт в другой программе')
+                self.parent.send_notify(
+                    'ошибка', 'Файл открыт в другой программе'
+                )
             except ValueError as e:
-                self.parent.setNotify('ошибка', str(e))
+                self.parent.send_notify('ошибка', str(e))
             except Exception as e:
-                self.parent.setNotify('ошибка', str(e))
+                self.parent.send_notify('ошибка', str(e))
 
-    def openFile(self):
+    def openFile(self) -> None:
         '''
         Метод открытия файла карты, если она была создана
         '''

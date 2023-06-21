@@ -194,7 +194,9 @@ class Report_window(QWidget):
         # TODO пока отчёт только по данным пнк
         text = self.intervals_from_txt.toPlainText()
         if self.toggle.isChecked() and not text:
-            self.parent.setNotify('предупреждение', "Введите интервалы.")
+            self.parent.send_notify(
+                'предупреждение', 'Введите интервалы'
+            )
             return
         if not self.toggle.isChecked():
             text = ''
@@ -222,19 +224,23 @@ class Report_window(QWidget):
                 )
                 self.file_path = file_path
                 self.open_button.show()
-                self.parent.setNotify(
-                    'успех', f'Отчёт сохранён в {self.file_path}')
+                self.parent.send_notify(
+                    'успех', f'Отчёт сохранён в {self.file_path}'
+                )
             except PermissionError:
-                self.parent.setNotify(
-                    'ошибка', 'Сохраняемый файл открыт в другой программе')
+                self.parent.send_notify(
+                    'ошибка', 'Сохраняемый файл открыт в другой программе'
+                )
             except FileNotFoundError:
-                self.parent.setNotify(
-                    'ошибка', 'Не найден шаблон xls_template.xlsx, проверьте его наличие')
+                self.parent.send_notify(
+                    'ошибка', 'Не найден шаблон xls_template.xlsx, проверьте его наличие'
+                )
             except AttributeError:
-                self.parent.setNotify(
-                    'ошибка', 'Ошибка в данных или в коэффициентах')
+                self.parent.send_notify(
+                    'ошибка', 'Ошибка в данных или в коэффициентах'
+                )
             except Exception as e:
-                self.parent.setNotify('ошибка', str(e))
+                self.parent.send_notify('ошибка', str(e))
 
     def open_file_event(self) -> None:
         '''

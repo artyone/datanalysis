@@ -138,7 +138,7 @@ class Graph_window(QMdiSubWindow):
             event.accept()
         if event.button() == Qt.MouseButton.MiddleButton:
             self.close()
-            self.parent.checkPositioningWindows()
+            self.parent.check_positioning_windows()
 
     def context_menu(self, event) -> None:
         '''
@@ -307,6 +307,6 @@ class Graph_window(QMdiSubWindow):
         value = self.spin_box.value(),
         data = self.data[curve_data['category']][curve_data['adr']]
         data['time'] = data['time'] + value
-        self.parent.setNotify(
+        self.parent.send_notify(
             'успех', 'Смещение задано. Не забудьте сохранить изменения'
         )

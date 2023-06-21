@@ -131,10 +131,10 @@ class ConsoleWindow(QMainWindow):
                 scriptData = self.controller.load_pytnon_script(
                     filepath)
                 self.textEdit.setPlainText(scriptData)
-                self.parent.setNotify('успех', 'Скрипт загружен')
+                self.parent.send_notify('успех', 'Скрипт загружен')
                 self.filepath = filepath
             except Exception as e:
-                self.parent.setNotify('ошибка', str(e))
+                self.parent.send_notify('ошибка', str(e))
 
     def saveScript(self) -> None:
         '''
@@ -152,13 +152,17 @@ class ConsoleWindow(QMainWindow):
         if self.filepath:
             try:
                 self.controller.save_python_sript(self.filepath, data)
-                self.parent.setNotify(
-                    'успех', f'Python файл сохранен в {self.filepath}')
+                self.parent.send_notify(
+                    'успех', f'Python файл сохранен в {self.filepath}'
+                )
             except PermissionError:
-                self.parent.setNotify(
-                    'ошибка', 'Файл открыт в другой программе')
+                self.parent.send_notify(
+                    'ошибка', 'Файл открыт в другой программе'
+                )
             except Exception as e:
-                self.parent.setNotify('ошибка', str(e))
+                self.parent.send_notify(
+                    'ошибка', str(e)
+                )
 
     def autoSave(self) -> None:
         '''
@@ -170,10 +174,10 @@ class ConsoleWindow(QMainWindow):
                 self.controller.save_python_sript(
                     self.filepath + '.bck', data)
             except PermissionError:
-                self.parent.setNotify(
+                self.parent.send_notify(
                     'ошибка', 'Автосейв не выполнен')
             except Exception as e:
-                self.parent.setNotify('ошибка', str(e))
+                self.parent.send_notify('ошибка', str(e))
 
     def graph(self, data: pandas.DataFrame, *args) -> None:
         '''
@@ -187,18 +191,18 @@ class ConsoleWindow(QMainWindow):
                 dataForGraph, treeSelected, 1, self.parent)
             self.parent.mdi.addSubWindow(graphWindow)
             graphWindow.show()
-            self.parent.trackGraph()
-            self.parent.checkPositioningWindows()
+            self.parent.track_graph()
+            self.parent.check_positioning_windows()
         except AttributeError as e:
             self.f.write(f'Данные для графика не являются dataframe\n{str(e)}')
-            self.parent.setNotify(
+            self.parent.send_notify(
                 'предупреждение',
                 'Данные для графика не являются dataframe'
             )
         except KeyError as e:
             self.f.write(
                 f'Необходимо правильно выбрать данные для графика или ошибка имен элементов\n{str(e)}')
-            self.parent.setNotify(
+            self.parent.send_notify(
                 'предупреждение',
                 'Необходимо правильно выбрать данные для графика или ошибка имен элементов'
             )

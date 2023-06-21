@@ -208,26 +208,33 @@ class CalcWindow(QWidget):
             self.calculatePnk(targetAdr)
 
 
-
-    def calculateUnch(self, target_adr):
+    def calculateUnch(self, target_adr) -> None:
         try:
             category = self.categoryUnchComboBox.currentText()
             self.controller.concatenate_unch(category, 'ADR2', target_adr)
             self.parent.tree_widget.update_check_box()
-            self.parent.setNotify('успех', 'Данные подсчитаны.')
+            self.parent.send_notify(
+                'успех', 'Данные подсчитаны.'
+            )
             self.close()
         except ValueError:
-            self.parent.setNotify('предупреждение', 'Нет данных в adr2')
+            self.parent.send_notify(
+                'предупреждение', 'Нет данных в adr2'
+            )
         except KeyError:
-            self.parent.setNotify('предупреждение', 'Нет указанной категории, возможно вы её переименовали')
+            self.parent.send_notify(
+                'предупреждение', 'Нет указанной категории, возможно вы её переименовали'
+            )
         except Exception as e:
-            self.parent.setNotify('предупреждение', str(e))
+            self.parent.send_notify(
+                'предупреждение', str(e)
+            )
 
 
-    def calculateDiss(self, target_adr):
+    def calculateDiss(self, target_adr) -> None:
         pass
 
-    def calculatePnk(self, target_adr):
+    def calculatePnk(self, target_adr) -> None:
         planeCorr = self.parent.settings.value(
             'planes')[self.planeComboBox.currentText()]
         corrections = self.parent.settings.value('corrections')
@@ -242,18 +249,18 @@ class CalcWindow(QWidget):
                 target_adr=target_adr
             )
             self.parent.tree_widget.update_check_box()
-            self.parent.setNotify('успех', 'Данные подсчитаны.')
+            self.parent.send_notify('успех', 'Данные подсчитаны.')
             self.close()
         except Exception as e:
-            self.parent.setNotify('предупреждение', str(e))
+            self.parent.send_notify('предупреждение', str(e))
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key_Escape:  # type: ignore
             self.hide()
         else:
             super().keyPressEvent(event)
 
-    def checkAnyChoice(self):
+    def checkAnyChoice(self) -> None:
         if any([
             self.calcPnkCheckBox.isChecked(),
             self.calcDissCheckBox.isChecked(),
@@ -263,7 +270,7 @@ class CalcWindow(QWidget):
         else:
             self.okButton.setEnabled(False)
 
-    def updateWidget(self):
+    def updateWidget(self) -> None:
         '''Метод обновления списка категорий'''
         categories = self.controller.get_data().keys()
         self.categoryUnchComboBox.clear()

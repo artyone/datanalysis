@@ -226,11 +226,11 @@ class Left_Menu_Tree(QTreeWidget):
             )
             self.update_check_box()
         except KeyError:
-            self.parent.setNotify(
+            self.parent.send_notify(
                 'предупреждение', 'Элемент не найден в данных'
             )
         except Exception as e:
-            self.parent.setNotify(
+            self.parent.send_notify(
                 'предупреждение', str(e)
             )
 
@@ -249,10 +249,10 @@ class Left_Menu_Tree(QTreeWidget):
             new_filter_value.append(name)
             self.settings.setValue('left_menu_filters', new_filter_value)
             self.update_check_box()
-            self.parent.setNotify('успех', f'{name} скрыт.')
+            self.parent.send_notify('успех', f'{name} скрыт.')
 
         except Exception as e:
-            self.parent.setNotify('предупреждение', str(e))
+            self.parent.send_notify('предупреждение', str(e))
 
     def view_data_event(self) -> None:
         """
@@ -306,11 +306,11 @@ class Left_Menu_Tree(QTreeWidget):
             self.parent.controller.delete_item(item_info)
             self.update_check_box()
         except KeyError:
-            self.parent.setNotify(
+            self.parent.send_notify(
                 'предупреждение', 'Элемент не найден в данных'
             )
         except Exception as e:
-            self.parent.setNotify('предупреждение', str(e))
+            self.parent.send_notify('предупреждение', str(e))
 
     def addToOtherCategory(self):
         # TODO необходимо реализовать идею переноса каких-то данных в другие категории

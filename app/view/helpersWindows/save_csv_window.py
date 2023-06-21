@@ -80,7 +80,7 @@ class Save_csv_window(QWidget):
         self.adr_combo_box.clear()
         self.adr_combo_box.addItems(adrs)
 
-    def save_csv_event(self):
+    def save_csv_event(self) -> None:
         category = self.category_combo_box.currentText()
         adr = self.adr_combo_box.currentText()
         options = QFileDialog.Options()
@@ -94,17 +94,17 @@ class Save_csv_window(QWidget):
         if file_path:
             try:
                 self.controller.save_csv(file_path, category, adr)
-                self.parent.setNotify(
+                self.parent.send_notify(
                     'успех', f'CSV файл сохранен {file_path}')
                 self.open_button.show()
                 self.filePath = file_path
             except PermissionError:
-                self.parent.setNotify(
+                self.parent.send_notify(
                     'ошибка', 'Файл отркрыт в другой программе')
             except Exception as e:
-                self.parent.setNotify('ошибка', str(e))
+                self.parent.send_notify('ошибка', str(e))
 
-    def open_dir_event(self):
+    def open_dir_event(self) -> None:
         '''
         Метод открытия папки с файлом, если файл был сохранён
         '''
@@ -112,13 +112,13 @@ class Save_csv_window(QWidget):
         startfile(folder_path)
         self.close()
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key_Escape:
             self.hide()
         else:
             super().keyPressEvent(event)
 
-    def updateWidget(self):
+    def updateWidget(self) -> None:
         new_categories = {
             name: value.keys()
             for name, value in self.controller.get_data().items()

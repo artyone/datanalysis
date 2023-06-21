@@ -22,7 +22,7 @@ class SettingsWindow(QWidget):
         super().__init__()
         self.parent = parent
         self.settings = self.parent.settings
-        self.listMainSettings = self.settings.value('mainSettings')
+        self.listMainSettings = self.settings.value('main_settings')
         self.listPlanes = self.settings.value('planes')
         self.listCorrections = self.settings.value('corrections')
         self.listGraphs = self.settings.value('graphs')
@@ -79,13 +79,15 @@ class SettingsWindow(QWidget):
 
         self.toolbarComboBox = QComboBox()
         self.toolbarComboBox.addItems(['left', 'top'])
-        self.toolbarComboBox.setCurrentText(self.listMainSettings['toolBar'])
+        self.toolbarComboBox.setCurrentText(self.listMainSettings['tool_bar'])
         tabLayout.addRow(
             'Позиция кнопок:', self.toolbarComboBox
         )
 
         self.openLastCheckbox = QCheckBox()
-        self.openLastCheckbox.setChecked(self.listMainSettings['openLastFile'])
+        self.openLastCheckbox.setChecked(
+            self.listMainSettings['open_last_file']
+        )
         tabLayout.addRow(
             'Открывать последний gzip:', self.openLastCheckbox
         )
@@ -96,7 +98,7 @@ class SettingsWindow(QWidget):
     def initBrowseBlock(self) -> QHBoxLayout:
         horizontalLayer = QHBoxLayout()
         self.browseLineEdit = QLineEdit()
-        self.browseLineEdit.setText(self.listMainSettings['jsonDir'])
+        self.browseLineEdit.setText(self.listMainSettings['json_dir'])
         browseButton = QPushButton()
         browseButton.setText('...')
         browseButton.setFixedSize(40, 22)
@@ -126,7 +128,7 @@ class SettingsWindow(QWidget):
         scrollArea.setWidget(widget)
         return scrollArea
 
-    def addFilterCheckBox(self, layout: QVBoxLayout):
+    def addFilterCheckBox(self, layout: QVBoxLayout) -> None:
         self.listMenuFilters = []
         for column in self.parent.tree_widget.get_all_columns():
             checkBox = QCheckBox(column)
@@ -180,51 +182,51 @@ class SettingsWindow(QWidget):
                 self.saveGraphSettings(),
                 self.saveLeftMenuFilterSettings()
             )):
-                self.parent.setNotify(
+                self.parent.send_notify(
                     'успех', 'Настройки сохранены.'
                 )
             else:
-                self.parent.setNotify(
+                self.parent.send_notify(
                     'информация', 'Вы не внесли изменения в настройки'
                 )
         except (ValueErrorPlanes, ValueErrorGraph) as e:
-            self.parent.setNotify(
+            self.parent.send_notify(
                 'ошибка', str(e)
             )
         except Exception as e:
-            self.parent.setNotify(
+            self.parent.send_notify(
                 'ошибка', 'Настройки не сохранены, проверьте правильность введенных данных!'
             )
 
     def saveMainSettings(self) -> bool:
         newValueMainSettings = {
             'theme': self.themeComboBox.currentText(),
-            'jsonDir': self.browseLineEdit.text(),
-            'toolBar': self.toolbarComboBox.currentText(),
-            'openLastFile': self.openLastCheckbox.isChecked()
+            'json_dir': self.browseLineEdit.text(),
+            'tool_bar': self.toolbarComboBox.currentText(),
+            'open_last_file': self.openLastCheckbox.isChecked()
         }
-        if self.settings.value('mainSettings') == newValueMainSettings:
+        if self.settings.value('main_settings') == newValueMainSettings:
             return False
         # Устанавливаем фон для графиков под тему
         if newValueMainSettings['theme'] != 'light':
             self.graphTabWidget.backgroundCombo.setCurrentText('black')
         else:
             self.graphTabWidget.backgroundCombo.setCurrentText('white')
-        self.settings.setValue('mainSettings', newValueMainSettings)
+        self.settings.setValue('main_settings', newValueMainSettings)
         question = QMessageBox.question(
-            None, "Вопрос", "Для применения настроек нужно перезапустить программу. Делаем?",
+            self, "Вопрос", "Для применения настроек нужно перезапустить программу. Делаем?",
             QMessageBox.Yes | QMessageBox.No
         )
         if question == QMessageBox.Yes:
-            self.parent.restartApp()
+            self.parent.restart_app()
         return True
 
-    def savePlanesSettings(self) -> None:
+    def savePlanesSettings(self) -> bool:
         newValuePlanes = self.planeTabWidget.getValues()
         if self.settings.value('planes') == newValuePlanes:
             return False
         self.settings.setValue('planes', newValuePlanes)
-        self.parent.updateChildWindows()
+        self.parent.update_child_windows()
         return True
 
     def saveCorrectionsSettings(self) -> bool:
@@ -243,7 +245,7 @@ class SettingsWindow(QWidget):
         if self.settings.value('graphs') == newGraphSettings:
             return False
         self.settings.setValue('graphs', newGraphSettings)
-        self.parent.updateInterfaceFromSettings('graphs')
+        self.parent.update_interface_from_settings('graphs')
         self.listGraphs = newGraphSettings
         return True
 
@@ -254,10 +256,10 @@ class SettingsWindow(QWidget):
         if self.settings.value('left_menu_filters') == newValueFilters:
             return False
         self.settings.setValue('left_menu_filters', newValueFilters)
-        self.parent.updateInterfaceFromSettings('left_menu_filters')
+        self.parent.update_interface_from_settings('left_menu_filters')
         return True
 
-    def checkDigit(self, widget: QLineEdit):
+    def checkDigit(self, widget: QLineEdit) -> None:
         try:
             float(widget.text())
             widget.setStyleSheet("background:#1E1E1E;")
@@ -266,18 +268,18 @@ class SettingsWindow(QWidget):
             widget.setStyleSheet("background:#FA8072;")
             self.saveButton.setEnabled(False)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
         self.parent.settingsWindow = None
         self.deleteLater()
         event.accept()
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key_Escape:
             self.close()
         else:
             super().keyPressEvent(event)
 
-    def updateWidget(self):
+    def updateWidget(self) -> None:
         layout = self.filterTabLayout
         while layout.count():
             child = layout.takeAt(0)

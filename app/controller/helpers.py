@@ -1,11 +1,11 @@
 from PyQt5.QtGui import QColor, QPalette
 
 
-def defaultSettings(settings, appVersion):
+def default_settings(settings, app_version) -> None:
     '''
     Функция установки стандартных настроек приложения
     '''
-    settings.setValue('version', appVersion)
+    settings.setValue('version', app_version)
     settings.setValue(
         'koef_for_intervals',
         {
@@ -29,7 +29,7 @@ def defaultSettings(settings, appVersion):
         'k',
         'k1'
     )
-    planesParams = {
+    planes_params = {
         'mdm': dict(zip(headers, (5, 14, 2, -0.62, 0.032, 3.33 - 0.032, 1, 1))),
         'm2': dict(zip(headers, (7, 6, 1, 0.2833, 0.032, 3.33 - 0.2, 1, 1))),
         'IL78m90a': dict(zip(headers, (7, 15, 1, 0.27, 0, 3.33, 1, 1))),
@@ -37,9 +37,9 @@ def defaultSettings(settings, appVersion):
         'tu22': dict(zip(headers, (6, 6, 2, 0, 0, 0, 1 / 3.6, 0.00508))),
         'tu160': dict(zip(headers, (6, 10, 1, 0, 0, -2.5, 1, 1)))
     }
-    settings.setValue('planes', planesParams)
+    settings.setValue('planes', planes_params)
     settings.setValue('map', {'jvdHMin': '100', 'decimation': '20'})
-    settings.setValue('lastFile', None)
+    settings.setValue('last_file', None)
     corrections = {
         'koef_Wx_PNK': 1, 'koef_Wy_PNK': 1, 'koef_Wz_PNK': 1,
         'kurs_correct': 0, 'kren_correct': 0, 'tang_correct': 0
@@ -51,60 +51,60 @@ def defaultSettings(settings, appVersion):
             {
                 "name": "Анализ Wp",
                 "rows": [
-                        {
-                            "row": 1,
-                            "width": 23,
-                            "fields": [
-                                {
-                                    "category": "PNK",
-                                    "adr": "ADR8",
-                                    "column": "JVD_H",
-                                },
-                            ]
-                        },
                     {
-                            "row": 2,
-                            "width": 25,
-                            "fields": [
-                                {
-                                    "category": "PNK",
-                                    "adr": "ADR8",
-                                    "column": "I1_Kren",
-                                },
-                                {
-                                    "category": "PNK",
-                                    "adr": "ADR8",
-                                    "column": "I1_Tang",
-                                }
-                            ]
-                        },
+                        "row": 1,
+                        "width": 23,
+                        "fields": [
+                            {
+                                "category": "PNK",
+                                "adr": "ADR8",
+                                "column": "JVD_H",
+                            },
+                        ]
+                    },
                     {
-                            "row": 3,
-                            "width": 15,
-                            "fields": [
-                                {
-                                    "category": "D001 v1_11",
-                                    "adr": "ADR1",
-                                    "column": "mem1",
-                                },
-                            ]
-                        },
+                        "row": 2,
+                        "width": 25,
+                        "fields": [
+                            {
+                                "category": "PNK",
+                                "adr": "ADR8",
+                                "column": "I1_Kren",
+                            },
+                            {
+                                "category": "PNK",
+                                "adr": "ADR8",
+                                "column": "I1_Tang",
+                            }
+                        ]
+                    },
                     {
-                            "row": 4,
-                            "width": 37,
-                            "fields": [
-                                {
-                                    "category": "CALC",
-                                    "adr": "PNK",
-                                    "column": "Wp_KBTIi",
-                                },
-                                {
-                                    "category": "CALC",
-                                    "adr": "PNK",
-                                    "column": "Wp_diss_pnki",
-                                }
-                            ]
-                        }
+                        "row": 3,
+                        "width": 15,
+                        "fields": [
+                            {
+                                "category": "D001 v1_11",
+                                "adr": "ADR1",
+                                "column": "mem1",
+                            },
+                        ]
+                    },
+                    {
+                        "row": 4,
+                        "width": 37,
+                        "fields": [
+                            {
+                                "category": "CALC",
+                                "adr": "PNK",
+                                "column": "Wp_KBTIi",
+                            },
+                            {
+                                "category": "CALC",
+                                "adr": "PNK",
+                                "column": "Wp_diss_pnki",
+                            }
+                        ]
+                    }
                 ]
             }
         ]
@@ -112,16 +112,16 @@ def defaultSettings(settings, appVersion):
     settings.setValue('graphs', graphs)
     filters = ['time']
     settings.setValue('left_menu_filters', filters)
-    mainSettings = {
+    main_settings = {
         'theme': 'dark',
-        'jsonDir': 'templates/',
-        'toolBar': 'left', 
-        'openLastFile': True
+        'json_dir': 'templates/',
+        'tool_bar': 'left',
+        'open_last_file': True
     }
-    settings.setValue('mainSettings', mainSettings)
+    settings.setValue('main_settings', main_settings)
 
 
-def getPalette(color):
+def get_palette(color) -> QPalette:
     palette = QPalette()
     if color == 'dark':
         palette.setColor(QPalette.Window, QColor(44, 44, 44))

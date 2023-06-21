@@ -39,7 +39,7 @@ class Open_file_window(QWidget):
         layout.addLayout(self.form_layout)
         layout.addWidget(self.button_box)
 
-    def init_input_block(self):
+    def init_input_block(self) -> None:
         '''Метод инициализации элементов ввода и выбора пользователя'''
         self.form_layout = QFormLayout()
         self.form_layout.setVerticalSpacing(20)
@@ -68,7 +68,7 @@ class Open_file_window(QWidget):
         self.adr_combo_box.addItems([adr['adr_name'] for adr in adrs])
         self.category_combo_box.activated.connect(self.update_adr_comboBox)
 
-    def init_browse_block(self):
+    def init_browse_block(self) -> QHBoxLayout:
         horizontal_layer = QHBoxLayout()
         self.filepath_line_edit = QLineEdit()
         browse_button = QPushButton()
@@ -80,7 +80,7 @@ class Open_file_window(QWidget):
         horizontal_layer.setSpacing(15)
         return horizontal_layer
 
-    def init_button_block(self):
+    def init_button_block(self) -> None:
         '''Метод инициализации кнопок на форме'''
         self.button_box = QDialogButtonBox()
         self.button_box.setStandardButtons(
@@ -93,12 +93,12 @@ class Open_file_window(QWidget):
             self.open_file_pdd if self.filetype == 'pdd' else self.open_file_txt
         )
 
-    def update_adr_comboBox(self):
+    def update_adr_comboBox(self) -> None:
         adrs = self.categories[self.category_combo_box.currentText()]
         self.adr_combo_box.clear()
         self.adr_combo_box.addItems([adr['adr_name'] for adr in adrs])
 
-    def open_file_dialog(self):
+    def open_file_dialog(self) -> None:
         filePath, check = QFileDialog.getOpenFileName(
             None,
             'Open file',
@@ -108,7 +108,7 @@ class Open_file_window(QWidget):
         if check:
             self.filepath_line_edit.setText(filePath)
 
-    def open_file_txt(self):
+    def open_file_txt(self) -> None:
         category = self.category_combo_box.currentText()
         adr = self.adr_combo_box.currentText()
         filepath = self.filepath_line_edit.text()
@@ -122,12 +122,12 @@ class Open_file_window(QWidget):
                 self.load_unknown_check_box.isChecked()
             )
             self.parent.tree_widget.update_check_box()
-            self.parent.setNotify(
+            self.parent.send_notify(
                 'успех', f'Файл {filepath} открыт'
             )
             self.parent.destroyChildWindow()
         except Exception as e:
-            self.parent.setNotify('ошибка', str(e))
+            self.parent.send_notify('ошибка', str(e))
 
     def open_file_pdd(self):
         category = self.category_combo_box.currentText()
@@ -140,14 +140,14 @@ class Open_file_window(QWidget):
                 json_data
             )
             self.parent.tree_widget.update_check_box()
-            self.parent.setNotify(
+            self.parent.send_notify(
                 'успех', f'Файл {filepath} открыт'
             )
             self.parent.destroyChildWindow()
         except Exception as e:
-            self.parent.setNotify('ошибка', str(e))
+            self.parent.send_notify('ошибка', str(e))
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
         '''
         Переназначение функции закрытия, для уничтожение окна.
         '''
@@ -155,7 +155,7 @@ class Open_file_window(QWidget):
         self.parent.openFileWindow = None
         event.accept()
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key_Escape:
             self.close()
         else:
