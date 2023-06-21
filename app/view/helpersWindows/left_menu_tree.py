@@ -92,7 +92,7 @@ class Left_Menu_Tree(QTreeWidget):
         """
         if not self.parent.controller.get_data():
             self.hide()
-            self.parent.destroyChildWindow()
+            self.parent.destroy_child_window()
             return
         self.clear()
         data = self.parent.controller.get_data()

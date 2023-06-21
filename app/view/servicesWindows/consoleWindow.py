@@ -79,11 +79,11 @@ class ConsoleWindow(QMainWindow):
     def createAction(self) -> None:
         self.openScriptAction = QAction('&Открыть *.py...')
         self.openScriptAction.setIcon(
-            QIcon(self.parent.getIcon(':file-text.svg')))
+            QIcon(self.parent.get_icon(':file-text.svg')))
         self.saveScriptAction = QAction('&Сохранить *.py...')
-        self.saveScriptAction.setIcon(QIcon(self.parent.getIcon(':save.svg')))
+        self.saveScriptAction.setIcon(QIcon(self.parent.get_icon(':save.svg')))
         self.executeAction = QAction('&Выполнить скрипт.')
-        self.executeAction.setIcon(self.parent.getIcon((':play.svg')))
+        self.executeAction.setIcon(self.parent.get_icon((':play.svg')))
         self.executeAction.setShortcut("Ctrl+Return")
 
     def connectActions(self) -> None:

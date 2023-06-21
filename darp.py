@@ -8,7 +8,7 @@ from app.resource.constants import (
     APPLICATION_NAME,
     APPLICATION_VERSION
 )
-# TODO продумать открытые файлы
+# TODO
 
 
 def main() -> None:

@@ -31,6 +31,7 @@ class Open_file_window(QWidget):
         '''
         self.setGeometry(0, 0, 400, 200)
         self.setWindowTitle(f'Открыть {self.filetype} файл...')
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
         layout = QVBoxLayout(self)
 
         self.init_input_block()
@@ -125,7 +126,10 @@ class Open_file_window(QWidget):
             self.parent.send_notify(
                 'успех', f'Файл {filepath} открыт'
             )
-            self.parent.destroyChildWindow()
+            self.parent.last_file_label.setText(
+                    f'Последний открытый файл: {filepath}   '
+            )
+            self.parent.destroy_child_window()
         except Exception as e:
             self.parent.send_notify('ошибка', str(e))
 
@@ -143,7 +147,10 @@ class Open_file_window(QWidget):
             self.parent.send_notify(
                 'успех', f'Файл {filepath} открыт'
             )
-            self.parent.destroyChildWindow()
+            self.parent.last_file_label.setText(
+                    f'Последний открытый файл: {filepath}   '
+                )
+            self.parent.destroy_child_window()
         except Exception as e:
             self.parent.send_notify('ошибка', str(e))
 
@@ -152,7 +159,7 @@ class Open_file_window(QWidget):
         Переназначение функции закрытия, для уничтожение окна.
         '''
         self.deleteLater()
-        self.parent.openFileWindow = None
+        self.parent.open_file_window = None
         event.accept()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:

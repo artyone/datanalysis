@@ -20,7 +20,7 @@ from PyQt5.QtCore import (
 from PyQt5.QtWidgets import (
     QApplication, QMdiArea, QSplitter,
     QToolBar, QSpinBox, QAction, QFileDialog,
-    QMainWindow, QMenu, QMessageBox
+    QMainWindow, QMenu, QMessageBox, QLabel,
 )
 from PyQt5.sip import delete
 from functools import partial
@@ -186,6 +186,9 @@ class Main_window(QMainWindow):
         self.statusbar.showMessage(
             'Привет, пользователь! Я за тобой слежу!', 30000
         )
+        self.last_file_label = QLabel()
+        self.statusbar.addPermanentWidget(self.last_file_label)
+        
 
     def generate_actions(self, action_list: list) -> None:
         '''
@@ -250,9 +253,9 @@ class Main_window(QMainWindow):
         '''
         # TODO передалть на ласт файл на filepath открыть последний открытый
         if filepath:
-            file, check = filepath, True
+            filepath, check = filepath, True
         else:
-            file, check = QFileDialog.getOpenFileName(
+            filepath, check = QFileDialog.getOpenFileName(
                 None,
                 'Open file',
                 '',
@@ -260,7 +263,7 @@ class Main_window(QMainWindow):
             )
         if check:
             try:
-                self.controller.load_gzip(file)
+                self.controller.load_gzip(filepath)
             except FileNotFoundError:
                 self.send_notify('ошибка', 'Файл не найден')
             except TypeError as e:
@@ -271,13 +274,16 @@ class Main_window(QMainWindow):
                 self.tree_widget.update_check_box()
                 self.settings.setValue(
                     'last_file', {
-                        'file_path': file,
+                        'file_path': filepath,
                         'param': 'gzip'
                     }
                 )
+                self.last_file_label.setText(
+                    f'Последний открытый файл: {filepath}   '
+                )
                 if not filepath:
                     self.send_notify(
-                        'успех', f'Файл {file} открыт')
+                        'успех', f'Файл {filepath} открыт')
 
     def get_open_file_window(self, filetype: str) -> None:
         if self.open_file_window is None:
@@ -604,6 +610,8 @@ class Main_window(QMainWindow):
             self.tree_widget.hide()
             QCoreApplication.processEvents()
             self.mdi.resize(self.splitter.width(), self.splitter.height())
+            self.statusbar.hide()
+            self.menuBar().hide()
         else:
             self.hide_left_menu_action.setIcon(self.get_icon(':eye-off'))
             self.tree_widget.show()
@@ -612,6 +620,8 @@ class Main_window(QMainWindow):
                 self.splitter.width() - self.tree_widget.width() - 5,
                 self.splitter.height()
             )
+            self.statusbar.show()
+            self.menuBar().show()
         self.check_positioning_windows()
 
     def track_graph(self) -> None:
