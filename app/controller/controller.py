@@ -190,11 +190,16 @@ class Control(object):
                 raise ValueError(
                     'JVD_H не найден в данных, автоматически подбор недоступен'
                 )
+            if not intervals:
+                raise ValueError(
+                    'Интервалы не были посчитаны автоматически'
+                )
         else:
             intervals = re.sub(r'[^\d\-\n]', '', string)
             intervals = re.findall(r'(\d+\-\d+)\n?', intervals)
             intervals = [i.split('-') for i in intervals]
             intervals = [(int(x), int(y)) for x, y in intervals]
+        
         data_result = self.worker.get_calculated_data(intervals)
 
         file_methods.write_xlsx(data_result, plane_koef, filepath)

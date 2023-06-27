@@ -229,8 +229,7 @@ class Mathematical(object):
         Метод формирования датафрейма для получения интервалов 
         с разными смещениями среднего и коэффициентами.
         '''
-        df = self.d.loc[self.d.time % 1 == 0,
-                        ['time', 'I1_Tang', 'I1_Kren', 'JVD_H', 'DIS_Wx']]
+        df = self.d.copy()
         df['Tang_mean_5'] = df.I1_Tang.rolling(5).mean().shift().bfill()
         df['Kren_mean_5'] = df.I1_Kren.rolling(5).mean().shift().bfill()
         df['h_mean_25'] = df.JVD_H.rolling(25).mean().shift().bfill()
