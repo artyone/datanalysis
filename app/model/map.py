@@ -16,11 +16,12 @@ class Flight_map(object):
         self.finish = self.data.time.iloc[-1]
         self.map = Map(
             location=[
-                self.data.latitude.iloc[0],
-                self.data.longitude.iloc[0]
+                self.data.latitude.iloc[25],
+                self.data.longitude.iloc[25]
             ],
             icon='icon_circle',
-            zoom_start=6
+            zoom_start=6, 
+            control_scale=True
         )
         self.tiles = [
             'openstreetmap',
@@ -54,9 +55,9 @@ class Flight_map(object):
 
     @staticmethod
     def _set_point(data, color, map, jvd_h_in):
-        html = f'<h5><b>time:</b> {data.time}'
+        html = f'<h5><b>Время:</b> {data.time}</h5>'
         if jvd_h_in:
-            html += f'<br><b>JVD_H:</b> {round(data.JVD_H)}</h5>'
+            html += f'<h5><br><b>JVD_H:</b> {round(data.JVD_H)}</h5>'
         icon = BeautifyIcon(
             icon='circle-o',
             icon_shape='circle',
@@ -88,8 +89,40 @@ class Flight_map(object):
 
     @staticmethod
     def _set_tiles(map, tiles):
+        #TODO реворк этого
         for tile in tiles:
             TileLayer(tile).add_to(map)
+        custom_tiles = TileLayer(
+            tiles='https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',  # Укажите URL к вашим кастомным тайлам
+            attr='&copy; OpenStreetMap France | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            name='OpenStreetMap France',  # Укажите имя для отображения в легенде (по желанию)
+        )
+        custom_tiles.add_to(map)
+        custom_tiles = TileLayer(
+            tiles='https://tile.openstreetmap.de/{z}/{x}/{y}.png',  # Укажите URL к вашим кастомным тайлам
+            attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            name='OpenStreetMap DE',  # Укажите имя для отображения в легенде (по желанию)
+        )
+        custom_tiles.add_to(map)
+        custom_tiles = TileLayer(
+            tiles='https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',  # Укажите URL к вашим кастомным тайлам
+            attr='Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+            name='OpenTopoMap',  # Укажите имя для отображения в легенде (по желанию)
+        )
+        custom_tiles.add_to(map)
+        custom_tiles = TileLayer(
+            tiles='https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',  # Укажите URL к вашим кастомным тайлам
+            attr='<a href="https://github.com/cyclosm/cyclosm-cartocss-style/releases" title="CyclOSM - Open Bicycle render">CyclOSM</a> | Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            name='CyclOSM',  # Укажите имя для отображения в легенде (по желанию)
+        )
+        custom_tiles.add_to(map)
+        custom_tiles = TileLayer(
+            tiles='https://server.arcgisonline.com/ArcGIS/rest/services/Specialty/DeLorme_World_Base_Map/MapServer/tile/{z}/{y}/{x}',  # Укажите URL к вашим кастомным тайлам
+            attr='Tiles &copy; Esri &mdash; Copyright: &copy;2012 DeLorme',
+            name='Esri.DeLorme',  # Укажите имя для отображения в легенде (по желанию)
+        )
+        custom_tiles.add_to(map)
+
 
     def get_map(self):
         self._set_colormap()
@@ -108,7 +141,7 @@ class Flight_map(object):
             openPopupOnHover=True,
             clear_text='сбросить'
         ).add_to(self.map)
-        LayerControl(collapsed=False).add_to(self.map)
+        LayerControl(collapsed=True).add_to(self.map)
 
     def save_map(self, filepath):
         self.map.save(filepath)

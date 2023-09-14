@@ -156,9 +156,11 @@ class Datas(object):
     def get_unpacked_data_list(filepath: str) -> np.ndarray:
         with open(filepath, 'rb') as file:
             string = file.read()
-            unpacked_data_list = [
-                i for i in struct.iter_unpack('>IH4x16H', string)]
-            unpacked_data_list = np.array(unpacked_data_list)
+            dtype = {
+                'names': ['time', 'cs', 'null', 'values'], 'formats': ['>u4', 'u2', '4b', '>16h'], 
+            }
+            unpacked_data_list = np.frombuffer(string, dtype=dtype)
+            unpacked_data_list = unpacked_data_list[['time', 'cs', 'values']]
         return unpacked_data_list
 
     @classmethod
@@ -168,7 +170,7 @@ class Datas(object):
         field_data: dict, 
         data_source: np.ndarray
         ) -> np.ndarray:
-        position = field_data['position'] + 2
+        position = field_data['position']
         koef = field_data['koef']
         size = field_data['size']
         type = field_data['type']
@@ -189,9 +191,12 @@ class Datas(object):
             masked_data = data_column
         if type == 'int8':
             masked_data = masked_data.astype(np.int8)
-
-
-        masked_data = masked_data.astype(np.float64) * koef
+        if type == 'uint16':
+            masked_data = masked_data.astype(np.uint16)
+        if type == 'pre':
+            masked_data = masked_data.astype(np.int8)
+        if koef != 1:
+            masked_data = masked_data.astype(np.float64) * koef
 
         return masked_data
 
@@ -219,7 +224,7 @@ class Datas(object):
                 for field in fields:
                     column_name = field['name']
                     column = cls.unpack_element(byteswap, field, data_source)
-                    column = np.where(condition_mask, column, np.nan)
+                    column = np.where(condition_mask, column, 0)
                     result_data[column_name] = column
 
     @staticmethod
@@ -227,14 +232,14 @@ class Datas(object):
         checksum: int, 
         source_data: np.ndarray
         ) -> np.ndarray:
-        control_sum = source_data[:, 1].astype(np.uint16).byteswap()
+        control_sum = source_data['cs']
         control_sum_mask = control_sum == checksum
         data_list = source_data[control_sum_mask]
         return data_list
 
     @staticmethod
     def get_time_list(koef: float, source: np.ndarray) -> np.ndarray:
-        time_list = source[:, 0].astype(np.uint32)
+        time_list = source['time']
         time_list = time_list.byteswap() * koef
         return time_list
 
@@ -247,7 +252,6 @@ class Datas(object):
                 column_name = field['name']
                 column = cls.unpack_element(byteswap, field, data_list)
                 result_dict[column_name] = column
-        return result_dict
 
     @classmethod
     def unpack_adr(cls, adr, unpacked_data_list) -> dict:
@@ -257,8 +261,8 @@ class Datas(object):
         )
         df_dict = {}
         df_dict['time'] = cls.get_time_list(adr['time_koef'], data_list)
-        df_dict = cls.unpack_fields(
-            adr['bytes_swap'], adr['fields'], data_list, df_dict)
+        cls.unpack_fields(
+            adr['bytes_swap'], adr['fields'], data_list['values'], df_dict)
         return df_dict
 
     @classmethod

@@ -133,7 +133,7 @@ class Open_file_window(QWidget):
         except Exception as e:
             self.parent.send_notify('ошибка', str(e))
 
-    def open_file_pdd(self):
+    def open_file_pdd(self) -> None:
         category = self.category_combo_box.currentText()
         json_data = self.categories[category]
         filepath = self.filepath_line_edit.text()
