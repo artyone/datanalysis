@@ -9,6 +9,7 @@ import pyqtgraph as pg
 from PyQt5.sip import delete
 from PyQt5.QtCore import Qt
 from functools import partial
+import pandas as pd
 
 
 class Graph_window(QMdiSubWindow):
@@ -22,19 +23,20 @@ class Graph_window(QMdiSubWindow):
     curves - словарь названия и объектов графиков.
     '''
 
-    def __init__(self, data, treeSelected, decimation, parent) -> None:
+    def __init__(self, data: pd.DataFrame, treeSelected, decimation, start_time, stop_time, parent) -> None:
         super().__init__()
         self.parent = parent
         self.data: dict = data
         self.columns: list = treeSelected
         self.title: str = '/'.join([i[2] for i in self.columns])
         self.decimation: int = decimation
+        self.start_time: float | None = start_time
+        self.stop_time: float | None = stop_time
         self.colors: list = [
             'red', 'blue', 'green', 'orange',
             'gray', 'purple', 'cyan', 'yellow',
             'pink'
         ]
-
         self.curves: dict = dict()
         self.theme: str = self.parent.settings.value('graphs')['background']
         self.initUI()
@@ -82,8 +84,11 @@ class Graph_window(QMdiSubWindow):
             data_for_graph = self.data[category][adr].dropna(
                 subset=['time', item]
             )
-            data_for_graph = data_for_graph.reset_index(
-            ).iloc[::self.decimation]
+            data_for_graph = data_for_graph.reset_index().iloc[::self.decimation]
+            if self.start_time and self.stop_time:
+                data_for_graph = data_for_graph.loc[
+                    (data_for_graph['time'] >= self.start_time) & (data_for_graph['time'] <= self.stop_time)
+                ]
             pen = pg.mkPen(color=self.colors[0])
             curve = pg.PlotDataItem(
                 data_for_graph.time.to_list(),
@@ -105,6 +110,8 @@ class Graph_window(QMdiSubWindow):
         )
         self.plot.scene().sigMouseClicked.connect(self.mouse_click_event)
         self.plot.setClipToView(True)
+        self.plot.setDownsampling(auto=True, mode='peak')
+
 
     def mouse_moved(self, e) -> None:
         '''

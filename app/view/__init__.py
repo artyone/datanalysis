@@ -1,3 +1,3 @@
-from .main_window import Main_window
+from .MainWindow import MainWindow
 from . import helpersWindows
 from . import servicesWindows

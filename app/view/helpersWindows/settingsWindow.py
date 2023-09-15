@@ -269,7 +269,7 @@ class SettingsWindow(QWidget):
             self.saveButton.setEnabled(False)
 
     def closeEvent(self, event) -> None:
-        self.parent.settingsWindow = None
+        self.parent.settings_window = None
         self.deleteLater()
         event.accept()
 

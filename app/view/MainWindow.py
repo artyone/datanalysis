@@ -9,7 +9,8 @@ from app.view.servicesWindows import (
 )
 from app.view.helpersWindows import (
     SettingsWindow, Save_csv_window,
-    Open_file_window, Left_Menu_Tree
+    Open_file_window, Left_Menu_Tree,
+    GraphOnTimeWidget
 )
 from PyQt5.QtGui import (
     QIcon, QColor, QPainter, QKeyEvent
@@ -31,7 +32,7 @@ import pyqtgraph as pg
 import sys
 
 
-class Main_window(QMainWindow):
+class MainWindow(QMainWindow):
     '''
     Класс основного окна. 
     При инициализаци создается контроллер и переменны для окон.
@@ -42,12 +43,13 @@ class Main_window(QMainWindow):
         super().__init__()
         self.app = app
         self.map_window: MapWindow | None = None
-        self.report_window: Report_window | None  = None
-        self.console_window: ConsoleWindow | None  = None
-        self.settings_window: SettingsWindow | None  = None
-        self.calc_window: CalcWindow | None  = None
-        self.save_csv_window: Save_csv_window | None  = None
-        self.open_file_window: Open_file_window | None  = None
+        self.report_window: Report_window | None = None
+        self.console_window: ConsoleWindow | None = None
+        self.settings_window: SettingsWindow | None = None
+        self.calc_window: CalcWindow | None = None
+        self.save_csv_window: Save_csv_window | None = None
+        self.open_file_window: Open_file_window | None = None
+        self.graph_on_time_window: GraphOnTimeWidget | None = None
         self.controller: Control = Control()
         self.app_version = QCoreApplication.applicationVersion()
         self.app_name = QCoreApplication.applicationName()
@@ -188,7 +190,6 @@ class Main_window(QMainWindow):
         )
         self.last_file_label = QLabel()
         self.statusbar.addPermanentWidget(self.last_file_label)
-        
 
     def generate_actions(self, action_list: list) -> None:
         '''
@@ -435,7 +436,7 @@ class Main_window(QMainWindow):
         '''
         return
 
-    def create_graph(self, custom_selected=None) -> None:
+    def create_graph(self, custom_selected=None, start_time=None, stop_time=None) -> None:
         '''
         Метод для создания окон графиков по чек-боксу бокового меню
         '''
@@ -453,6 +454,8 @@ class Main_window(QMainWindow):
                 self.controller.get_data(),
                 tree_selected,
                 decimation,
+                start_time,
+                stop_time,
                 self
             )
         except AttributeError:
@@ -512,6 +515,14 @@ class Main_window(QMainWindow):
             window.setGeometry(0, 0, width, current_heigth)
             window.move(pnt[0], pnt[1])
             pnt[1] += current_heigth
+    
+    def create_graph_on_time(self) -> None:
+        if self.graph_on_time_window is None:
+            self.graph_on_time_window = GraphOnTimeWidget(self)
+        else :
+            self.graph_on_time_window.hide()
+        self.center(self.graph_on_time_window)
+        self.graph_on_time_window.show()
 
     def python_console(self) -> None:
         '''
@@ -689,7 +700,7 @@ class Main_window(QMainWindow):
 
     def update_interface_from_settings(self, param) -> None:
         if param == 'graphs':
-            self.menuDefaultGraphAction.setMenu(
+            self.default_graph_action.setMenu(
                 self.menu_default_graph()
             )
         if param == 'left_menu_filters':

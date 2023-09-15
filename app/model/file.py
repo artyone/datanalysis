@@ -157,7 +157,7 @@ class Datas(object):
         with open(filepath, 'rb') as file:
             string = file.read()
             dtype = {
-                'names': ['time', 'cs', 'null', 'values'], 'formats': ['>u4', 'u2', '4b', '>16h'], 
+                'names': ['time', 'cs', 'null', 'values'], 'formats': ['>u4', 'u2', '4b', '>16u2'], 
             }
             unpacked_data_list = np.frombuffer(string, dtype=dtype)
             unpacked_data_list = unpacked_data_list[['time', 'cs', 'values']]
@@ -178,27 +178,26 @@ class Datas(object):
         data_column = data_source[:, position]
         # if type == 'uint16' or type == 'pre':
         #     data_column = data_column.astype(np.uint16)
+        if mask != 65535 or shift != 0:
+            data_column = np.bitwise_and(data_column, (mask << shift))
+            data_column = np.right_shift(data_column, shift)
+        else:
+            data_column = data_column
+        if not byteswap:
+            data_column = data_column.byteswap()
 
         if type == 'int16':
             data_column = data_column.astype(np.int16)
-
-        if not byteswap:
-            data_column = data_column.byteswap()
-        if mask != 65535 or shift != 0:
-            masked_data = np.bitwise_and(data_column, (mask << shift))
-            masked_data = np.right_shift(masked_data, shift) 
-        else:
-            masked_data = data_column
         if type == 'int8':
-            masked_data = masked_data.astype(np.int8)
+            data_column = data_column.astype(np.int8)
         if type == 'uint16':
-            masked_data = masked_data.astype(np.uint16)
+            data_column = data_column.astype(np.uint16)
         if type == 'pre':
-            masked_data = masked_data.astype(np.int8)
+            data_column = data_column.astype(np.int8)
         if koef != 1:
-            masked_data = masked_data.astype(np.float64) * koef
+            data_column = data_column.astype(np.float64) * koef
 
-        return masked_data
+        return data_column
 
     @classmethod
     def unpack_group(
@@ -216,7 +215,7 @@ class Datas(object):
             mask_condition, shift_condition = cls.get_mask_shift_from_field(
                 group_info['condition_bit'])
             condition_data = (
-                data_source[:, group_info['condition_byte'] + 2]
+                data_source[:, group_info['condition_byte']]
                  & (mask_condition << shift_condition)
                  ) >> shift_condition
             for condition, fields in group_info['fields'].items():
@@ -224,6 +223,12 @@ class Datas(object):
                 for field in fields:
                     column_name = field['name']
                     column = cls.unpack_element(byteswap, field, data_source)
+
+                    # for i in range(1, len(column)):
+                    #     if not condition_mask[i]:
+                    #         column[i] = column[i - 1]
+
+                    
                     column = np.where(condition_mask, column, 0)
                     result_data[column_name] = column
 
