@@ -13,7 +13,7 @@ from app.view.helpersWindows import (
     GraphOnTimeWidget
 )
 from PyQt5.QtGui import (
-    QIcon, QColor, QPainter, QKeyEvent
+    QIcon, QColor, QPainter, QKeyEvent, QMovie, QCursor, QPixmap
 )
 from PyQt5.QtCore import (
     Qt, QSettings, QCoreApplication, QProcess
@@ -828,3 +828,14 @@ class MainWindow(QMainWindow):
                 )
             else:
                 window.setWindowFlags(Qt.FramelessWindowHint)
+
+    def add_cat(self) -> None:
+        animated_label = QLabel(self.mdi)
+        movie = QMovie('app/resource/catani.gif')
+        animated_label.setMovie(movie)
+        movie.start()
+        self.mdi.addSubWindow(animated_label)
+        animated_label.show()
+        cursor_image = QPixmap("app/resource/nyan_cursor.png")
+        custom_cursor = QCursor(cursor_image, 2, 2)
+        self.setCursor(custom_cursor)

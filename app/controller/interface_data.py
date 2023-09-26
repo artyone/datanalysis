@@ -69,7 +69,7 @@ def get_actions_list() -> list:
         Action('save_settings_to_file_actions', 'Сохранить настройки в файл', ':save.svg',
                'Сохранить настройки в файл json', None, False, 'save_settings_to_file'),
         Action('about_action', 'О программе', ':help-circle.svg',
-               'О программе', None, False, 'about')
+               'О программе', None, False, 'add_cat')
     ]
     return list_action
 

@@ -236,13 +236,16 @@ class Control(object):
         map.get_map()
         map.save_map(filepath)
 
-    def save_csv(self, filepath: str, category: str, adr: str) -> None:
+    def save_csv(self, filepath: str, category: str, adr: str, columns=None) -> None:
         '''
         Сохранение данных в формате csv.
         '''
         if self.data_is_none():
-            raise Exception('Data must be not none')
-        data_for_csv = self.data[category][adr]
+            raise Exception('Нет загруженных данных')
+        if columns:
+            data_for_csv = self.data[category][adr][columns]
+        else:
+            data_for_csv = self.data[category][adr]
         file_methods.write_csv(data_for_csv, filepath)
 
     def save_gzip(self, filepath: str) -> None:
@@ -250,7 +253,7 @@ class Control(object):
         Сохранение данных в формате pickle gzip.
         '''
         if self.data_is_none():
-            raise Exception('Data must be not none')
+            raise Exception('Нет загруженных данных')
         file_methods.write_gzip(self.data, filepath)
 
     def get_data(self) -> dict:

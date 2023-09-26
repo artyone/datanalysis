@@ -1,27 +1,33 @@
 from PyQt5.QtWidgets import (
     QTreeWidget, QTreeWidgetItem, QApplication, QMenu, QInputDialog,
-    QVBoxLayout, QTableWidget, QTableWidgetItem, QWidget,
-    QTreeWidgetItemIterator, QHeaderView
+    QTableWidget, QTableWidgetItem, QAction,
+    QTreeWidgetItemIterator, QHeaderView, QFileDialog, QMainWindow
 )
-from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtGui import QColor, QFont, QIcon
 from PyQt5.QtCore import Qt, QPoint
 from collections import defaultdict
 import pandas as pd
 
 
-class View_data_widget(QWidget):
-    def __init__(self, data: pd.DataFrame) -> None:
+class ViewDataWidget(QMainWindow):
+    def __init__(self, parent, data: pd.DataFrame, category, adr, columns) -> None:
         super().__init__()
-        self.data = data.round(3)
-        self.columns = list(data.columns)
-        self.items_per_page = 2000
+        self.parent = parent
+        self.data: pd.DataFrame = data[category][adr][columns].round(3)
+        self.category: str = category
+        self.adr: str = adr
+        self.columns: list = columns
+        self.items_per_page = 5000
         self.current_page = 1
 
-
-        layout = QVBoxLayout(self)
-
         self.table_widget = QTableWidget(self)
-        layout.addWidget(self.table_widget)
+        self.setCentralWidget(self.table_widget)
+
+        self.save_csv_action = QAction('&Сохранить *.csv...')
+        self.save_csv_action.setIcon(QIcon(self.parent.get_icon(':save.svg')))
+        self.save_csv_action.triggered.connect(self.save_csv)
+        save_tool_bar = self.addToolBar('Save')
+        save_tool_bar.addAction(self.save_csv_action)
 
         self.setup_table_widget()
         self.load_page(1)
@@ -42,6 +48,35 @@ class View_data_widget(QWidget):
         scroll_bar = self.table_widget.verticalScrollBar()
         scroll_bar.valueChanged.connect(self.scroll_bar_value_changed)
 
+    def save_csv(self) -> None:
+        '''
+        Метод сохранения данных в csv формат
+        '''
+        options = QFileDialog.Options()
+        self.filepath, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save File",
+            "",
+            f"csv files (*.csv);;All Files(*)",
+            options=options
+        )
+        if self.filepath:
+            try:
+                self.parent.controller.save_csv(
+                    self.filepath, self.category, self.adr, self.columns
+                )
+                self.parent.send_notify(
+                    'успех', f'Csv файл сохранен в {self.filepath}'
+                )
+            except PermissionError:
+                self.parent.send_notify(
+                    'ошибка', 'Файл открыт в другой программе'
+                )
+            except Exception as e:
+                self.parent.send_notify(
+                    'ошибка', str(e)
+                )
+
     def load_page(self, page_number: int) -> None:
         """
         Загрузка страницы просмотра.
@@ -52,7 +87,9 @@ class View_data_widget(QWidget):
         start_index = (page_number - 1) * self.items_per_page
         end_index = start_index + self.items_per_page
         data_page = self.data.iloc[start_index:end_index]
-        self.table_widget.setRowCount(end_index)
+        if len(data_page) <= 0:
+            return
+        self.table_widget.setRowCount(start_index + len(data_page))
         for row_index, row in data_page.iterrows():
             for column_index, column_name in enumerate(self.columns):
                 column_item = QTableWidgetItem(str(row[column_name]))
@@ -284,10 +321,7 @@ class Left_Menu_Tree(QTreeWidget):
         for key, columns in selected_categories.items():
             columns.insert(0, 'time')
             category, adr = key[0], key[1]
-            data_for_view = data[category][adr].filter(
-                items=columns
-            )
-            self.child_window.append(View_data_widget(data_for_view))
+            self.child_window.append(ViewDataWidget(self.parent, data, category, adr, columns))
         
 
 

@@ -70,11 +70,6 @@ class ConsoleWindow(QMainWindow):
             '# setNewData(category: str, adr: str, columnName: str, timeData: list, columnData: list)\n'
         )
 
-    def createMenu(self) -> None:
-        fileToolBar = self.addToolBar('File')
-        fileToolBar.addAction(self.openScriptAction)
-        fileToolBar.addAction(self.saveScriptAction)
-        fileToolBar.addAction(self.executeAction)
 
     def createAction(self) -> None:
         self.openScriptAction = QAction('&Открыть *.py...')
@@ -85,6 +80,12 @@ class ConsoleWindow(QMainWindow):
         self.executeAction = QAction('&Выполнить скрипт.')
         self.executeAction.setIcon(self.parent.get_icon((':play.svg')))
         self.executeAction.setShortcut("Ctrl+Return")
+
+    def createMenu(self) -> None:
+        fileToolBar = self.addToolBar('File')
+        fileToolBar.addAction(self.openScriptAction)
+        fileToolBar.addAction(self.saveScriptAction)
+        fileToolBar.addAction(self.executeAction)
 
     def connectActions(self) -> None:
         self.openScriptAction.triggered.connect(self.openScript)

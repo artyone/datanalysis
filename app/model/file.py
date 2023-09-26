@@ -99,7 +99,7 @@ class Datas(object):
 
     @staticmethod
     def write_csv(data: pd.DataFrame, filepath: str) -> None:
-        data.to_csv(filepath, index=False, sep=',')
+        data.to_csv(filepath, index=False, sep=';')
 
     @staticmethod
     def load_gzip(filepath: str) -> Any:
