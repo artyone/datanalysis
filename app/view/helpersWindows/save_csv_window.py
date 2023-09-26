@@ -1,29 +1,26 @@
 from os import startfile, path
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QFormLayout,
+    QVBoxLayout, QFormLayout,
     QComboBox, QDialogButtonBox,
     QFileDialog
 )
-from PyQt5.QtGui import QKeyEvent
-from PyQt5.QtCore import Qt
+from ..helpersWindows.baseWidget import BaseWidget
 
 
-class Save_csv_window(QWidget):
+class Save_csv_window(BaseWidget):
     '''
     Класс окна выбора категории и адр для сохранения csv файла
     parent - родительское окно
     controller - контроллер для получения данных.
     '''
 
-    def __init__(self, controller, parent) -> None:
-        super().__init__()
-        self.parent = parent
+    def __init__(self, name, controller, parent) -> None:
+        super().__init__(name, parent)
         self.controller = controller
         self.initUI()
 
     def initUI(self) -> None:
         '''Метод отрисовки основных элементов окна.'''
-        self.setGeometry(0, 0, 360, 130)
         self.setWindowTitle("Сохранить в CSV...")
         layout = QVBoxLayout(self)
 
@@ -32,6 +29,8 @@ class Save_csv_window(QWidget):
 
         layout.addLayout(input_box)
         layout.addWidget(button_box)
+        self.adjustSize()
+        self.setGeometry(0, 0, 400, self.height())
 
     def get_input_box(self) -> QFormLayout:
         '''Метод инициализации элементов ввода и выбора пользователя'''
@@ -111,12 +110,6 @@ class Save_csv_window(QWidget):
         folder_path = path.dirname(self.filePath)
         startfile(folder_path)
         self.close()
-
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() == Qt.Key_Escape:
-            self.hide()
-        else:
-            super().keyPressEvent(event)
 
     def updateWidget(self) -> None:
         new_categories = {

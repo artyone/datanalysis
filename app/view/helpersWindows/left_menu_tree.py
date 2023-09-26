@@ -133,6 +133,8 @@ class Left_Menu_Tree(QTreeWidget):
             return
         self.clear()
         data = self.parent.controller.get_data()
+        if 'FLIGHT_DATA' in data:
+            data = {key: val for key, val in data.items() if key != 'FLIGHT_DATA'}
         for category, adrs in sorted(data.items()):
             tree_category = QTreeWidgetItem(self)
             tree_category.setText(0, category)
@@ -355,6 +357,8 @@ class Left_Menu_Tree(QTreeWidget):
         Позволяет получить список уникальных имен всех элементов дерева.
         """
         data = self.parent.controller.get_data()
+        if 'FLIGHT_DATA' in data:
+            data = {key: val for key, val in data.items() if key != 'FLIGHT_DATA'}
         columns = []
         for address in data.values():
             for dataframe in address.values():

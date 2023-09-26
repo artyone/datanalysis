@@ -9,18 +9,18 @@ from PyQt5.QtCore import Qt
 from functools import partial
 from .settingsWindowGraph import GraphTab, ValueErrorGraph
 from .settingsWindowPlane import PlaneTab, ValueErrorPlanes
+from ..helpersWindows.baseWidget import BaseWidget
 
 
-class SettingsWindow(QWidget):
+class SettingsWindow(BaseWidget):
     '''
     Класс окна настроек.
     settings - настройки приложения.
     list* - словари для сохранения объектов настроек.
     '''
 
-    def __init__(self, parent) -> None:
-        super().__init__()
-        self.parent = parent
+    def __init__(self, name, parent) -> None:
+        super().__init__(name, parent)
         self.settings = self.parent.settings
         self.listMainSettings = self.settings.value('main_settings')
         self.listPlanes = self.settings.value('planes')
@@ -33,7 +33,6 @@ class SettingsWindow(QWidget):
         '''
         Метод инициализации основных элементов окна.
         '''
-        self.setGeometry(0, 0, 800, 600)
         self.setWindowTitle("Настройки")
         layout = QVBoxLayout()
         tabWidget = QTabWidget()
@@ -57,6 +56,8 @@ class SettingsWindow(QWidget):
         layout.addWidget(tabWidget)
         layout.addWidget(self.saveButton)
         self.setLayout(layout)
+        self.adjustSize()
+        self.setGeometry(0, 0, 800, self.height())
 
     def mainTab(self) -> QWidget:
         '''

@@ -32,6 +32,8 @@ def get_actions_list() -> list:
         Action('exit_action', 'Закрыть приложение', ':log-out.svg',
                'Закрыть приложение навсегда', 'Ctrl+Q', False, 'close'),
         # service actions
+        Action('flight_data_action', 'Данные полёта', ':twitter.svg',
+               'Задать данные полёта', None, False, 'get_flight_data_window'),
         Action('calculate_data_action', 'Рассчитать данные', ':percent.svg',
                'Рассчитать данные для анализа', None, False, 'calculate_data'),
         Action('make_map_action', 'Создать карту', ':map.svg',
@@ -114,6 +116,7 @@ def get_menu_dict() -> dict:
             'close_all_action'
         ],
         Submenu('Сервисы', None): [
+            'flight_data_action',
             'calculate_data_action',
             'make_map_action',
             'create_report_action',

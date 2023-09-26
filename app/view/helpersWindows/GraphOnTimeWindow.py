@@ -1,13 +1,11 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout
+from app.view.helpersWindows.baseWidget import BaseWidget
 
-
-class GraphOnTimeWidget(QWidget):
-    def __init__(self, parent) -> None:
-        super().__init__()
-        self.parent = parent
+class GraphOnTimeWidget(BaseWidget):
+    def __init__(self, name, parent) -> None:
+        super().__init__(name, parent)
         self.setWindowTitle('Выберите время')
-        self.setGeometry(100, 100, 400, 200)
 
         start_label = QLabel('Старт:', self)
         stop_label = QLabel('Стоп:', self)
@@ -34,6 +32,8 @@ class GraphOnTimeWidget(QWidget):
         layout.addWidget(cancel_button)
 
         self.setLayout(layout)
+        self.adjustSize()
+        self.setGeometry(0, 0, 400, self.height())
 
     def create_graph(self) -> None:
         start = float(self.start_input.text())

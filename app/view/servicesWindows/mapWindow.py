@@ -1,14 +1,13 @@
 from os import startfile
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QFormLayout,
+    QVBoxLayout, QFormLayout,
     QComboBox, QLineEdit, QFileDialog,
     QDialogButtonBox
 )
-from PyQt5.QtGui import QKeyEvent
-from PyQt5.QtCore import Qt
+from ..helpersWindows import BaseWidget
 
 
-class MapWindow(QWidget):
+class MapWindow(BaseWidget):
     '''
     Класс окна построения карты полёта
     parent - родительское окно
@@ -16,9 +15,8 @@ class MapWindow(QWidget):
     settings - настройки приложения.
     '''
 
-    def __init__(self, controller, parent) -> None:
-        super().__init__()
-        self.parent = parent
+    def __init__(self, name, controller, parent) -> None:
+        super().__init__(name, parent)
         self.controller = controller
         self.settings = self.parent.settings
         self.initUI()
@@ -27,7 +25,7 @@ class MapWindow(QWidget):
         '''
         Метод отрисовки основных элементов окна.
         '''
-        self.setGeometry(0, 0, 400, 200)
+
         self.setWindowTitle("Создание карты")
         dlgLayout = QVBoxLayout()
 
@@ -37,6 +35,8 @@ class MapWindow(QWidget):
         dlgLayout.addLayout(self.formLayout)
         dlgLayout.addWidget(self.btnBox)
         self.setLayout(dlgLayout)
+        self.adjustSize()
+        self.setGeometry(0, 0, 400, self.height())
 
     def initInputBlock(self) -> None:
         '''Метод инициализации элементов ввода и выбора пользователя'''
@@ -147,13 +147,6 @@ class MapWindow(QWidget):
         '''
         startfile(self.filePath)
         self.close()
-
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        # закрыть по esc
-        if event.key() == Qt.Key_Escape:
-            self.hide()
-        else:
-            super().keyPressEvent(event)
 
     def validateLineEdit(self) -> None:
         # проверка что введены цифры

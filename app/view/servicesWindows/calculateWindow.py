@@ -1,22 +1,20 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QFormLayout,
+    QVBoxLayout, QFormLayout,
     QCheckBox, QComboBox,
     QDialogButtonBox, QInputDialog
 )
-from PyQt5.QtGui import QKeyEvent
-from PyQt5.QtCore import Qt
+from ..helpersWindows import BaseWidget
 
 
-class CalcWindow(QWidget):
+class CalcWindow(BaseWidget):
     '''
     Класс окна рассчета данных.
     parent - родительское окно
     controller - контроллер для получения данных.
     '''
 
-    def __init__(self, controller, parent) -> None:
-        super().__init__()
-        self.parent = parent
+    def __init__(self, name, controller, parent) -> None:
+        super().__init__(name, parent)
         self.controller = controller
         self.initUI()
 
@@ -253,12 +251,6 @@ class CalcWindow(QWidget):
             self.close()
         except Exception as e:
             self.parent.send_notify('предупреждение', str(e))
-
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() == Qt.Key_Escape:  # type: ignore
-            self.hide()
-        else:
-            super().keyPressEvent(event)
 
     def checkAnyChoice(self) -> None:
         if any([

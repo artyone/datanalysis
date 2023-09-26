@@ -1,24 +1,22 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QFormLayout,
+    QVBoxLayout, QFormLayout,
     QCheckBox, QComboBox, QHBoxLayout,
     QDialogButtonBox, QFileDialog,
     QLineEdit, QPushButton
 )
-from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtCore import Qt
+from .baseWidget import BaseWidget
 
 
-class Open_file_window(QWidget):
+class OpenFileWindow(BaseWidget):
     '''
     Класс окна для выбора json для парсинга данных файла txt или csv
     parent - родительское окно
     controller - контроллер для получения данных.
     settings - настройки приложения.
     '''
-
-    def __init__(self, controller, filetype, categories, parent=None):
-        super().__init__()
-        self.parent = parent
+    def __init__(self, name, controller, filetype, categories, parent) -> None:
+        super().__init__(name, parent)
         self.controller = controller
         self.filetype = filetype
         self.categories = categories
@@ -29,7 +27,6 @@ class Open_file_window(QWidget):
         '''
         Метод отрисовки основных элементов окна.
         '''
-        self.setGeometry(0, 0, 400, 200)
         self.setWindowTitle(f'Открыть {self.filetype} файл...')
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
         layout = QVBoxLayout(self)
@@ -39,6 +36,8 @@ class Open_file_window(QWidget):
 
         layout.addLayout(self.form_layout)
         layout.addWidget(self.button_box)
+        self.adjustSize()
+        self.setGeometry(0, 0, 400, self.height())
 
     def init_input_block(self) -> None:
         '''Метод инициализации элементов ввода и выбора пользователя'''
@@ -87,6 +86,9 @@ class Open_file_window(QWidget):
         self.button_box.setStandardButtons(
             QDialogButtonBox.Open | QDialogButtonBox.Cancel
         )
+        self.button_box.button(QDialogButtonBox.Open).setText('Открыть')
+        self.button_box.button(QDialogButtonBox.Cancel).setText('Отмена')
+
         self.button_box.rejected.connect(self.close)
 
         self.openButton = self.button_box.button(QDialogButtonBox.Open)
@@ -127,7 +129,7 @@ class Open_file_window(QWidget):
                 'успех', f'Файл {filepath} открыт'
             )
             self.parent.last_file_label.setText(
-                    f'Последний открытый файл: {filepath}   '
+                f'Последний открытый файл: {filepath}   '
             )
             self.parent.destroy_child_window()
         except Exception as e:
@@ -148,22 +150,22 @@ class Open_file_window(QWidget):
                 'успех', f'Файл {filepath} открыт'
             )
             self.parent.last_file_label.setText(
-                    f'Последний открытый файл: {filepath}   '
-                )
+                f'Последний открытый файл: {filepath}   '
+            )
             self.parent.destroy_child_window()
         except Exception as e:
             self.parent.send_notify('ошибка', str(e))
 
-    def closeEvent(self, event) -> None:
-        '''
-        Переназначение функции закрытия, для уничтожение окна.
-        '''
-        self.deleteLater()
-        self.parent.open_file_window = None
-        event.accept()
+    # def closeEvent(self, event) -> None:
+    #     '''
+    #     Переназначение функции закрытия, для уничтожение окна.
+    #     '''
+    #     self.deleteLater()
+    #     self.parent.open_file_window = None
+    #     event.accept()
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() == Qt.Key_Escape:
-            self.close()
-        else:
-            super().keyPressEvent(event)
+    # def keyPressEvent(self, event: QKeyEvent) -> None:
+    #     if event.key() == Qt.Key_Escape:
+    #         self.close()
+    #     else:
+    #         super().keyPressEvent(event)

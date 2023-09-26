@@ -9,7 +9,7 @@ from PyQt5.QtCore import Qt
 from qtwidgets import AnimatedToggle
 from os import startfile
 from functools import partial
-
+from ..helpersWindows import BaseWidget
 
 class Line_choose_widget(QWidget):
     '''Виджет выбора категории и адр'''
@@ -81,7 +81,7 @@ class Choose_widget(QWidget):
         self.line_calc_widget.update_categories(categories)
 
 
-class Report_window(QWidget):
+class Report_window(BaseWidget):
     '''
     Класс окна получения отчета по полету.
     parent - родительское окно.
@@ -89,9 +89,8 @@ class Report_window(QWidget):
     intervalsTxt - текст пользовательских интервалов.
     '''
 
-    def __init__(self, controller, parent) -> None:
-        super().__init__()
-        self.parent = parent
+    def __init__(self, name, controller, parent) -> None:
+        super().__init__(name, parent)
         self.controller = controller
         self.intervals_from_txt = None
         self.initUI()
@@ -149,6 +148,8 @@ class Report_window(QWidget):
         self.toggle.setChecked(True)
         self.intervals_from_txt = QPlainTextEdit()
         self.intervals_from_txt.setFixedHeight(300)
+        if 'FLIGHT_DATA' in self.controller.get_data() and 'intervals' in self.controller.get_data()['FLIGHT_DATA']:
+            self.intervals_from_txt.setPlainText(str(self.controller.get_data()['FLIGHT_DATA']['intervals']))
         self.toggle.stateChanged.connect(
             partial(self.widget_state_changed, self.intervals_from_txt)
         )
@@ -174,15 +175,21 @@ class Report_window(QWidget):
             QDialogButtonBox.Save |
             QDialogButtonBox.Cancel
         )
-        button_box.rejected.connect(self.close)
 
         self.open_button = button_box.button(QDialogButtonBox.Open)
+        self.open_button.setText('Открыть файл')
         self.open_button.clicked.connect(self.open_file_event)
         self.open_button.hide()
 
         self.save_button = button_box.button(QDialogButtonBox.Save)
+        self.save_button.setText('Сохранить')
         self.save_button.clicked.connect(self.get_report_event)
         self.save_button.hide()
+
+        close_button = button_box.button(QDialogButtonBox.Cancel)
+        close_button.setText('Закрыть')
+        close_button.clicked.connect(self.close)
+
         return button_box
 
     def get_report_event(self) -> None:

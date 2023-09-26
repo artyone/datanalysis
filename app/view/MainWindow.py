@@ -5,11 +5,11 @@ from app.controller import (
 )
 from app.view.servicesWindows import (
     Graph_window, MapWindow, Report_window,
-    ConsoleWindow, CalcWindow
+    ConsoleWindow, CalcWindow, FlightDataWindow
 )
 from app.view.helpersWindows import (
     SettingsWindow, Save_csv_window,
-    Open_file_window, Left_Menu_Tree,
+    OpenFileWindow, Left_Menu_Tree,
     GraphOnTimeWidget
 )
 from PyQt5.QtGui import (
@@ -48,8 +48,9 @@ class MainWindow(QMainWindow):
         self.settings_window: SettingsWindow | None = None
         self.calc_window: CalcWindow | None = None
         self.save_csv_window: Save_csv_window | None = None
-        self.open_file_window: Open_file_window | None = None
+        self.open_file_window: OpenFileWindow | None = None
         self.graph_on_time_window: GraphOnTimeWidget | None = None
+        self.flight_data_window: FlightDataWindow | None = None
         self.controller: Control = Control()
         self.app_version = QCoreApplication.applicationVersion()
         self.app_name = QCoreApplication.applicationName()
@@ -292,8 +293,8 @@ class MainWindow(QMainWindow):
                 categories = self.controller.get_json_categories(
                     self.settings.value('main_settings')['json_dir']
                 )
-                self.open_file_window = Open_file_window(
-                    self.controller, filetype, categories, self
+                self.open_file_window = OpenFileWindow(
+                    'open_file_window', self.controller, filetype, categories, self
                 )
             except KeyError:
                 self.send_notify(
@@ -320,6 +321,16 @@ class MainWindow(QMainWindow):
         self.center(self.open_file_window)
         self.open_file_window.show()
 
+    def get_flight_data_window(self) -> None:
+        if self.flight_data_window is None:
+            self.flight_data_window = FlightDataWindow(
+                'flight_data_window', self
+            )
+        else:
+            self.flight_data_window.hide()
+        self.center(self.flight_data_window)
+        self.flight_data_window.show()
+
     def destroy_child_window(self) -> None:
         '''
         Метод удаления дочерних окон.
@@ -330,6 +341,7 @@ class MainWindow(QMainWindow):
             'map_window',
             'calc_window',
             'open_file_window',
+            'flight_data_window'
         ]
         for window in windows:
             if getattr(self, window):
@@ -345,7 +357,7 @@ class MainWindow(QMainWindow):
             return
 
         if self.save_csv_window is None:
-            self.save_csv_window = Save_csv_window(self.controller, self)
+            self.save_csv_window = Save_csv_window('save_csv_window', self.controller, self)
         else:
             self.save_csv_window.hide()
         self.center(self.save_csv_window)
@@ -389,7 +401,7 @@ class MainWindow(QMainWindow):
             return
 
         if self.calc_window is None:
-            self.calc_window = CalcWindow(self.controller, self)
+            self.calc_window = CalcWindow('calc_window', self.controller, self)
         else:
             self.calc_window.hide()
         self.center(self.calc_window)
@@ -403,7 +415,7 @@ class MainWindow(QMainWindow):
             return
 
         if self.map_window is None:
-            self.map_window = MapWindow(self.controller, self)
+            self.map_window = MapWindow('map_window', self.controller, self)
         else:
             self.map_window.hide()
         self.center(self.map_window)
@@ -424,7 +436,7 @@ class MainWindow(QMainWindow):
             )
             return
         if self.report_window is None:
-            self.report_window = Report_window(self.controller, self)
+            self.report_window = Report_window('report_window', self.controller, self)
         else:
             self.report_window.hide()
         self.center(self.report_window)
@@ -515,11 +527,11 @@ class MainWindow(QMainWindow):
             window.setGeometry(0, 0, width, current_heigth)
             window.move(pnt[0], pnt[1])
             pnt[1] += current_heigth
-    
+
     def create_graph_on_time(self) -> None:
         if self.graph_on_time_window is None:
-            self.graph_on_time_window = GraphOnTimeWidget(self)
-        else :
+            self.graph_on_time_window = GraphOnTimeWidget('graph_on_time_window', self)
+        else:
             self.graph_on_time_window.hide()
         self.center(self.graph_on_time_window)
         self.graph_on_time_window.show()
@@ -690,7 +702,7 @@ class MainWindow(QMainWindow):
         Метод открытия окна настроек.
         '''
         if self.settings_window is None:
-            self.settings_window = SettingsWindow(self)
+            self.settings_window = SettingsWindow('settings_window', self)
         else:
             self.settings_window.hide()
         self.center(self.settings_window)
