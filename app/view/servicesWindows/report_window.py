@@ -254,7 +254,7 @@ class Report_window(BaseWidget):
         Метод открытия файла отчёта, если он был создан.
         '''
         startfile(self.file_path)
-        self.close()
+        self.hide()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         # закрыть по esc

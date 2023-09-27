@@ -75,7 +75,7 @@ class MainWindow(QMainWindow):
         '''
         # self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle(f'{self.app_name} {self.app_version}')
-        self.app.setWindowIcon(QIcon('icon.ico'))
+        self.app.setWindowIcon(QIcon('files/icon.ico'))
         self.generate_actions(get_actions_list())
         self.generate_menu(self.menuBar(), get_menu_dict())
         self.generate_tool_bar(get_toolbar_list())
@@ -357,7 +357,9 @@ class MainWindow(QMainWindow):
             return
 
         if self.save_csv_window is None:
-            self.save_csv_window = Save_csv_window('save_csv_window', self.controller, self)
+            self.save_csv_window = Save_csv_window(
+                'save_csv_window', self.controller, self
+            )
         else:
             self.save_csv_window.hide()
         self.center(self.save_csv_window)
@@ -436,7 +438,9 @@ class MainWindow(QMainWindow):
             )
             return
         if self.report_window is None:
-            self.report_window = Report_window('report_window', self.controller, self)
+            self.report_window = Report_window(
+                'report_window', self.controller, self
+            )
         else:
             self.report_window.hide()
         self.center(self.report_window)
@@ -530,7 +534,9 @@ class MainWindow(QMainWindow):
 
     def create_graph_on_time(self) -> None:
         if self.graph_on_time_window is None:
-            self.graph_on_time_window = GraphOnTimeWidget('graph_on_time_window', self)
+            self.graph_on_time_window = GraphOnTimeWidget(
+                'graph_on_time_window', self
+            )
         else:
             self.graph_on_time_window.hide()
         self.center(self.graph_on_time_window)
@@ -843,11 +849,11 @@ class MainWindow(QMainWindow):
 
     def add_cat(self) -> None:
         animated_label = QLabel(self.mdi)
-        movie = QMovie('app/resource/catani.gif')
+        movie = QMovie('files/catani.gif')
         animated_label.setMovie(movie)
         movie.start()
         self.mdi.addSubWindow(animated_label)
         animated_label.show()
-        cursor_image = QPixmap("app/resource/nyan_cursor.png")
+        cursor_image = QPixmap('files/cursor.png')
         custom_cursor = QCursor(cursor_image, 2, 2)
         self.setCursor(custom_cursor)

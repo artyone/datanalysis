@@ -110,7 +110,7 @@ def default_settings(settings, app_version) -> None:
         ]
     }
     settings.setValue('graphs', graphs)
-    filters = ['time']
+    filters = []
     settings.setValue('left_menu_filters', filters)
     main_settings = {
         'theme': 'dark',

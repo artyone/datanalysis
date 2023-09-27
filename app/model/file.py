@@ -68,19 +68,6 @@ class Datas(object):
         values['pnk_kren'] = plane_koef['values']['kren_DISS_grad']
         values['pnk_tang'] = plane_koef['values']['tang_DISS_grad']
 
-        values['mean_US'] = data.US.mean()
-        values['mean_Wp'] = data.Wp.mean()
-        values['average_US'] = np.average(data.US, weights=data.counts)
-        values['average_Wp'] = np.average(data.Wp, weights=data.counts)
-        values['std_US'] = data.US.std()
-        values['std_Wp'] = data.Wp.std()
-        values['skp_US'] = np.sqrt((data.US.sum() ** 2) / len(data.US))
-        values['skp_Wp'] = np.sqrt((data.Wp.sum() ** 2) / len(data.Wp))
-        values['skp_US2'] = values['skp_US'] * 2
-        values['skp_Wp2'] = values['skp_Wp'] * 2
-        values['abs_US'] = values['average_US'] + 2 * values['skp_US']
-        values['abs_Wp'] = values['average_Wp'] + 2 * values['skp_Wp']
-
         for name, value in values.items():
             address = find_bookmarks(name, ws)
             if not address:
