@@ -1,7 +1,7 @@
 from app.model import Mathematical, Flight_map
 from app.model import file_methods
 from pandas import DataFrame
-import re
+from .helpers import get_intervals_from_string
 import numpy as np
 import pandas as pd
 from collections import defaultdict
@@ -149,6 +149,8 @@ class Control(object):
         self.worker.calc_wg_kbti(plane_correct['k'], plane_correct['k1'])
         self.worker.calc_wc_kbti()
         self.worker.calc_wp()
+        self.worker.calc_us()
+        self.worker.calc_ratio_data()
         if 'CALC' in self.data:
             self.data['CALC'][target_adr] = self.worker.get_only_calculated_data_pnk()
         else:
@@ -195,10 +197,7 @@ class Control(object):
                     'Интервалы не были посчитаны автоматически'
                 )
         else:
-            intervals = re.sub(r'[^\d\-\n]', '', string)
-            intervals = re.findall(r'(\d+\-\d+)\n?', intervals)
-            intervals = [i.split('-') for i in intervals]
-            intervals = [(int(x), int(y)) for x, y in intervals]
+            intervals = get_intervals_from_string(string)
         
         data_result = self.worker.get_calculated_data(intervals)
 

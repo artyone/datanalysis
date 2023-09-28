@@ -1,7 +1,8 @@
 from typing import Any, Iterable
 import pandas as pd
 from pandas import DataFrame, Series
-from math import pi, sin, cos, atan, radians
+from math import pi, atan
+import numpy as np
 
 
 class Mathematical(object):
@@ -41,24 +42,12 @@ class Mathematical(object):
         '''
         Метод расчета углов для рассчетов.
         '''
-        self.d['Kren_sin'] = self.d.I1_Kren.apply(
-            lambda x: sin(radians(x + kren))
-        )
-        self.d['Kren_cos'] = self.d.I1_Kren.apply(
-            lambda x: cos(radians(x + kren))
-        )
-        self.d['Tang_sin'] = self.d.I1_Tang.apply(
-            lambda x: sin(radians(x + tang))
-        )
-        self.d['Tang_cos'] = self.d.I1_Tang.apply(
-            lambda x: cos(radians(x + tang))
-        )
-        self.d['Kurs_sin'] = self.d.I1_KursI.apply(
-            lambda x: sin(radians(x + kurs))
-        )
-        self.d['Kurs_cos'] = self.d.I1_KursI.apply(
-            lambda x: cos(radians(x + kurs))
-        )
+        self.d['Kren_sin'] = np.sin(np.radians(self.d.I1_Kren + kren))
+        self.d['Kren_cos'] = np.cos(np.radians(self.d.I1_Kren + kren))
+        self.d['Tang_sin'] = np.sin(np.radians(self.d.I1_Tang + tang))
+        self.d['Tang_cos'] = np.cos(np.radians(self.d.I1_Tang + tang))
+        self.d['Kurs_sin'] = np.sin(np.radians(self.d.I1_KursI + kurs))
+        self.d['Kurs_cos'] = np.cos(np.radians(self.d.I1_KursI + kurs))
 
     def calc_wg_kbti(self, k: int, k1: int) -> None:
         '''
@@ -78,10 +67,13 @@ class Mathematical(object):
         '''
         Метод рассчёта данных КБТИ.
         '''
-        wxg, wyg, wzg = self.d.Wxg_KBTIi, self.d.Wyg_KBTIi, self.d.Wzg_KBTIi
-        tang_cos, tang_sin, kren_cos, kren_sin = (
-            self.d.Tang_cos, self.d.Tang_sin, self.d.Kren_cos, self.d.Kren_sin
-        )
+        wxg = self.d.Wxg_KBTIi
+        wyg = self.d.Wyg_KBTIi
+        wzg = self.d.Wzg_KBTIi
+        tang_cos = self.d.Tang_cos
+        tang_sin = self.d.Tang_sin
+        kren_cos = self.d.Kren_cos
+        kren_sin = self.d.Kren_sin
         
         self.d['Wxc_KBTIi'] = wxg * tang_cos + wyg * tang_sin
         self.d['Wyc_KBTIi'] = (
@@ -97,6 +89,56 @@ class Mathematical(object):
         '''
         self.d['Wp_KBTIi'] = (self.d.Wxc_KBTIi**2 + self.d.Wzc_KBTIi**2)**0.5
         self.d['Wp_diss_pnki'] = (self.d.Wx_DISS_PNK**2 + self.d.Wz_DISS_PNK**2)**0.5
+
+    def calc_us(self) -> None:
+        '''
+        Метод рассчёта угла сноса.
+        '''
+        self.d['US_diss_pnki'] = np.arctan(self.d.Wz_DISS_PNK / self.d.Wx_DISS_PNK) * 180 / np.pi
+        self.d['US_KBTIi'] = np.arctan(self.d.Wzc_KBTIi / self.d.Wxc_KBTIi) * 180 / np.pi
+
+    @staticmethod
+    def ratio_filter(data, koef=0.01):
+        ratio_filter = np.zeros(len(data))
+        ratio_koef = data * koef
+        shift = int(0.5 / 0.01)
+        ratio_koef[np.isinf(ratio_koef)] = 0
+        ratio_koef[np.isnan(ratio_koef)] = 0
+        for i in range(1, len(ratio_filter)):
+            ratio_filter[i] = ratio_koef[i] + ratio_filter[i - 1] * (1 - koef)
+        return np.pad(ratio_filter[shift:], (0, shift), mode='constant', constant_values=np.nan)
+
+
+    def calc_ratio_data(self) -> None:
+        '''
+        Метод рассчёта отношений US, Wp, Wx, Wy, Wz
+        '''
+        self.d['US_ratio'] = self.d.US_KBTIi - self.d.US_diss_pnki
+        #self.d.loc[self.d['US_ratio'] > 1000, 'US_ratio'] = 0
+        self.d['US_ratio_median'] = self.d.US_ratio.rolling(window=100, min_periods=1, center=True).median()
+        self.d['US_ratio_filter'] = self.ratio_filter(self.d.US_ratio)
+        self.d['US_ratio_mean'] = self.d.US_ratio.rolling(window=100, min_periods=1, center=True).mean()
+
+        self.d['Wp_ratio'] = (self.d.Wp_diss_pnki - self.d.Wp_KBTIi) / self.d.Wp_diss_pnki * 100
+        #self.d.loc[self.d['Wp_ratio'] > 1000, 'Wp_ratio'] = 0
+        self.d['Wp_ratio_median'] = self.d.Wp_ratio.rolling(window=100, min_periods=1, center=True).median()
+        self.d['Wp_ratio_filter'] = self.ratio_filter(self.d.Wp_ratio)
+        self.d['Wp_ratio_mean'] = self.d.Wp_ratio.rolling(window=100, min_periods=1, center=True).mean()
+
+        self.d['Wx_ratio'] = (self.d.Wx_DISS_PNK - self.d.Wxc_KBTIi) / self.d.Wxc_KBTIi * 100
+        #self.d.loc[self.d['Wx_ratio'] > 1000, 'Wx_ratio'] = 0
+        self.d['Wx_ratio_median'] = self.d.Wx_ratio.rolling(window=100, min_periods=1, center=True).median()
+        self.d['Wx_ratio_filter'] = self.ratio_filter(self.d.Wx_ratio)
+
+        self.d['Wy_ratio'] = (self.d.Wy_DISS_PNK - self.d.Wyc_KBTIi) / self.d.Wyc_KBTIi * 100
+        #self.d.loc[self.d['Wy_ratio'] > 1000, 'Wy_ratio'] = 0
+        self.d['Wy_ratio_median'] = self.d.Wx_ratio.rolling(window=100, min_periods=1, center=True).median()
+        self.d['Wy_ratio_filter'] = self.ratio_filter(self.d.Wy_ratio)
+
+        self.d['Wz_ratio'] = (self.d.Wz_DISS_PNK - self.d.Wzc_KBTIi) / self.d.Wzc_KBTIi * 100
+        #self.d.loc[self.d['Wz_ratio'] > 'Wz_ratio'] = 0
+        self.d['Wz_ratio_median'] = self.d.Wz_ratio.rolling(window=100, min_periods=1, center=True).median()
+        self.d['Wz_ratio_filter'] = self.ratio_filter(self.d.Wz_ratio)
 
     def _get_interval(self, start: float, stop: float) -> DataFrame:
         '''
@@ -303,6 +345,11 @@ class Mathematical(object):
             'Wx_DISS_PNK', 'Wz_DISS_PNK', 'Wy_DISS_PNK',
             'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
             'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi',
-            'Wp_KBTIi', 'Wp_diss_pnki'
+            'Wp_KBTIi', 'Wp_diss_pnki',  'US_KBTIi', 'US_ratio',
+            'US_ratio_median', 'US_ratio_filter', 'US_ratio_mean',
+            'Wp_ratio', 'Wp_ratio_median', 'Wp_ratio_filter', 
+            'Wp_ratio_mean', 'Wx_ratio', 'Wx_ratio_median',
+            'Wx_ratio_filter', 'Wy_ratio', 'Wy_ratio_median', 'Wy_ratio_filter',
+            'Wz_ratio', 'Wz_ratio_median', 'Wz_ratio_filter'
         ]
         return self.d[headers]

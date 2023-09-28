@@ -93,6 +93,7 @@ class Report_window(BaseWidget):
         super().__init__(name, parent)
         self.controller = controller
         self.intervals_from_txt = None
+        self.flight_data = self.controller.get_data().get('FLIGHT_DATA', {})
         self.initUI()
 
     def initUI(self) -> None:
@@ -100,8 +101,16 @@ class Report_window(BaseWidget):
         layout = QFormLayout(self)
 
         self.plane_combo_box = QComboBox()  # выбор самолёта
-        planes = self.parent.settings.value('planes').keys()
+
+        planes = list(self.parent.settings.value('planes').keys())
         self.plane_combo_box.addItems(planes)
+        if self.flight_data and 'plane' in self.flight_data:
+            try:
+                self.plane_combo_box.setCurrentIndex(planes.index(self.flight_data['plane']))
+            except:
+                self.parent.send_notify(
+                    'ошибка', 'Указанный самолёт в данных полёта не существует в настройках'
+                )
         layout.addRow('Самолёт', self.plane_combo_box)
 
         categories = {
@@ -148,8 +157,8 @@ class Report_window(BaseWidget):
         self.toggle.setChecked(True)
         self.intervals_from_txt = QPlainTextEdit()
         self.intervals_from_txt.setFixedHeight(300)
-        if 'FLIGHT_DATA' in self.controller.get_data() and 'intervals' in self.controller.get_data()['FLIGHT_DATA']:
-            self.intervals_from_txt.setPlainText(str(self.controller.get_data()['FLIGHT_DATA']['intervals']))
+        if self.flight_data and 'intervals' in self.flight_data:
+            self.intervals_from_txt.setPlainText(str(self.flight_data['intervals']))
         self.toggle.stateChanged.connect(
             partial(self.widget_state_changed, self.intervals_from_txt)
         )

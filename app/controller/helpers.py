@@ -1,4 +1,5 @@
 from PyQt5.QtGui import QColor, QPalette
+import re
 
 
 def default_settings(settings, app_version) -> None:
@@ -152,3 +153,10 @@ def get_palette(color) -> QPalette:
         palette.setColor(QPalette.Highlight, QColor(110, 120, 125, 127))
         palette.setColor(QPalette.HighlightedText, QColor(255, 255, 255))
     return palette
+
+def get_intervals_from_string(string: str) -> list:
+    intervals = re.sub(r'[^\d\-\n]', '', string)
+    intervals = re.findall(r'(\d+\-\d+)\n?', intervals)
+    intervals = [i.split('-') for i in intervals]
+    intervals = [(int(x), int(y)) for x, y in intervals]
+    return intervals

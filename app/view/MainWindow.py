@@ -641,6 +641,8 @@ class MainWindow(QMainWindow):
             self.mdi.resize(self.splitter.width(), self.splitter.height())
             self.statusbar.hide()
             self.menuBar().hide()
+            for subwindow in self.mdi.subWindowList():
+                subwindow.setWindowFlag(Qt.FramelessWindowHint)
         else:
             self.hide_left_menu_action.setIcon(self.get_icon(':eye-off'))
             self.tree_widget.show()
@@ -651,6 +653,9 @@ class MainWindow(QMainWindow):
             )
             self.statusbar.show()
             self.menuBar().show()
+            for subwindow in self.mdi.subWindowList():
+                subwindow.setWindowFlag(Qt.FramelessWindowHint, False)
+        
         self.check_positioning_windows()
 
     def track_graph(self) -> None:

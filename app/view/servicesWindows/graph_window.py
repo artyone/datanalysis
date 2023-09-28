@@ -10,6 +10,7 @@ from PyQt5.sip import delete
 from PyQt5.QtCore import Qt
 from functools import partial
 import pandas as pd
+from ...controller.helpers import get_intervals_from_string
 
 
 class Graph_window(QMdiSubWindow):
@@ -79,6 +80,11 @@ class Graph_window(QMdiSubWindow):
             labelTextColor=legend_color,
             offset=(0, 0)
         )
+        pen = pg.mkPen(legend_color, width=1.3)
+        self.plot.getAxis('bottom').setPen(pen)
+        self.plot.getAxis('bottom').setTextPen(pen)
+        self.plot.getAxis('left').setPen(pen)
+        self.plot.getAxis('left').setTextPen(pen)
 
         for category, adr, item in self.columns:
             data_for_graph = self.data[category][adr].dropna(
@@ -89,7 +95,7 @@ class Graph_window(QMdiSubWindow):
                 data_for_graph = data_for_graph.loc[
                     (data_for_graph['time'] >= self.start_time) & (data_for_graph['time'] <= self.stop_time)
                 ]
-            pen = pg.mkPen(color=self.colors[0])
+            pen = pg.mkPen(color=self.colors[0], width=1.5)
             curve = pg.PlotDataItem(
                 data_for_graph.time.to_list(),
                 data_for_graph[item].to_list(),
@@ -111,6 +117,15 @@ class Graph_window(QMdiSubWindow):
         self.plot.scene().sigMouseClicked.connect(self.mouse_click_event)
         self.plot.setClipToView(True)
         self.plot.setDownsampling(auto=True, mode='peak')
+
+        flight_data = self.parent.controller.get_data().get('FLIGHT_DATA', {})
+        if flight_data and 'intervals' in flight_data:
+            intervals = get_intervals_from_string(flight_data['intervals'])
+            for interval in intervals:
+                roi = pg.LinearRegionItem(interval)  # отрезок [начало, конец]
+                roi.setBrush(pg.mkBrush(192, 192, 50, 28))  # цвет фона с прозрачностью
+                roi.setMovable(False)
+                self.plot.addItem(roi)
 
 
     def mouse_moved(self, e) -> None:

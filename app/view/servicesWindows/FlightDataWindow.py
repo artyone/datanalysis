@@ -115,17 +115,3 @@ class FlightDataWindow(BaseWidget):
             'информация', 'Не забудьте сохранить данные в gzip'
         )
         self.close()
-
-    # def closeEvent(self, event) -> None:
-    #     '''
-    #     Переназначение функции закрытия, для уничтожение окна.
-    #     '''
-    #     self.deleteLater()
-    #     self.parent.graph_on_time_window = None
-    #     event.accept()
-
-    # def keyPressEvent(self, event: QKeyEvent) -> None:
-    #     if event.key() == Qt.Key_Escape:
-    #         self.close()
-    #     else:
-    #         super().keyPressEvent(event)

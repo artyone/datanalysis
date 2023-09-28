@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (
     QCheckBox, QComboBox,
     QDialogButtonBox, QInputDialog
 )
+from PyQt5.QtCore import QSettings
 from ..helpersWindows import BaseWidget
 
 
@@ -15,6 +16,7 @@ class CalcWindow(BaseWidget):
 
     def __init__(self, name, controller, parent) -> None:
         super().__init__(name, parent)
+        self.settings: QSettings = self.parent.settings
         self.controller = controller
         self.initUI()
 
@@ -40,10 +42,10 @@ class CalcWindow(BaseWidget):
         self.formLayout.setVerticalSpacing(20)
 
         self.planeComboBox = QComboBox()
-        planes = self.parent.settings.value('planes')
+        planes = self.settings.value('planes')
         self.planeComboBox.addItems(planes)
         self.planeComboBox.setCurrentText(
-            self.parent.settings.value('planeComboBox')
+            self.settings.value('planeComboBox')
         )
         self.planeComboBox.activated.connect(self.saveComboBoxValue)
 
@@ -178,7 +180,7 @@ class CalcWindow(BaseWidget):
         '''
         Метод для сохранения в настройках самолета по умолчанию.
         '''
-        self.parent.settings.setValue(
+        self.settings.setValue(
             'planeComboBox', self.planeComboBox.currentText()
         )
 
@@ -233,9 +235,9 @@ class CalcWindow(BaseWidget):
         pass
 
     def calculatePnk(self, target_adr) -> None:
-        planeCorr = self.parent.settings.value(
-            'planes')[self.planeComboBox.currentText()]
-        corrections = self.parent.settings.value('corrections')
+        #TODO добавить получение поправок если есть из флай даты
+        planeCorr = self.settings.value('planes')[self.planeComboBox.currentText()]
+        corrections = self.settings.value('corrections')
         categoryPnk = self.categoryPnkComboBox.currentText()
         adrPnk = self.adrPnkComboBox.currentText()
         try:
@@ -273,9 +275,9 @@ class CalcWindow(BaseWidget):
         self.categoryPnkComboBox.addItems(categories)
         self.updateAdrDissComboBox()
         self.updateAdrPnkComboBox()
-        planes = self.parent.settings.value('planes')
+        planes = self.settings.value('planes')
         self.planeComboBox.clear()
         self.planeComboBox.addItems(planes)
         self.planeComboBox.setCurrentText(
-            self.parent.settings.value('planeComboBox')
+            self.settings.value('planeComboBox')
         )
