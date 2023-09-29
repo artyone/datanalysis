@@ -14,7 +14,7 @@ class Mathematical(object):
     '''
 
     def __init__(self, object: DataFrame) -> None:
-        self.d = object
+        self.d = object.astype(np.float64)
         self.Wxc_KBTIi_acc = 0
         self.Wzc_KBTIi_acc = 0
         self.Wyc_KBTIi_acc = 0
@@ -87,8 +87,8 @@ class Mathematical(object):
         '''
         Метод рассчёта путевой скорости.
         '''
-        self.d['Wp_KBTIi'] = (self.d.Wxc_KBTIi**2 + self.d.Wzc_KBTIi**2)**0.5
-        self.d['Wp_diss_pnki'] = (self.d.Wx_DISS_PNK**2 + self.d.Wz_DISS_PNK**2)**0.5
+        self.d['Wp_KBTIi'] = np.sqrt(np.power(self.d.Wxc_KBTIi, 2) + np.power(self.d.Wzc_KBTIi, 2))
+        self.d['Wp_diss_pnki'] = np.sqrt(np.power(self.d.Wx_DISS_PNK, 2) + np.power(self.d.Wz_DISS_PNK, 2))
 
     def calc_us(self) -> None:
         '''
@@ -113,7 +113,7 @@ class Mathematical(object):
         '''
         Метод рассчёта отношений US, Wp, Wx, Wy, Wz
         '''
-        self.d['US_ratio'] = self.d.US_KBTIi - self.d.US_diss_pnki
+        self.d['US_ratio'] = self.d.US_diss_pnki - self.d.US_KBTIi
         #self.d.loc[self.d['US_ratio'] > 1000, 'US_ratio'] = 0
         self.d['US_ratio_median'] = self.d.US_ratio.rolling(window=100, min_periods=1, center=True).median()
         self.d['US_ratio_filter'] = self.ratio_filter(self.d.US_ratio)
