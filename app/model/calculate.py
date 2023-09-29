@@ -345,7 +345,7 @@ class Mathematical(object):
             'Wx_DISS_PNK', 'Wz_DISS_PNK', 'Wy_DISS_PNK',
             'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
             'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi',
-            'Wp_KBTIi', 'Wp_diss_pnki',  'US_KBTIi', 'US_ratio',
+            'Wp_KBTIi', 'Wp_diss_pnki',  'US_KBTIi', 'US_diss_pnki', 'US_ratio',
             'US_ratio_median', 'US_ratio_filter', 'US_ratio_mean',
             'Wp_ratio', 'Wp_ratio_median', 'Wp_ratio_filter', 
             'Wp_ratio_mean', 'Wx_ratio', 'Wx_ratio_median',
