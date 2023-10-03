@@ -1,5 +1,6 @@
-from PyQt5.QtGui import QColor, QPalette
 import re
+
+from PyQt5.QtGui import QColor, QPalette
 
 
 def default_settings(settings, app_version) -> None:

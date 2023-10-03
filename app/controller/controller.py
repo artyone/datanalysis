@@ -1,10 +1,12 @@
-from app.model import Mathematical, Flight_map
-from app.model import file_methods
-from pandas import DataFrame
-from .helpers import get_intervals_from_string
+from collections import defaultdict
+
 import numpy as np
 import pandas as pd
-from collections import defaultdict
+from pandas import DataFrame
+
+from app.model import FlightMap, Mathematical, file_methods
+
+from .helpers import get_intervals_from_string
 
 
 class NoneJsonError(Exception):
@@ -198,7 +200,7 @@ class Control(object):
                 )
         else:
             intervals = get_intervals_from_string(string)
-        
+
         data_result = self.worker.get_calculated_data(intervals)
 
         file_methods.write_xlsx(data_result, plane_koef, filepath)
@@ -231,7 +233,7 @@ class Control(object):
                 data_for_map.JVD_H >= float(jvd_h_min),
                 ['time', 'latitude', 'longitude', 'JVD_H']
             ]
-        map = Flight_map(data_for_map)
+        map = FlightMap(data_for_map)
         map.get_map()
         map.save_map(filepath)
 

@@ -1,16 +1,32 @@
-from PyQt5.QtWidgets import (
-    QTreeWidget, QTreeWidgetItem, QApplication, QMenu, QInputDialog,
-    QTableWidget, QTableWidgetItem, QAction,
-    QTreeWidgetItemIterator, QHeaderView, QFileDialog, QMainWindow
-)
-from PyQt5.QtGui import QColor, QFont, QIcon
-from PyQt5.QtCore import Qt, QPoint
 from collections import defaultdict
+
 import pandas as pd
+from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtGui import QColor, QFont, QIcon
+from PyQt5.QtWidgets import (QAction, QApplication, QFileDialog, QHeaderView,
+                             QInputDialog, QMainWindow, QMenu, QTableWidget,
+                             QTableWidgetItem, QTreeWidget, QTreeWidgetItem,
+                             QTreeWidgetItemIterator)
+import app.view as view
 
 
 class ViewDataWidget(QMainWindow):
-    def __init__(self, parent, data: pd.DataFrame, category, adr, columns) -> None:
+    '''Виджет для отображения данных в отдельном окне в виде таблицы'''
+
+    def __init__(self,
+                 parent: 'view.MainWindow',
+                 data: pd.DataFrame,
+                 category: str,
+                 adr: str, columns: list) -> None:
+        '''__init__
+
+        Args:
+            parent (view.MainWindow): основное окнов программы
+            data (pd.DataFrame): все данные загруженные в программу
+            category (str): категория для вывода
+            adr (str): адр для вывода
+            columns (list): колонки для вывода
+        '''
         super().__init__()
         self.parent = parent
         self.data: pd.DataFrame = data[category][adr][columns].round(3)
@@ -110,7 +126,14 @@ class ViewDataWidget(QMainWindow):
 
 
 class Left_Menu_Tree(QTreeWidget):
-    def __init__(self, parent) -> None:
+    '''Виджет для отображения списка данных в виде дерева'''
+
+    def __init__(self, parent: 'view.MainWindow') -> None:
+        '''__init__
+
+        Args:
+            parent (view.MainWindow): основное окно программы
+        '''
         super().__init__()
         self.parent = parent
         self.settings = self.parent.settings
@@ -134,7 +157,8 @@ class Left_Menu_Tree(QTreeWidget):
         self.clear()
         data = self.parent.controller.get_data()
         if 'FLIGHT_DATA' in data:
-            data = {key: val for key, val in data.items() if key != 'FLIGHT_DATA'}
+            data = {key: val for key, val in data.items() if key !=
+                    'FLIGHT_DATA'}
         for category, adrs in sorted(data.items()):
             tree_category = QTreeWidgetItem(self)
             tree_category.setText(0, category)
@@ -154,8 +178,12 @@ class Left_Menu_Tree(QTreeWidget):
         self.parent.splitter.setSizes([90, 500])
         self.parent.update_child_windows()
 
-
     def get_filters(self) -> list:
+        '''Возвращает список заголовков, которые нужно скрыть
+
+        Returns:
+            list: список заголовков
+        '''
         return self.settings.value('left_menu_filters')
 
     def add_tree_item(self, parent: QTreeWidgetItem, item_name: str, count: int) -> None:
@@ -298,21 +326,21 @@ class Left_Menu_Tree(QTreeWidget):
         Посмотреть данные выбранного элемента
         """
         # Проверяем выбраны ли какие чек-боксы
-        
+
         if self.get_selected_elements() != []:
             selected_elements = self.get_selected_elements()
-            
+
         elif self.currentItem():
             # Проверяем правый клик был по элементу или категории
             current_item = self.currentItem()
             item_info = self.get_info_item(current_item)
-            if len(item_info) != 3:  
+            if len(item_info) != 3:
                 return
             else:
                 selected_elements = [item_info]
-        else: 
+        else:
             return
-        
+
         data = self.parent.controller.get_data()
 
         selected_categories = defaultdict(list)
@@ -323,11 +351,8 @@ class Left_Menu_Tree(QTreeWidget):
         for key, columns in selected_categories.items():
             columns.insert(0, 'time')
             category, adr = key[0], key[1]
-            self.child_window.append(ViewDataWidget(self.parent, data, category, adr, columns))
-        
-
-
-
+            self.child_window.append(ViewDataWidget(
+                self.parent, data, category, adr, columns))
 
     def delete_item(self) -> None:
         """
@@ -358,7 +383,8 @@ class Left_Menu_Tree(QTreeWidget):
         """
         data = self.parent.controller.get_data()
         if 'FLIGHT_DATA' in data:
-            data = {key: val for key, val in data.items() if key != 'FLIGHT_DATA'}
+            data = {key: val for key, val in data.items() if key !=
+                    'FLIGHT_DATA'}
         columns = []
         for address in data.values():
             for dataframe in address.values():
@@ -366,7 +392,7 @@ class Left_Menu_Tree(QTreeWidget):
         unique_columns = list(set(columns))
         sorted_columns = sorted(unique_columns)
         return sorted_columns
-    
+
     def get_selected_elements(self) -> list:
         '''
         Фукнция для получения всех отмеченных чек-боксов.

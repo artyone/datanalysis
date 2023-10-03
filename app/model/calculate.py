@@ -1,8 +1,9 @@
-from typing import Any, Iterable
+from math import atan, pi
+from typing import Iterable
+
+import numpy as np
 import pandas as pd
 from pandas import DataFrame, Series
-from math import pi, atan
-import numpy as np
 
 
 class Mathematical(object):
@@ -74,7 +75,7 @@ class Mathematical(object):
         tang_sin = self.d.Tang_sin
         kren_cos = self.d.Kren_cos
         kren_sin = self.d.Kren_sin
-        
+
         self.d['Wxc_KBTIi'] = wxg * tang_cos + wyg * tang_sin
         self.d['Wyc_KBTIi'] = (
             -wxg * tang_sin * kren_cos + wyg * tang_cos * kren_cos + wzg * kren_sin
@@ -87,15 +88,19 @@ class Mathematical(object):
         '''
         Метод рассчёта путевой скорости.
         '''
-        self.d['Wp_KBTIi'] = np.sqrt(np.power(self.d.Wxc_KBTIi, 2) + np.power(self.d.Wzc_KBTIi, 2))
-        self.d['Wp_diss_pnki'] = np.sqrt(np.power(self.d.Wx_DISS_PNK, 2) + np.power(self.d.Wz_DISS_PNK, 2))
+        self.d['Wp_KBTIi'] = np.sqrt(
+            np.power(self.d.Wxc_KBTIi, 2) + np.power(self.d.Wzc_KBTIi, 2))
+        self.d['Wp_diss_pnki'] = np.sqrt(
+            np.power(self.d.Wx_DISS_PNK, 2) + np.power(self.d.Wz_DISS_PNK, 2))
 
     def calc_us(self) -> None:
         '''
         Метод рассчёта угла сноса.
         '''
-        self.d['US_diss_pnki'] = np.arctan(self.d.Wz_DISS_PNK / self.d.Wx_DISS_PNK) * 180 / np.pi
-        self.d['US_KBTIi'] = np.arctan(self.d.Wzc_KBTIi / self.d.Wxc_KBTIi) * 180 / np.pi
+        self.d['US_diss_pnki'] = np.arctan(
+            self.d.Wz_DISS_PNK / self.d.Wx_DISS_PNK) * 180 / np.pi
+        self.d['US_KBTIi'] = np.arctan(
+            self.d.Wzc_KBTIi / self.d.Wxc_KBTIi) * 180 / np.pi
 
     @staticmethod
     def ratio_filter(data, koef=0.01):
@@ -108,37 +113,43 @@ class Mathematical(object):
             ratio_filter[i] = ratio_koef[i] + ratio_filter[i - 1] * (1 - koef)
         return np.pad(ratio_filter[shift:], (0, shift), mode='constant', constant_values=np.nan)
 
-
     def calc_ratio_data(self) -> None:
         '''
         Метод рассчёта отношений US, Wp, Wx, Wy, Wz
         '''
+        # Рассчет отношений для US
         self.d['US_ratio'] = self.d.US_diss_pnki - self.d.US_KBTIi
-        #self.d.loc[self.d['US_ratio'] > 1000, 'US_ratio'] = 0
-        self.d['US_ratio_median'] = self.d.US_ratio.rolling(window=100, min_periods=1, center=True).median()
-        self.d['US_ratio_filter'] = self.ratio_filter(self.d.US_ratio)
-        self.d['US_ratio_mean'] = self.d.US_ratio.rolling(window=100, min_periods=1, center=True).mean()
+        self.calculate_ratio_metrics('US_ratio')
 
-        self.d['Wp_ratio'] = (self.d.Wp_diss_pnki - self.d.Wp_KBTIi) / self.d.Wp_diss_pnki * 100
-        #self.d.loc[self.d['Wp_ratio'] > 1000, 'Wp_ratio'] = 0
-        self.d['Wp_ratio_median'] = self.d.Wp_ratio.rolling(window=100, min_periods=1, center=True).median()
-        self.d['Wp_ratio_filter'] = self.ratio_filter(self.d.Wp_ratio)
-        self.d['Wp_ratio_mean'] = self.d.Wp_ratio.rolling(window=100, min_periods=1, center=True).mean()
+        # Рассчет отношений для Wp
+        self.d['Wp_ratio'] = (self.d.Wp_diss_pnki -
+                              self.d.Wp_KBTIi) / self.d.Wp_diss_pnki * 100
+        self.calculate_ratio_metrics('Wp_ratio')
 
-        self.d['Wx_ratio'] = (self.d.Wx_DISS_PNK - self.d.Wxc_KBTIi) / self.d.Wxc_KBTIi * 100
-        #self.d.loc[self.d['Wx_ratio'] > 1000, 'Wx_ratio'] = 0
-        self.d['Wx_ratio_median'] = self.d.Wx_ratio.rolling(window=100, min_periods=1, center=True).median()
-        self.d['Wx_ratio_filter'] = self.ratio_filter(self.d.Wx_ratio)
+        # Рассчет отношений для Wx
+        self.d['Wx_ratio'] = (self.d.Wx_DISS_PNK -
+                              self.d.Wxc_KBTIi) / self.d.Wxc_KBTIi * 100
+        self.calculate_ratio_metrics('Wx_ratio')
 
-        self.d['Wy_ratio'] = (self.d.Wy_DISS_PNK - self.d.Wyc_KBTIi) / self.d.Wyc_KBTIi * 100
-        #self.d.loc[self.d['Wy_ratio'] > 1000, 'Wy_ratio'] = 0
-        self.d['Wy_ratio_median'] = self.d.Wx_ratio.rolling(window=100, min_periods=1, center=True).median()
-        self.d['Wy_ratio_filter'] = self.ratio_filter(self.d.Wy_ratio)
+        # Рассчет отношений для Wy
+        self.d['Wy_ratio'] = (self.d.Wy_DISS_PNK -
+                              self.d.Wyc_KBTIi) / self.d.Wyc_KBTIi * 100
+        self.calculate_ratio_metrics('Wy_ratio')
 
-        self.d['Wz_ratio'] = (self.d.Wz_DISS_PNK - self.d.Wzc_KBTIi) / self.d.Wzc_KBTIi * 100
-        #self.d.loc[self.d['Wz_ratio'] > 'Wz_ratio'] = 0
-        self.d['Wz_ratio_median'] = self.d.Wz_ratio.rolling(window=100, min_periods=1, center=True).median()
-        self.d['Wz_ratio_filter'] = self.ratio_filter(self.d.Wz_ratio)
+        # Рассчет отношений для Wz
+        self.d['Wz_ratio'] = (self.d.Wz_DISS_PNK -
+                              self.d.Wzc_KBTIi) / self.d.Wzc_KBTIi * 100
+        self.calculate_ratio_metrics('Wz_ratio')
+
+    def calculate_ratio_metrics(self, ratio_name: str):
+        '''
+        Метод для рассчета метрик отношений
+        '''
+        self.d[f'{ratio_name}_median'] = self.d[ratio_name].rolling(
+            window=100, min_periods=1, center=True).median()
+        self.d[f'{ratio_name}_filter'] = self.ratio_filter(self.d[ratio_name])
+        self.d[f'{ratio_name}_mean'] = self.d[ratio_name].rolling(
+            window=100, min_periods=1, center=True).mean()
 
     def _get_interval(self, start: float, stop: float) -> DataFrame:
         '''
@@ -146,7 +157,7 @@ class Mathematical(object):
         '''
         return self.d[(self.d['time'] >= start) & (self.d['time'] <= stop)]
 
-    def _get_height(self, start: int) -> Any:
+    def _get_height(self, start: int) -> float:
         '''
         Метод получения высоты на старте интервала, если высота есть в данных.
         '''
@@ -166,16 +177,15 @@ class Mathematical(object):
             return (x - y) / x * 100
         return 0
 
-
     def _get_mean(self, start: int, stop: int) -> None:
         '''
         Метод получения средних данных для отчёта.
         '''
         interval = self._get_interval(start, stop)
-        
+
         mean_columns = ['Wxc_KBTIi', 'Wzc_KBTIi', 'Wyc_KBTIi', 'Wp_KBTIi',
                         'Wx_DISS_PNK', 'Wz_DISS_PNK', 'Wy_DISS_PNK', 'Wp_diss_pnki']
-        
+
         for column in mean_columns:
             mean_value = interval[column].mean()
             setattr(self, f'{column}_acc', mean_value)
@@ -219,7 +229,7 @@ class Mathematical(object):
                 self.Wy_DISS_PNK_acc, self.Wyc_KBTIi_acc), 3)
 
             data.append((length, height, start,
-                              stop, counts, US, Wp, Wx, Wz, Wy))
+                         stop, counts, US, Wp, Wx, Wz, Wy))
         result = pd.DataFrame(data, columns=headers)
         return result
 
@@ -320,7 +330,7 @@ class Mathematical(object):
         elif len(self.intervals_wx[-1]) > 0:
             self.intervals_wx.append(set())
 
-    def _calc_intervals(self, *args) -> list :
+    def _calc_intervals(self, *args) -> list:
         '''
         Метод получения интервалов всем параметрам.
         '''
@@ -345,9 +355,9 @@ class Mathematical(object):
             'Wx_DISS_PNK', 'Wz_DISS_PNK', 'Wy_DISS_PNK',
             'Wxg_KBTIi', 'Wzg_KBTIi', 'Wyg_KBTIi',
             'Wxc_KBTIi', 'Wyc_KBTIi', 'Wzc_KBTIi',
-            'Wp_KBTIi', 'Wp_diss_pnki',  'US_KBTIi', 'US_diss_pnki', 'US_ratio',
+            'Wp_KBTIi', 'Wp_diss_pnki', 'US_KBTIi', 'US_diss_pnki', 'US_ratio',
             'US_ratio_median', 'US_ratio_filter', 'US_ratio_mean',
-            'Wp_ratio', 'Wp_ratio_median', 'Wp_ratio_filter', 
+            'Wp_ratio', 'Wp_ratio_median', 'Wp_ratio_filter',
             'Wp_ratio_mean', 'Wx_ratio', 'Wx_ratio_median',
             'Wx_ratio_filter', 'Wy_ratio', 'Wy_ratio_median', 'Wy_ratio_filter',
             'Wz_ratio', 'Wz_ratio_median', 'Wz_ratio_filter'

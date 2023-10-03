@@ -4,17 +4,29 @@ from PyQt5.QtWidgets import (
     QComboBox, QDialogButtonBox,
     QFileDialog
 )
-from ..helpersWindows.baseWidget import BaseWidget
+from .base_widget import BaseWidget
+import app.view as view
+import app.controller as ctrl
 
 
-class Save_csv_window(BaseWidget):
+class SaveCsvWindow(BaseWidget):
     '''
     Класс окна выбора категории и адр для сохранения csv файла
     parent - родительское окно
     controller - контроллер для получения данных.
     '''
 
-    def __init__(self, name, controller, parent) -> None:
+    def __init__(self,
+                 name: str,
+                 controller: 'ctrl.Control',
+                 parent: 'view.MainWindow') -> None:
+        '''__init__
+
+        Args:
+            name (str): имя переменной в родительском классе
+            controller (ctrl.Control): контроллер
+            parent (view.MainWindow): основное окно
+        '''
         super().__init__(name, parent)
         self.controller = controller
         self.initUI()

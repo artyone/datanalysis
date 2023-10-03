@@ -1,13 +1,12 @@
-from typing import Any
-import openpyxl
-import struct
-import numpy as np
 import gzip
-import chardet as cd
-import pandas as pd
 import json as js
-import pickle
 import os
+import pickle
+
+import chardet as cd
+import numpy as np
+import openpyxl
+import pandas as pd
 
 
 class Datas(object):
@@ -59,7 +58,8 @@ class Datas(object):
                 continue
             row, column = address
             for i, value in enumerate(data[name]):
-                ws.cell(column=column + i, row=row, value=value) # type: ignore
+                ws.cell(column=column + i, row=row,
+                        value=value)  # type: ignore
 
         values = {}
 
@@ -74,7 +74,7 @@ class Datas(object):
                 continue
             row, column = address
             value = value if isinstance(value, str) else round(value, 3)
-            ws.cell(column=column, row=row, value=value) # type: ignore
+            ws.cell(column=column, row=row, value=value)  # type: ignore
 
         wb.save(filepath)
         wb.close()
@@ -89,7 +89,7 @@ class Datas(object):
         data.to_csv(filepath, index=False, sep=';')
 
     @staticmethod
-    def load_gzip(filepath: str) -> Any:
+    def load_gzip(filepath: str) -> dict:
         with gzip.open(filepath, 'rb') as f:
             return pickle.load(f)
 
@@ -103,7 +103,7 @@ class Datas(object):
             return file.read()
 
     @staticmethod
-    def load_json(filepath: str) -> Any:
+    def load_json(filepath: str) -> dict:
         with open(filepath, 'r', encoding='utf8') as file:
             return js.load(file)
 
@@ -144,7 +144,7 @@ class Datas(object):
         with open(filepath, 'rb') as file:
             string = file.read()
             dtype = {
-                'names': ['time', 'cs', 'null', 'values'], 'formats': ['>u4', 'u2', '4b', '>16u2'], 
+                'names': ['time', 'cs', 'null', 'values'], 'formats': ['>u4', 'u2', '4b', '>16u2'],
             }
             unpacked_data_list = np.frombuffer(string, dtype=dtype)
             unpacked_data_list = unpacked_data_list[['time', 'cs', 'values']]
@@ -152,11 +152,11 @@ class Datas(object):
 
     @classmethod
     def unpack_element(
-        cls, 
-        byteswap: bool, 
-        field_data: dict, 
+        cls,
+        byteswap: bool,
+        field_data: dict,
         data_source: np.ndarray
-        ) -> np.ndarray:
+    ) -> np.ndarray:
         position = field_data['position']
         koef = field_data['koef']
         size = field_data['size']
@@ -188,11 +188,11 @@ class Datas(object):
 
     @classmethod
     def unpack_group(
-        cls, 
-        byteswap: bool, 
-        group_info: dict, 
-        data_source: np.ndarray, 
-        result_data: dict) -> None:
+            cls,
+            byteswap: bool,
+            group_info: dict,
+            data_source: np.ndarray,
+            result_data: dict) -> None:
         if type(group_info['fields']) == list:
             for field in group_info['fields']:
                 column_name = field['name']
@@ -203,8 +203,8 @@ class Datas(object):
                 group_info['condition_bit'])
             condition_data = (
                 data_source[:, group_info['condition_byte']]
-                 & (mask_condition << shift_condition)
-                 ) >> shift_condition
+                & (mask_condition << shift_condition)
+            ) >> shift_condition
             for condition, fields in group_info['fields'].items():
                 condition_mask = condition_data == int(condition)
                 for field in fields:
@@ -215,15 +215,14 @@ class Datas(object):
                     #     if not condition_mask[i]:
                     #         column[i] = column[i - 1]
 
-                    
                     column = np.where(condition_mask, column, 0)
                     result_data[column_name] = column
 
     @staticmethod
     def get_filtered_data_by_checksum(
-        checksum: int, 
+        checksum: int,
         source_data: np.ndarray
-        ) -> np.ndarray:
+    ) -> np.ndarray:
         control_sum = source_data['cs']
         control_sum_mask = control_sum == checksum
         data_list = source_data[control_sum_mask]
